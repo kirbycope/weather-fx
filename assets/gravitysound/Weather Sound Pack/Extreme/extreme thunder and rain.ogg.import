@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://2cijqn1mwkru"
+path="res://.godot/imported/extreme thunder and rain.ogg-5262a1dbf4ad822accf0b43cd93144c4.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/gravitysound/Weather Sound Pack/Extreme/extreme thunder and rain.ogg"
+dest_files=["res://.godot/imported/extreme thunder and rain.ogg-5262a1dbf4ad822accf0b43cd93144c4.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

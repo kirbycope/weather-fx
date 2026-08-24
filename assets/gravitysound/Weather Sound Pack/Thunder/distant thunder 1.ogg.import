@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bsiaqjrfu8jwp"
+path="res://.godot/imported/distant thunder 1.ogg-b7d0281caef7d1e0a7b0b2d8c8b6cfa3.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/gravitysound/Weather Sound Pack/Thunder/distant thunder 1.ogg"
+dest_files=["res://.godot/imported/distant thunder 1.ogg-b7d0281caef7d1e0a7b0b2d8c8b6cfa3.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

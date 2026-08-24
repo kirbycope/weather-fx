@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://f82y5pv4d1g7"
+path="res://.godot/imported/heavy wind.ogg-104c2ae0d02cfc7a06145ccd4fc3c004.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/gravitysound/Weather Sound Pack/Wind/heavy wind.ogg"
+dest_files=["res://.godot/imported/heavy wind.ogg-104c2ae0d02cfc7a06145ccd4fc3c004.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

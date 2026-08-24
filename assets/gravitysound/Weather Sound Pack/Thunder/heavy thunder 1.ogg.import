@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://0xiaqgea8h6i"
+path="res://.godot/imported/heavy thunder 1.ogg-56d2f0adf561166e97d68c942c78ae9e.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/gravitysound/Weather Sound Pack/Thunder/heavy thunder 1.ogg"
+dest_files=["res://.godot/imported/heavy thunder 1.ogg-56d2f0adf561166e97d68c942c78ae9e.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

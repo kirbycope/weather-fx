@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cw1y7neu0ifhd"
+path="res://.godot/imported/light rain 2.ogg-b32fac2b74c7907a7266a7fbed21512b.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/gravitysound/Weather Sound Pack/Rain/light rain 2.ogg"
+dest_files=["res://.godot/imported/light rain 2.ogg-b32fac2b74c7907a7266a7fbed21512b.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
