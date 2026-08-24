@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dl610hxqqeutk"
+path="res://.godot/imported/medium wind.ogg-c250533d7c42e294b9024ebb9d62a55b.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Wind/medium wind.ogg"
+dest_files=["res://.godot/imported/medium wind.ogg-c250533d7c42e294b9024ebb9d62a55b.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

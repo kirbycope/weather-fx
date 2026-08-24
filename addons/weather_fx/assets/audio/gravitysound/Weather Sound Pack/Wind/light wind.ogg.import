@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dhae0ffciywv"
+path="res://.godot/imported/light wind.ogg-5bf17203ed76bd63fb90f6e8f5d78dbd.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Wind/light wind.ogg"
+dest_files=["res://.godot/imported/light wind.ogg-5bf17203ed76bd63fb90f6e8f5d78dbd.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

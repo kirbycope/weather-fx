@@ -1,0 +1,156 @@
+[gd_scene format=3 uid="uid://do6j5qhjt8bsf"]
+
+[ext_resource type="Script" uid="uid://1fmde6uimmio" path="res://addons/weather_fx/scripts/weather_fx.gd" id="1_wfx"]
+[ext_resource type="AudioStream" uid="uid://ba3f2ves324th" path="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Rain/light rain 1.ogg" id="2_shyyd"]
+[ext_resource type="AudioStream" uid="uid://cunptavn8fliu" path="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Rain/heavy rain 1.ogg" id="3_xywsf"]
+[ext_resource type="AudioStream" uid="uid://je1keybik6vk" path="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Rain and Thunder/heavy rain and thunder 1.ogg" id="4_tkp72"]
+[ext_resource type="AudioStream" uid="uid://f82y5pv4d1g7" path="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Wind/heavy wind.ogg" id="5_3q7bx"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/textures/ripple.svg" id="6_ripple"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rain"]
+emission_shape = 3
+emission_box_extents = Vector3(20, 1, 20)
+direction = Vector3(0, -1, 0)
+spread = 5.0
+initial_velocity_min = 22.0
+initial_velocity_max = 24.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rain"]
+transparency = 1
+albedo_color = Color(0.65, 0.82, 1, 0.6)
+emission_enabled = true
+emission = Color(0.4, 0.7, 0.9, 1)
+billboard_mode = 2
+
+[sub_resource type="BoxMesh" id="BoxMesh_rain"]
+material = SubResource("StandardMaterial3D_rain")
+size = Vector3(0.02, 0.35, 0.02)
+
+[sub_resource type="Curve" id="Curve_splash_scale"]
+_data = [Vector2(0, 0.25), 0.0, 2.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_splash_scale"]
+curve = SubResource("Curve_splash_scale")
+
+[sub_resource type="Gradient" id="Gradient_splash_alpha"]
+offsets = PackedFloat32Array(0, 0.7, 1)
+colors = PackedColorArray(1, 1, 1, 0.75, 1, 1, 1, 0.6, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_splash_alpha"]
+gradient = SubResource("Gradient_splash_alpha")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_splash"]
+emission_shape = 3
+emission_box_extents = Vector3(20, 0.1, 20)
+direction = Vector3(0, 1, 0)
+spread = 60.0
+initial_velocity_min = 1.2
+initial_velocity_max = 2.4
+gravity = Vector3(0, -9.8, 0)
+scale_curve = SubResource("CurveTexture_splash_scale")
+color_ramp = SubResource("GradientTexture1D_splash_alpha")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_splash_droplet"]
+transparency = 1
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.7, 0.85, 1, 0.75)
+emission_enabled = true
+emission = Color(0.4, 0.7, 0.9, 1)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_splash_droplet"]
+material = SubResource("StandardMaterial3D_splash_droplet")
+size = Vector2(0.025, 0.025)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ripple"]
+transparency = 1
+cull_mode = 2
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.75, 0.88, 1, 0.6)
+albedo_texture = ExtResource("6_ripple")
+emission_enabled = true
+emission = Color(0.3, 0.6, 0.85, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="QuadMesh" id="QuadMesh_ripple"]
+material = SubResource("StandardMaterial3D_ripple")
+size = Vector2(0.35, 0.35)
+orientation = 1
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_snow"]
+emission_shape = 3
+emission_box_extents = Vector3(20, 1, 20)
+direction = Vector3(0, -1, 0)
+spread = 20.0
+initial_velocity_min = 1.0
+initial_velocity_max = 3.0
+gravity = Vector3(0, -1.5, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_snow"]
+transparency = 1
+albedo_color = Color(0.95, 0.98, 1, 0.85)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_snow"]
+material = SubResource("StandardMaterial3D_snow")
+size = Vector2(0.08, 0.08)
+
+[node name="WeatherFX" type="Node3D" unique_id=1080350456 node_paths=PackedStringArray("rain_particles", "rain_splash_particles", "snow_particles", "audio_rain_light", "audio_rain_heavy", "audio_storm", "audio_wind")]
+script = ExtResource("1_wfx")
+wind_direction = Vector3(1, 0, 0)
+rain_particles = NodePath("RainParticles")
+rain_splash_particles = NodePath("RainSplashParticles")
+snow_particles = NodePath("SnowParticles")
+audio_rain_light = NodePath("RainLightSFX")
+audio_rain_heavy = NodePath("RainHeavySFX")
+audio_storm = NodePath("StormSFX")
+audio_wind = NodePath("WindSFX")
+
+[node name="RainParticles" type="GPUParticles3D" parent="." unique_id=1560518735]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
+amount = 1000
+lifetime = 0.55
+visibility_aabb = AABB(-25, -20, -25, 50, 25, 50)
+process_material = SubResource("ParticleProcessMaterial_rain")
+draw_pass_1 = SubResource("BoxMesh_rain")
+
+[node name="RainSplashParticles" type="GPUParticles3D" parent="." unique_id=1560518736]
+emitting = false
+amount = 2000
+lifetime = 0.35
+draw_passes = 2
+visibility_aabb = AABB(-25, -5, -25, 50, 15, 50)
+process_material = SubResource("ParticleProcessMaterial_splash")
+draw_pass_1 = SubResource("QuadMesh_splash_droplet")
+draw_pass_2 = SubResource("QuadMesh_ripple")
+
+[node name="SnowParticles" type="GPUParticles3D" parent="." unique_id=888760288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
+emitting = false
+amount = 3000
+lifetime = 4.0
+visibility_aabb = AABB(-25, -20, -25, 50, 25, 50)
+process_material = SubResource("ParticleProcessMaterial_snow")
+draw_pass_1 = SubResource("QuadMesh_snow")
+
+[node name="RainLightSFX" type="AudioStreamPlayer" parent="." unique_id=2028836351]
+stream = ExtResource("2_shyyd")
+volume_db = -6.0
+
+[node name="RainHeavySFX" type="AudioStreamPlayer" parent="." unique_id=617510328]
+stream = ExtResource("3_xywsf")
+volume_db = -3.0
+
+[node name="StormSFX" type="AudioStreamPlayer" parent="." unique_id=1613677526]
+stream = ExtResource("4_tkp72")
+
+[node name="WindSFX" type="AudioStreamPlayer" parent="." unique_id=682283832]
+stream = ExtResource("5_3q7bx")
+volume_db = -8.0

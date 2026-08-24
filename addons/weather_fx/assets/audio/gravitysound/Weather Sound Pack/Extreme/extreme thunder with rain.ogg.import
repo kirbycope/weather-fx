@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://oc8hbsf0xsj5"
+path="res://.godot/imported/extreme thunder with rain.ogg-d93fe7ac9edbc6c47466d9d15a0cbe88.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Extreme/extreme thunder with rain.ogg"
+dest_files=["res://.godot/imported/extreme thunder with rain.ogg-d93fe7ac9edbc6c47466d9d15a0cbe88.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

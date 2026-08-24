@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://vfb8yfoky845"
+path="res://.godot/imported/rain on tin roof inside.ogg-2a373625b7db42fbd7aed14a8528aafa.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Rain/rain on tin roof inside.ogg"
+dest_files=["res://.godot/imported/rain on tin roof inside.ogg-2a373625b7db42fbd7aed14a8528aafa.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

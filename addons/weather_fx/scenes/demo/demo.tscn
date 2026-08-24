@@ -1,0 +1,335 @@
+[gd_scene format=3 uid="uid://cx6g4w1kydtq8"]
+
+[ext_resource type="Script" path="res://addons/weather_fx/scenes/demo/demo.gd" id="1_demogd"]
+[ext_resource type="Script" path="res://addons/date_and_time/scripts/date_and_time.gd" id="2_dtd"]
+[ext_resource type="PackedScene" uid="uid://do6j5qhjt8bsf" path="res://addons/weather_fx/scenes/weather_fx.tscn" id="3_wfxscene"]
+[ext_resource type="Script" path="res://addons/date_and_time/scripts/date_and_time_display.gd" id="4_dtdisplay"]
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/weather_forecast_display.gd" id="5_wfdisplay"]
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/temperature_gauge_display.gd" id="6_tgdisplay"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_demo"]
+sky_horizon_color = Color(0.65, 0.72, 0.8, 1)
+ground_horizon_color = Color(0.65, 0.72, 0.8, 1)
+
+[sub_resource type="Sky" id="Sky_demo"]
+sky_material = SubResource("ProceduralSkyMaterial_demo")
+
+[sub_resource type="Environment" id="Environment_demo"]
+background_mode = 2
+sky = SubResource("Sky_demo")
+ambient_light_source = 3
+ambient_light_color = Color(0.6, 0.65, 0.7, 1)
+glow_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.28, 0.35, 0.28, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+material = SubResource("StandardMaterial3D_ground")
+size = Vector3(60, 1, 60)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(60, 1, 60)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_platform"]
+albedo_color = Color(0.4, 0.42, 0.45, 1)
+roughness = 0.6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pedestal"]
+material = SubResource("StandardMaterial3D_platform")
+top_radius = 2.5
+bottom_radius = 2.8
+height = 0.4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pillar"]
+material = SubResource("StandardMaterial3D_platform")
+top_radius = 1.0
+bottom_radius = 1.0
+height = 4.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_step"]
+material = SubResource("StandardMaterial3D_platform")
+size = Vector3(3, 0.3, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+bg_color = Color(0.08, 0.1, 0.12, 0.88)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 8
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_forecast"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_gauge"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[node name="WeatherFXDemo" type="Node3D"]
+script = ExtResource("1_demogd")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_demo")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 10, 0)
+shadow_enabled = true
+
+[node name="DemonstrationTarget" type="Node3D" parent="."]
+
+[node name="Ground" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_ground")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="Scenery" type="Node3D" parent="."]
+
+[node name="CenterPedestal" type="MeshInstance3D" parent="Scenery"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+mesh = SubResource("CylinderMesh_pedestal")
+
+[node name="Pillar1" type="MeshInstance3D" parent="Scenery"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2, -4)
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="Pillar2" type="MeshInstance3D" parent="Scenery"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2, -4)
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="Step1" type="MeshInstance3D" parent="Scenery"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -5)
+mesh = SubResource("BoxMesh_step")
+
+[node name="Step2" type="MeshInstance3D" parent="Scenery"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, -6)
+mesh = SubResource("BoxMesh_step")
+
+[node name="Step3" type="MeshInstance3D" parent="Scenery"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -7)
+mesh = SubResource("BoxMesh_step")
+
+[node name="CameraPivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8)
+current = true
+
+[node name="DateAndTime" type="Node" parent="."]
+script = ExtResource("2_dtd")
+current_time = 12.0
+
+[node name="WeatherFX" parent="." node_paths=PackedStringArray("date_and_time_node", "target_node", "world_environment") instance=ExtResource("3_wfxscene")]
+date_and_time_node = NodePath("../DateAndTime")
+target_node = NodePath("../DemonstrationTarget")
+world_environment = NodePath("../WorldEnvironment")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="ControlPanel" type="PanelContainer" parent="HUD"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 380.0
+offset_bottom = 440.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="HUD/ControlPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="HUD/ControlPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "WeatherFX Biome & Weather Lab"
+
+[node name="HSeparator1" type="HSeparator" parent="HUD/ControlPanel/VBox"]
+layout_mode = 2
+
+[node name="BiomeRow" type="HBoxContainer" parent="HUD/ControlPanel/VBox"]
+layout_mode = 2
+
+[node name="BiomeLabel" type="Label" parent="HUD/ControlPanel/VBox/BiomeRow"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "Biome:"
+
+[node name="BiomeOptionButton" type="OptionButton" parent="HUD/ControlPanel/VBox/BiomeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WeatherRow" type="HBoxContainer" parent="HUD/ControlPanel/VBox"]
+layout_mode = 2
+
+[node name="WeatherLabel" type="Label" parent="HUD/ControlPanel/VBox/WeatherRow"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "Weather:"
+
+[node name="WeatherOptionButton" type="OptionButton" parent="HUD/ControlPanel/VBox/WeatherRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TimeRow" type="HBoxContainer" parent="HUD/ControlPanel/VBox"]
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="HUD/ControlPanel/VBox/TimeRow"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "Time:"
+
+[node name="TimeSlider" type="HSlider" parent="HUD/ControlPanel/VBox/TimeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 24.0
+step = 0.1
+value = 12.0
+
+[node name="TimeValueLabel" type="Label" parent="HUD/ControlPanel/VBox/TimeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "12:00"
+horizontal_alignment = 2
+
+[node name="AltitudeRow" type="HBoxContainer" parent="HUD/ControlPanel/VBox"]
+layout_mode = 2
+
+[node name="AltitudeLabel" type="Label" parent="HUD/ControlPanel/VBox/AltitudeRow"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "Altitude:"
+
+[node name="AltitudeSlider" type="HSlider" parent="HUD/ControlPanel/VBox/AltitudeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1500.0
+step = 10.0
+
+[node name="AltitudeValueLabel" type="Label" parent="HUD/ControlPanel/VBox/AltitudeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "0 m"
+horizontal_alignment = 2
+
+[node name="ButtonRow" type="HBoxContainer" parent="HUD/ControlPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PlayPauseButton" type="Button" parent="HUD/ControlPanel/VBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pause"
+
+[node name="AdvanceCycleButton" type="Button" parent="HUD/ControlPanel/VBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Next Cycle"
+
+[node name="UnitButton" type="Button" parent="HUD/ControlPanel/VBox/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 0)
+layout_mode = 2
+text = "°C"
+
+[node name="HSeparator2" type="HSeparator" parent="HUD/ControlPanel/VBox"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="HUD/ControlPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "Biome: Temperate Plains\nWeather: Blue Sky (Simulated)\nTemp: 20.0°C / 68.0°F\nAltitude: 0 m\nCycle: 0% (04:00 left)"
+
+[node name="HintLabel" type="Label" parent="HUD/ControlPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "Camera: Right-Click Drag or Arrow/WASD keys to orbit, Scroll to zoom."
+autowrap_mode = 2
+
+[node name="BottomRight" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -80.0
+offset_right = -20.0
+offset_bottom = -16.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="DateAndTimeDisplay" type="PanelContainer" parent="HUD/BottomRight" node_paths=PackedStringArray("date_and_time_node")]
+layout_mode = 0
+offset_top = -38.0
+offset_right = 48.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_hud")
+script = ExtResource("4_dtdisplay")
+date_and_time_node = NodePath("../../../DateAndTime")
+
+[node name="WeatherForecastDisplay" type="PanelContainer" parent="HUD/BottomRight" node_paths=PackedStringArray("weather_fx_node")]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 0
+offset_right = 110.0
+offset_bottom = 36.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud_forecast")
+script = ExtResource("5_wfdisplay")
+weather_fx_node = NodePath("../../../WeatherFX")
+
+[node name="TemperatureGaugeDisplay" type="Button" parent="HUD/BottomRight" node_paths=PackedStringArray("weather_fx_node")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 0
+offset_left = 100.0
+offset_top = -36.0
+offset_right = 136.0
+mouse_filter = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_hud_gauge")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_hud_gauge")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hud_gauge")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_hud_gauge")
+theme_override_styles/focus = SubResource("StyleBoxFlat_hud_gauge")
+flat = true
+script = ExtResource("6_tgdisplay")
+weather_fx_node = NodePath("../../../WeatherFX")
