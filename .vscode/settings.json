@@ -1,0 +1,25 @@
+{
+  "godotTools.editorPath.godot4": "/Applications/Godot.app",
+  "gut-extension.additionalOptions": "-d --headless",
+  "cSpell.words": [
+    "clampf",
+    "deadzone",
+    "elif",
+    "GREATSWORD",
+    "hitbox",
+    "Joypad",
+    "lerp",
+    "mixamo",
+    "onready",
+    "orthonormalized",
+    "ragdoll",
+    "ragdolling",
+    "reparent",
+    "rigidbody",
+    "stylebox",
+    "styleboxes",
+    "tscn",
+    "unequip",
+    "Webfix"
+  ]
+}

@@ -1,9 +1,8 @@
 [gd_scene format=3 uid="uid://cx6g4w1kydtq8"]
 
 [ext_resource type="Script" path="res://addons/weather_fx/scenes/demo/demo.gd" id="1_demogd"]
-[ext_resource type="Script" path="res://addons/date_and_time/scripts/date_and_time.gd" id="2_dtd"]
+[ext_resource type="Script" path="res://addons/weather_fx/scenes/demo/demo_date_and_time.gd" id="2_dtd"]
 [ext_resource type="PackedScene" uid="uid://do6j5qhjt8bsf" path="res://addons/weather_fx/scenes/weather_fx.tscn" id="3_wfxscene"]
-[ext_resource type="Script" path="res://addons/date_and_time/scripts/date_and_time_display.gd" id="4_dtdisplay"]
 [ext_resource type="Script" path="res://addons/weather_fx/scripts/weather_forecast_display.gd" id="5_wfdisplay"]
 [ext_resource type="Script" path="res://addons/weather_fx/scripts/temperature_gauge_display.gd" id="6_tgdisplay"]
 
@@ -299,13 +298,11 @@ offset_bottom = -16.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="DateAndTimeDisplay" type="PanelContainer" parent="HUD/BottomRight" node_paths=PackedStringArray("date_and_time_node")]
+[node name="DateAndTimeDisplay" type="PanelContainer" parent="HUD/BottomRight"]
 layout_mode = 0
 offset_top = -38.0
 offset_right = 48.0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_hud")
-script = ExtResource("4_dtdisplay")
-date_and_time_node = NodePath("../../../DateAndTime")
 
 [node name="WeatherForecastDisplay" type="PanelContainer" parent="HUD/BottomRight" node_paths=PackedStringArray("weather_fx_node")]
 unique_name_in_owner = true

@@ -5,8 +5,8 @@ A high-performance, modular climate and weather simulation system featuring 20 u
 > [!NOTE]
 > **Plugin Activation vs Scene Usage**:
 > All core scripts use `class_name` (`WeatherFX`, `WeatherZone`, `WeatherForecastDisplay`, `TemperatureGaugeDisplay`, `ClimateData`).
-> - **Direct Usage**: You can add and use these nodes immediately in your scenes, drag `.gd` scripts, or call them via code without enabling anything in Project Settings.
-> - **Enabling the Plugin**: Enabling `Weather FX` in **Project Settings > Plugins** registers the custom icons and adds the node types directly to Godot's "Create New Node" hierarchy dialog.
+> - **Direct Usage**: You can add and use these nodes immediately in your scenes, drag `.gd` scripts, or call them via code. Ensure the global shader parameters are added in **Project Settings > Shader Globals**.
+> - **Enabling the Plugin**: Enabling `Weather FX` in **Project Settings > Plugins** registers the custom icons, adds the node types directly to Godot's "Create New Node" hierarchy dialog, and automatically configures the required **Shader Globals** in `ProjectSettings`.
 
 ---
 
@@ -46,12 +46,25 @@ Provides statistical probabilities and altitude curves across 20 distinct biomes
 - Generates a queue of upcoming weather conditions (default 7 cycles ahead).
 - Advances automatically every 240 seconds (configurable) or manually in editor / via API.
 
-### 5. Wind & Shader Integration
-- Dynamically updates global shader uniforms:
-  - `weather_wind_strength` (float)
-  - `weather_wind_direction` (Vector3)
-  - `weather_precipitation_strength` (float)
-- Foliage, grass, and water shaders can read these uniforms without manual wiring.
+### 5. Wind & Global Shader Integration
+Dynamically synchronizes weather parameters with Godot's global shader variables:
+- `weather_wind_strength` (`float`): Current wind power multiplier.
+- `weather_wind_direction` (`vec3`): Normalized 3D world-space wind direction.
+- `weather_precipitation_strength` (`float`): Wetness and rain/snow intensity (0.0 to 1.2+).
+
+These can be accessed directly in any Godot shader without extra script bindings:
+```gdshader
+shader_type spatial;
+
+global uniform float weather_wind_strength;
+global uniform vec3 weather_wind_direction;
+global uniform float weather_precipitation_strength;
+
+void vertex() {
+    // Example: Foliage wind sway
+    VERTEX += weather_wind_direction * sin(TIME * 3.0 + VERTEX.x) * (weather_wind_strength * 0.05);
+}
+```
 
 ### 6. In-Editor `@tool` Controls
 - **Play/Pause**: Toggle `is_playing` to freeze or progress weather in the viewport.

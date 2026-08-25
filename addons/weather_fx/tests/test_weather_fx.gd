@@ -336,6 +336,21 @@ func test_weather_fx_renderer_compatibility_setup() -> void:
 	assert_eq(mat_forward.sub_emitter_mode, ParticleProcessMaterial.SUB_EMITTER_AT_END)
 
 
+func test_global_shader_parameters_initialization_and_updates() -> void:
+	WeatherFX.ensure_shader_globals()
+	assert_true(ProjectSettings.has_setting("shader_globals/weather_wind_strength"))
+	assert_true(ProjectSettings.has_setting("shader_globals/weather_wind_direction"))
+	assert_true(ProjectSettings.has_setting("shader_globals/weather_precipitation_strength"))
+
+	# Test setting altitude / weather updates wind shader globals without errors
+	wfx.current_altitude = 250.0
+	wfx.wind_direction = Vector3(0.0, 0.0, 1.0)
+	wfx.set_weather(ClimateData.WeatherType.STORM)
+	wfx._update_wind_globals()
+	pass_test("Wind globals updated without errors")
+
+
+
 
 
 

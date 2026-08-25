@@ -1,0 +1,70 @@
+name: GUT Unit Tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  gut:
+    runs-on: ubuntu-latest
+
+    env:
+      HOME: /tmp/godot-home
+      XDG_CONFIG_HOME: /tmp/godot-home/.config
+      XDG_CACHE_HOME: /tmp/godot-home/.cache
+
+    container:
+      image: "barichello/godot-ci:4.7"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Godot runtime deps
+        shell: bash
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends blender libfontconfig1 python3-numpy
+
+      - name: Configure Blender path for headless import
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CONFIG_HOME/godot" "$XDG_CACHE_HOME"
+          cat > "$XDG_CONFIG_HOME/godot/editor_settings-4.7.tres" <<'EOF'
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          filesystem/import/blender/blender_path = "/usr/bin/blender"
+          EOF
+
+      - name: Import project
+        run: godot --headless --path "$PWD" --import --quit
+
+      - name: Run Tests
+        env:
+          GODOT_DISABLE_LEAK_CHECKS: "1"
+        run: |
+          mkdir -p test-results
+          godot \
+            --headless \
+            -d \
+            --path "$PWD" \
+            -s addons/gut/gut_cmdln.gd \
+            -gconfig=.gutconfig.json \
+            -gjunit_xml_file \
+            test-results/gut-junit.xml \
+            -gcompact_mode \
+            -gexit
+
+      - name: Archive test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gut-test-reports
+          path: test-results/
+          if-no-files-found: warn

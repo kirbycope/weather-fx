@@ -424,6 +424,7 @@ func _update_wind_globals() -> void:
 	emit_signal("wind_changed", final_strength, wind_direction)
 	
 	if update_global_shader_variables:
+		ensure_shader_globals()
 		var precip_val = 0.0
 		match active_weather:
 			ClimateData.WeatherType.RAIN, ClimateData.WeatherType.SNOW: precip_val = 0.5
@@ -435,21 +436,25 @@ func _update_wind_globals() -> void:
 		RenderingServer.global_shader_parameter_set(&"weather_precipitation_strength", precip_val)
 
 
-static var _globals_initialized: bool = false
+static var _globals_checked: bool = false
 
-## Ensures global shader parameters exist in editor mode without per-frame overhead.
+## Verifies that required shader globals exist in ProjectSettings.
 static func ensure_shader_globals() -> void:
-	if _globals_initialized:
+	if _globals_checked:
 		return
-	_globals_initialized = true
-	if Engine.is_editor_hint():
-		var existing = RenderingServer.global_shader_parameter_get_list()
-		if not existing.has(&"weather_wind_strength"):
-			RenderingServer.global_shader_parameter_add(&"weather_wind_strength", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)
-		if not existing.has(&"weather_wind_direction"):
-			RenderingServer.global_shader_parameter_add(&"weather_wind_direction", RenderingServer.GLOBAL_VAR_TYPE_VEC3, Vector3.RIGHT)
-		if not existing.has(&"weather_precipitation_strength"):
-			RenderingServer.global_shader_parameter_add(&"weather_precipitation_strength", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)
+	_globals_checked = true
+	var required_globals: Array[String] = [
+		"weather_wind_strength",
+		"weather_wind_direction",
+		"weather_precipitation_strength"
+	]
+	var missing: Array[String] = []
+	for param in required_globals:
+		if not ProjectSettings.has_setting("shader_globals/" + param):
+			missing.append(param)
+
+	if not missing.is_empty():
+		push_error("WeatherFX: Missing global shader parameter(s) in Project Settings: %s. Please add them under Project Settings -> Shader Globals or enable the WeatherFX plugin." % [", ".join(missing)])
 
 
 ## Applies visual and audio effects for the given weather type.
@@ -595,4 +600,3 @@ func get_cycle_progress() -> float:
 ## Returns elapsed seconds in current weather cycle.
 func get_cycle_timer() -> float:
 	return _cycle_timer
-
