@@ -115,6 +115,7 @@ audio_wind = NodePath("WindSFX")
 
 [node name="RainParticles" type="GPUParticles3D" parent="." unique_id=1560518735]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
+emitting = false
 amount = 1000
 lifetime = 0.55
 visibility_aabb = AABB(-25, -20, -25, 50, 25, 50)

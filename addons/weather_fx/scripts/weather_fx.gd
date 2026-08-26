@@ -154,7 +154,7 @@ var current_temperature: float = 20.0
 # ------------------------------------------------------------------------------
 var _cycle_timer: float = 0.0
 var _forecast: Array = []
-var _previous_weather: ClimateData.WeatherType = ClimateData.WeatherType.BLUE_SKY
+var _previous_weather: int = -1
 var _is_forward_plus: bool = true
 
 
@@ -180,9 +180,10 @@ func _ready() -> void:
 			target_node = found_player
 
 	ensure_shader_globals()
+	clear_all_effects()
 	_regenerate_forecast()
 	if _can_simulate():
-		_update_active_weather()
+		_update_active_weather(true)
 	else:
 		clear_all_effects()
 	_update_wind_globals()
@@ -387,7 +388,7 @@ func _update_temperature_and_weather() -> void:
 	_update_wind_globals()
 
 
-func _update_active_weather() -> void:
+func _update_active_weather(force_apply: bool = false) -> void:
 	var target_weather: ClimateData.WeatherType
 	if force_weather:
 		target_weather = manual_weather
@@ -396,7 +397,7 @@ func _update_active_weather() -> void:
 			_regenerate_forecast()
 		target_weather = _forecast[0] if not _forecast.is_empty() else ClimateData.WeatherType.BLUE_SKY
 
-	if active_weather != target_weather or _previous_weather != target_weather:
+	if force_apply or active_weather != target_weather or _previous_weather != target_weather:
 		var old = active_weather
 		active_weather = target_weather
 		_previous_weather = target_weather

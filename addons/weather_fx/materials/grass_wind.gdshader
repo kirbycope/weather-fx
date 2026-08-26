@@ -64,20 +64,22 @@ void vertex() {
 	float cur_wind_strength = max(weather_wind_strength, 0.5);
 	float effective_speed = wind_speed * (0.8 + 0.2 * cur_wind_strength);
 	
-	// Sweeping macro wave traveling across field coordinates
+	// Sweeping macro wave traveling across field coordinates (unidirectional 0.0 -> 1.0 downwind)
 	float wave_coord = (world_origin.x * wind_dir.x + world_origin.z * wind_dir.z) * wind_wave_size;
-	float macro_wave = sin(TIME * effective_speed + wave_coord);
+	float raw_wave = sin(TIME * effective_speed + wave_coord);
+	float macro_wave = pow(raw_wave * 0.5 + 0.5, 1.35);
 	
 	// Micro-turbulence / rustle for individual blade organic motion
-	float micro_flutter = sin(TIME * effective_speed * 2.7 + world_origin.x * 0.6 - world_origin.z * 0.6) * wind_turbulence * 0.4;
-	float tip_flutter = sin(TIME * effective_speed * 4.2 + v_world_pos.x * 1.3 + v_world_pos.z * 1.3) * wind_turbulence * 0.2;
+	float micro_flutter = sin(TIME * effective_speed * 2.5 + world_origin.x * 0.6 - world_origin.z * 0.6) * wind_turbulence * 0.15;
+	float tip_flutter = sin(TIME * effective_speed * 3.8 + v_world_pos.x * 1.2 + v_world_pos.z * 1.2) * wind_turbulence * 0.10;
 	
-	// Quadratic displacement curve along blade height
-	float bend = (macro_wave + micro_flutter + tip_flutter) * sway_strength * (0.35 + 0.15 * cur_wind_strength) * pow(height_factor, 1.65);
+	// Total bend: forward wind wave + subtle organic flutter, clamped to resting vertical baseline
+	float total_bend = max(macro_wave + (macro_wave * 0.4 + 0.2) * (micro_flutter + tip_flutter), 0.0);
+	float bend = total_bend * sway_strength * (0.22 + 0.10 * cur_wind_strength) * pow(height_factor, 1.65);
 	vec3 sway = wind_dir * bend;
 	
 	// Dip slightly downward when bending forward to conserve blade length
-	sway.y -= abs(bend) * 0.28 * height_factor;
+	sway.y -= bend * 0.22 * height_factor;
 	
 	// Player / entity displacement interaction
 	vec3 push_delta = v_world_pos - player_position;
