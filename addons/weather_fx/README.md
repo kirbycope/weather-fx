@@ -46,23 +46,37 @@ Provides statistical probabilities and altitude curves across 20 distinct biomes
 - Generates a queue of upcoming weather conditions (default 7 cycles ahead).
 - Advances automatically every 240 seconds (configurable) or manually in editor / via API.
 
-### 5. Wind & Global Shader Integration
+### 5. Wind & Global Shader Integration (Foliage & Grass Sway)
 Dynamically synchronizes weather parameters with Godot's global shader variables:
-- `weather_wind_strength` (`float`): Current wind power multiplier.
+- `weather_wind_strength` (`float`): Current wind power multiplier (scales according to biome base power and active storm / blizzard multipliers).
 - `weather_wind_direction` (`vec3`): Normalized 3D world-space wind direction.
 - `weather_precipitation_strength` (`float`): Wetness and rain/snow intensity (0.0 to 1.2+).
 
-These can be accessed directly in any Godot shader without extra script bindings:
+These can be accessed directly in any Godot shader without extra script bindings. The project includes ready-to-use spatial shaders:
+- **`materials/grass_wind.gdshader`**: Wind-reactive grass with macro sweeping waves, micro turbulence, tip-bending, root stability, and rain wetness glossiness.
+- **`materials/foliage_wind.gdshader`**: Tree canopy and leaf flutter shader reacting to wind direction and velocity.
+- **`scenes/grass_field.tscn` / `GrassField`**: High-performance instanced `MultiMeshInstance3D` grass generator.
+
 ```gdshader
 shader_type spatial;
+render_mode cull_disabled, diffuse_toon, specular_toon;
 
 global uniform float weather_wind_strength;
 global uniform vec3 weather_wind_direction;
 global uniform float weather_precipitation_strength;
 
+uniform float sway_strength : hint_range(0.0, 2.0) = 0.45;
+
 void vertex() {
-    // Example: Foliage wind sway
-    VERTEX += weather_wind_direction * sin(TIME * 3.0 + VERTEX.x) * (weather_wind_strength * 0.05);
+    float height_factor = clamp(1.0 - UV.y, 0.0, 1.0);
+    vec3 world_origin = MODEL_MATRIX[3].xyz;
+    vec3 wind_dir = normalize(weather_wind_direction);
+    
+    float wave = sin(TIME * (1.5 + 0.2 * weather_wind_strength) + (world_origin.x + world_origin.z) * 0.1);
+    vec3 sway = wind_dir * wave * sway_strength * max(weather_wind_strength, 0.5) * pow(height_factor, 1.5);
+    sway.y -= length(sway.xz) * 0.25;
+    
+    VERTEX += (inverse(MODEL_MATRIX) * vec4(sway, 0.0)).xyz;
 }
 ```
 

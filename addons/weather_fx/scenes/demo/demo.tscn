@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://addons/weather_fx/scenes/demo/demo.gd" id="1_demogd"]
 [ext_resource type="Script" path="res://addons/weather_fx/scenes/demo/demo_date_and_time.gd" id="2_dtd"]
 [ext_resource type="PackedScene" uid="uid://do6j5qhjt8bsf" path="res://addons/weather_fx/scenes/weather_fx.tscn" id="3_wfxscene"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/scenes/grass_field.tscn" id="4_gfield"]
 [ext_resource type="Script" path="res://addons/weather_fx/scripts/weather_forecast_display.gd" id="5_wfdisplay"]
 [ext_resource type="Script" path="res://addons/weather_fx/scripts/temperature_gauge_display.gd" id="6_tgdisplay"]
 
@@ -21,7 +22,7 @@ ambient_light_color = Color(0.6, 0.65, 0.7, 1)
 glow_enabled = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
-albedo_color = Color(0.28, 0.35, 0.28, 1)
+albedo_color = Color(0.24, 0.38, 0.22, 1)
 roughness = 0.85
 
 [sub_resource type="BoxMesh" id="BoxMesh_ground"]
@@ -111,6 +112,11 @@ shape = SubResource("BoxShape3D_ground")
 
 [node name="Scenery" type="Node3D" parent="."]
 
+[node name="GrassField" parent="Scenery" instance=ExtResource("4_gfield")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+instance_count = 1500
+field_size = Vector2(50, 50)
+
 [node name="CenterPedestal" type="MeshInstance3D" parent="Scenery"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 mesh = SubResource("CylinderMesh_pedestal")
@@ -134,6 +140,7 @@ mesh = SubResource("BoxMesh_step")
 [node name="Step3" type="MeshInstance3D" parent="Scenery"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -7)
 mesh = SubResource("BoxMesh_step")
+
 
 [node name="CameraPivot" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)

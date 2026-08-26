@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/materials/grass_wind.gdshader" id="1_gshader"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_gshader")
+shader_parameter/color_base = Color(0.137, 0.322, 0.125, 1)
+shader_parameter/color_tip = Color(0.482, 0.745, 0.224, 1)
+shader_parameter/alpha_scissor_threshold = 0.5
+shader_parameter/wind_speed = 1.8
+shader_parameter/wind_turbulence = 0.7
+shader_parameter/wind_wave_size = 0.12
+shader_parameter/sway_strength = 0.45
