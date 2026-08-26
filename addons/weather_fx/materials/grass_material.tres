@@ -5,10 +5,20 @@
 [resource]
 render_priority = 0
 shader = ExtResource("1_gshader")
-shader_parameter/color_base = Color(0.137, 0.322, 0.125, 1)
-shader_parameter/color_tip = Color(0.482, 0.745, 0.224, 1)
+shader_parameter/color_base = Color(0.08, 0.22, 0.08, 1)
+shader_parameter/color_mid = Color(0.26, 0.56, 0.17, 1)
+shader_parameter/color_tip = Color(0.58, 0.82, 0.24, 1)
+shader_parameter/color_dry_variation = Color(0.66, 0.62, 0.28, 1)
+shader_parameter/dry_patch_scale = 0.06
+shader_parameter/dry_patch_blend = 0.18
+shader_parameter/ambient_occlusion_strength = 0.45
 shader_parameter/alpha_scissor_threshold = 0.5
-shader_parameter/wind_speed = 1.8
-shader_parameter/wind_turbulence = 0.7
-shader_parameter/wind_wave_size = 0.12
-shader_parameter/sway_strength = 0.45
+shader_parameter/transmission_tint = Color(0.35, 0.52, 0.14, 1)
+shader_parameter/transmission_strength = 0.35
+shader_parameter/normal_up_bias = 0.55
+shader_parameter/wind_speed = 1.6
+shader_parameter/wind_turbulence = 0.75
+shader_parameter/wind_wave_size = 0.08
+shader_parameter/sway_strength = 0.5
+shader_parameter/player_displacement_strength = 0.6
+shader_parameter/player_displacement_radius = 1.2

@@ -52,33 +52,54 @@ Dynamically synchronizes weather parameters with Godot's global shader variables
 - `weather_wind_direction` (`vec3`): Normalized 3D world-space wind direction.
 - `weather_precipitation_strength` (`float`): Wetness and rain/snow intensity (0.0 to 1.2+).
 
-These can be accessed directly in any Godot shader without extra script bindings. The project includes ready-to-use spatial shaders:
-- **`materials/grass_wind.gdshader`**: Wind-reactive grass with macro sweeping waves, micro turbulence, tip-bending, root stability, and rain wetness glossiness.
+These can be accessed directly in any Godot shader without extra script bindings. The project includes ready-to-use spatial shaders and procedural foliage tools:
+- **`materials/grass_wind.gdshader`**: Feature-rich wind-reactive grass shader featuring:
+  - Macro sweeping gust waves and micro-flutter turbulence.
+  - Realistic tip-bending physics with vertical dip conservation.
+  - 3-stop vertical color gradient (`color_base`, `color_mid`, `color_tip`) with root ambient occlusion.
+  - Rolling macro terrain color variation (procedural pasture patches).
+  - Volumetric upward normal blending for fluffy Ghibli/BotW-style foliage lighting.
+  - Subsurface scattering / backlight transmission through blade tips.
+  - Dynamic character / object push-aside displacement.
+  - Rain wetness response (darkened soaked albedo, reduced roughness, glossy specular highlights).
 - **`materials/foliage_wind.gdshader`**: Tree canopy and leaf flutter shader reacting to wind direction and velocity.
-- **`scenes/grass_field.tscn` / `GrassField`**: High-performance instanced `MultiMeshInstance3D` grass generator.
+- **`scenes/grass_field.tscn` / `GrassField`**: High-performance instanced `MultiMeshInstance3D` grass generator that creates procedural 3D curved-blade tufts (multi-segment tapered blades with organic radial distribution and volumetric normals).
 
 ```gdshader
 shader_type spatial;
-render_mode cull_disabled, diffuse_toon, specular_toon;
+render_mode cull_disabled, diffuse_toon, specular_schlick_ggx;
 
 global uniform float weather_wind_strength;
 global uniform vec3 weather_wind_direction;
 global uniform float weather_precipitation_strength;
 
-uniform float sway_strength : hint_range(0.0, 2.0) = 0.45;
+uniform float sway_strength : hint_range(0.0, 2.0) = 0.50;
 
 void vertex() {
     float height_factor = clamp(1.0 - UV.y, 0.0, 1.0);
     vec3 world_origin = MODEL_MATRIX[3].xyz;
     vec3 wind_dir = normalize(weather_wind_direction);
     
-    float wave = sin(TIME * (1.5 + 0.2 * weather_wind_strength) + (world_origin.x + world_origin.z) * 0.1);
-    vec3 sway = wind_dir * wave * sway_strength * max(weather_wind_strength, 0.5) * pow(height_factor, 1.5);
-    sway.y -= length(sway.xz) * 0.25;
+    float wave = sin(TIME * (1.6 + 0.2 * max(weather_wind_strength, 0.5)) + (world_origin.x + world_origin.z) * 0.08);
+    float micro = sin(TIME * 4.2 + VERTEX.x * 1.3 + VERTEX.z * 1.3) * 0.15;
+    vec3 sway = wind_dir * (wave + micro) * sway_strength * max(weather_wind_strength, 0.5) * pow(height_factor, 1.65);
+    sway.y -= abs(wave) * 0.28 * height_factor;
     
     VERTEX += (inverse(MODEL_MATRIX) * vec4(sway, 0.0)).xyz;
+    NORMAL = normalize(mix(NORMAL, vec3(0.0, 1.0, 0.0), 0.55));
 }
 ```
+
+---
+
+## Credits & Attributions
+
+Special thanks and attributions to open-source shaders and creators whose techniques and insights inspired WeatherFX's foliage rendering:
+- **Malido** – *Stylized Multimesh Grass Shader* ([GodotShaders](https://godotshaders.com/shader/stylized-multimesh-grass-shader/), CC0 Public Domain / [GitHub](https://github.com/Malidos/Grass-Shader-Example))
+- **Calico** – *Stylized Customable Grass* ([GodotShaders](https://godotshaders.com/shader/stylized-customable-grass/), CC0 Public Domain)
+- **Bramreth (Bramwell)** – *Godot 4 3D Stylized Grass* ([GitHub](https://github.com/bramreth/Godot-4-3D-Stylized-Grass), MIT License)
+- **2Retr0** – *GodotGrass* ([GitHub](https://github.com/2Retr0/GodotGrass), MIT License)
+
 
 ### 6. In-Editor `@tool` Controls
 - **Play/Pause**: Toggle `is_playing` to freeze or progress weather in the viewport.

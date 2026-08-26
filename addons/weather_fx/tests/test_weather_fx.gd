@@ -350,6 +350,48 @@ func test_global_shader_parameters_initialization_and_updates() -> void:
 	pass_test("Wind globals updated without errors")
 
 
+func test_grass_field_generation_and_properties() -> void:
+	var grass_field = GrassField.new()
+	add_child_autofree(grass_field)
+	
+	grass_field.instance_count = 100
+	grass_field.field_size = Vector2(20.0, 20.0)
+	grass_field.blades_per_tuft = 6
+	grass_field.blade_segments = 4
+	grass_field.regenerate()
+	
+	assert_not_null(grass_field.multimesh)
+	assert_eq(grass_field.multimesh.instance_count, 100)
+	
+	var mesh = grass_field.multimesh.mesh as ArrayMesh
+	assert_not_null(mesh)
+	assert_gt(mesh.get_surface_count(), 0)
+	
+	# Verify stylized mesh attributes
+	var arrays = mesh.surface_get_arrays(0)
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	
+	assert_gt(vertices.size(), 0)
+	assert_eq(vertices.size(), normals.size())
+	assert_eq(vertices.size(), uvs.size())
+	
+	# Check instance transforms
+	var t0 = grass_field.multimesh.get_instance_transform(0)
+	assert_almost_eq(t0.origin.y, 0.0, 0.01)
+
+
+func test_grass_material_resource() -> void:
+	var mat = load("res://addons/weather_fx/materials/grass_material.tres") as ShaderMaterial
+	assert_not_null(mat)
+	assert_not_null(mat.shader)
+	assert_not_null(mat.get_shader_parameter("color_base"))
+	assert_not_null(mat.get_shader_parameter("color_tip"))
+	assert_not_null(mat.get_shader_parameter("wind_speed"))
+
+
+
 
 
 
