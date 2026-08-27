@@ -242,11 +242,12 @@ func regenerate() -> void:
 		
 	var mat: Material = custom_grass_material
 	if mat == null:
-		mat = load("res://addons/weather_fx/materials/grass_material.tres")
+		mat = load("res://addons/weather_fx/resources/grass_material.tres")
 	if mat:
 		material_override = mat
 		if mesh_to_use and mesh_to_use.get_surface_count() > 0:
 			mesh_to_use.surface_set_material(0, mat)
+
 
 	var mm = MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D

@@ -1,6 +1,7 @@
 [gd_resource type="ShaderMaterial" load_steps=2 format=3]
 
-[ext_resource type="Shader" path="res://addons/weather_fx/materials/grass_wind.gdshader" id="1_gshader"]
+[ext_resource type="Shader" path="res://addons/weather_fx/resources/grass_wind.gdshader" id="1_gshader"]
+
 
 [resource]
 render_priority = 0

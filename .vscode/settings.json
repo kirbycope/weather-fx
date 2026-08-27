@@ -1,5 +1,5 @@
 {
-  "godotTools.editorPath.godot4": "/Applications/Godot.app",
+  "godotTools.editorPath.godot4": "c:\\Godot\\godot.exe",
   "gut-extension.additionalOptions": "-d --headless",
   "cSpell.words": [
     "clampf",

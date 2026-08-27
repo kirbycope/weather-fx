@@ -1,7 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://addons/weather_fx/scripts/grass_field.gd" id="1_grassgd"]
-[ext_resource type="Material" path="res://addons/weather_fx/materials/grass_material.tres" id="2_grassmat"]
+[ext_resource type="Material" path="res://addons/weather_fx/resources/grass_material.tres" id="2_grassmat"]
+
 
 [node name="GrassField" type="MultiMeshInstance3D"]
 script = ExtResource("1_grassgd")

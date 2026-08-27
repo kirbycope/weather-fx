@@ -383,12 +383,13 @@ func test_grass_field_generation_and_properties() -> void:
 
 
 func test_grass_material_resource() -> void:
-	var mat = load("res://addons/weather_fx/materials/grass_material.tres") as ShaderMaterial
+	var mat = load("res://addons/weather_fx/resources/grass_material.tres") as ShaderMaterial
 	assert_not_null(mat)
 	assert_not_null(mat.shader)
 	assert_not_null(mat.get_shader_parameter("color_base"))
 	assert_not_null(mat.get_shader_parameter("color_tip"))
 	assert_not_null(mat.get_shader_parameter("wind_speed"))
+
 
 
 
