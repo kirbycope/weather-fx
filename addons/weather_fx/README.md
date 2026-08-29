@@ -79,13 +79,17 @@ void vertex() {
     float height_factor = clamp(1.0 - UV.y, 0.0, 1.0);
     vec3 world_origin = MODEL_MATRIX[3].xyz;
     vec3 wind_dir = normalize(weather_wind_direction);
+    vec3 sway = vec3(0.0);
     
-    float raw_wave = sin(TIME * (1.6 + 0.2 * max(weather_wind_strength, 0.5)) + (world_origin.x + world_origin.z) * 0.08);
-    float wave = pow(raw_wave * 0.5 + 0.5, 1.35);
-    float micro = sin(TIME * 4.2 + VERTEX.x * 1.3 + VERTEX.z * 1.3) * 0.08;
-    float bend = max(wave + micro, 0.0) * sway_strength * max(weather_wind_strength, 0.5) * 0.5 * pow(height_factor, 1.65);
-    vec3 sway = wind_dir * bend;
-    sway.y -= bend * 0.22 * height_factor;
+    if (weather_wind_strength > 0.001) {
+        float wind_scale = weather_wind_strength / 7.5;
+        float raw_wave = sin(TIME * (1.6 + 0.2 * wind_scale) + (world_origin.x + world_origin.z) * 0.08);
+        float wave = pow(raw_wave * 0.5 + 0.5, 1.35);
+        float micro = sin(TIME * 4.2 + VERTEX.x * 1.3 + VERTEX.z * 1.3) * 0.08;
+        float bend = max(wave + micro, 0.0) * sway_strength * (0.35 + 0.45 * wind_scale) * pow(height_factor, 1.65);
+        sway = wind_dir * bend;
+        sway.y -= bend * 0.22 * height_factor;
+    }
     
     VERTEX += (inverse(MODEL_MATRIX) * vec4(sway, 0.0)).xyz;
     NORMAL = normalize(mix(NORMAL, vec3(0.0, 1.0, 0.0), 0.55));

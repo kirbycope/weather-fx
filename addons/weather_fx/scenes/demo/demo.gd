@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Antigravity Contributors
 # SPDX-License-Identifier: MIT
 
+@tool
 extends Node3D
 
 ## Demo controller for WeatherFX showcasing 20 biomes, weather overrides,
@@ -46,6 +47,8 @@ var _last_mouse_pos: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
 	_setup_biome_options()
 	_setup_weather_options()
 	_setup_ui_signals()
@@ -54,6 +57,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_update_sun_lighting()
+	if Engine.is_editor_hint():
+		return
 	_update_status_display()
 	_handle_camera_input(delta)
 
@@ -213,6 +218,8 @@ func _apply_biome_ambient(biome: ClimateData.BiomeZone) -> void:
 # Interactive Camera Controls
 # ------------------------------------------------------------------------------
 func _input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			_is_dragging = event.pressed

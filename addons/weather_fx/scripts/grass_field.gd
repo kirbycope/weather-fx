@@ -91,10 +91,25 @@ extends MultiMeshInstance3D
 			material_override = custom_grass_material
 
 
+func _enter_tree() -> void:
+	if Engine.is_editor_hint():
+		if multimesh == null or multimesh.instance_count == 0:
+			regenerate()
+
+
 func _ready() -> void:
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if cast_grass_shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	if multimesh == null or multimesh.instance_count == 0:
 		regenerate()
+
+
+func _notification(what: int) -> void:
+	if Engine.is_editor_hint():
+		match what:
+			NOTIFICATION_EDITOR_PRE_SAVE:
+				multimesh = null
+			NOTIFICATION_EDITOR_POST_SAVE:
+				regenerate()
 
 
 ## Generates an optimized stylized 3D grass tuft mesh with curved, tapered blades and volumetric spherical normals.

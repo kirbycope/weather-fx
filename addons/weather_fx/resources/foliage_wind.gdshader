@@ -31,23 +31,25 @@ void vertex() {
 		wind_dir = normalize(wind_dir);
 	}
 	
-	float current_wind_strength = max(weather_wind_strength, 0.5);
-	float effective_speed = wind_speed * (0.8 + 0.15 * current_wind_strength);
-	
-	// Canopy overall sway (low frequency)
-	float sway_phase = TIME * effective_speed + (world_origin.x + world_origin.z) * 0.1;
-	float canopy_sway = sin(sway_phase) * canopy_sway_strength * (0.2 + 0.08 * current_wind_strength) * height_factor;
-	
-	// Leaf branch fluttering (high frequency)
-	float flutter_phase = TIME * effective_speed * 3.5 + (VERTEX.x * 2.0 + VERTEX.z * 2.0);
-	float leaf_flutter = sin(flutter_phase) * leaf_flutter_strength * (0.3 + 0.07 * current_wind_strength);
-	
-	vec3 total_sway = wind_dir * (canopy_sway + leaf_flutter);
-	total_sway.y -= abs(canopy_sway) * 0.15;
-	
-	// Convert to local vertex space
-	vec3 local_sway = (inverse(MODEL_MATRIX) * vec4(total_sway, 0.0)).xyz;
-	VERTEX += local_sway;
+	if (weather_wind_strength > 0.001) {
+		float wind_scale = weather_wind_strength / 7.5;
+		float effective_speed = wind_speed * (0.8 + 0.2 * wind_scale);
+		
+		// Canopy overall sway (low frequency)
+		float sway_phase = TIME * effective_speed + (world_origin.x + world_origin.z) * 0.1;
+		float canopy_sway = sin(sway_phase) * canopy_sway_strength * (0.2 + 0.6 * wind_scale) * height_factor;
+		
+		// Leaf branch fluttering (high frequency)
+		float flutter_phase = TIME * effective_speed * 3.5 + (VERTEX.x * 2.0 + VERTEX.z * 2.0);
+		float leaf_flutter = sin(flutter_phase) * leaf_flutter_strength * (0.3 + 0.5 * wind_scale);
+		
+		vec3 total_sway = wind_dir * (canopy_sway + leaf_flutter);
+		total_sway.y -= abs(canopy_sway) * 0.15;
+		
+		// Convert to local vertex space
+		vec3 local_sway = (inverse(MODEL_MATRIX) * vec4(total_sway, 0.0)).xyz;
+		VERTEX += local_sway;
+	}
 }
 
 void fragment() {

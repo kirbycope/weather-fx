@@ -173,36 +173,41 @@ func test_weather_fx_pause_stops_sfx_and_vfx() -> void:
 	assert_true(instance.rain_splash_particles.emitting)
 	assert_true(instance.audio_storm.playing)
 	assert_true(instance.audio_wind.playing)
+	assert_gt(instance.current_wind_strength, 0.0)
 
-	# Pausing should stop both VFX and SFX
+	# Pausing should stop VFX, SFX, and zero wind strength
 	instance.pause()
 	assert_false(instance.is_playing)
 	assert_false(instance.rain_particles.emitting)
 	assert_false(instance.rain_splash_particles.emitting)
 	assert_false(instance.audio_storm.playing)
 	assert_false(instance.audio_wind.playing)
+	assert_almost_eq(instance.current_wind_strength, 0.0, 0.001)
 
-	# Resuming should restore both VFX and SFX for active weather
+	# Resuming should restore VFX, SFX, and wind strength for active weather
 	instance.play()
 	assert_true(instance.is_playing)
 	assert_true(instance.rain_particles.emitting)
 	assert_true(instance.rain_splash_particles.emitting)
 	assert_true(instance.audio_storm.playing)
 	assert_true(instance.audio_wind.playing)
+	assert_gt(instance.current_wind_strength, 0.0)
 
-	# Setting is_playing = false should also stop VFX and SFX
+	# Setting is_playing = false should also stop VFX, SFX, and zero wind strength
 	instance.is_playing = false
 	assert_false(instance.rain_particles.emitting)
 	assert_false(instance.rain_splash_particles.emitting)
 	assert_false(instance.audio_storm.playing)
 	assert_false(instance.audio_wind.playing)
+	assert_almost_eq(instance.current_wind_strength, 0.0, 0.001)
 
-	# Setting is_playing = true should resume VFX and SFX
+	# Setting is_playing = true should resume VFX, SFX, and wind strength
 	instance.is_playing = true
 	assert_true(instance.rain_particles.emitting)
 	assert_true(instance.rain_splash_particles.emitting)
 	assert_true(instance.audio_storm.playing)
 	assert_true(instance.audio_wind.playing)
+	assert_gt(instance.current_wind_strength, 0.0)
 
 
 func test_gauge_needle_angle_and_percentage() -> void:
@@ -389,6 +394,57 @@ func test_grass_material_resource() -> void:
 	assert_not_null(mat.get_shader_parameter("color_base"))
 	assert_not_null(mat.get_shader_parameter("color_tip"))
 	assert_not_null(mat.get_shader_parameter("wind_speed"))
+
+
+func test_date_and_time_node_and_manual_time_synchronization() -> void:
+	var clock_script = load("res://addons/weather_fx/scenes/demo/demo_date_and_time.gd")
+	assert_not_null(clock_script)
+	var clock = clock_script.new()
+	add_child_autofree(clock)
+	clock.current_time = 6.0
+
+	var test_wfx = WeatherFX.new()
+	add_child_autofree(test_wfx)
+
+	# Assign date_and_time_node
+	test_wfx.date_and_time_node = clock
+	assert_almost_eq(test_wfx.get_current_time_hours(), 6.0, 0.01)
+
+	# Modifying clock.current_time emits time_changed, updating test_wfx and manual_time_of_day
+	clock.current_time = 18.0
+	assert_almost_eq(test_wfx.get_current_time_hours(), 18.0, 0.01)
+	assert_almost_eq(test_wfx.manual_time_of_day, 18.0, 0.01)
+
+	# Modifying test_wfx.manual_time_of_day updates clock.current_time
+	test_wfx.manual_time_of_day = 12.0
+	assert_almost_eq(clock.current_time, 12.0, 0.01)
+	assert_almost_eq(test_wfx.get_current_time_hours(), 12.0, 0.01)
+
+
+func test_sun_light_time_and_biome_updates() -> void:
+	var light = DirectionalLight3D.new()
+	add_child_autofree(light)
+
+	var test_wfx = WeatherFX.new()
+	add_child_autofree(test_wfx)
+	test_wfx.sun_light = light
+	test_wfx.manual_time_of_day = 12.0 # Noon
+
+	# Noon: energy 1.0 (daylight)
+	test_wfx._update_sun_lighting()
+	assert_almost_eq(light.light_energy, 1.0, 0.01)
+
+	# Midnight (0.0): energy 0.15 (night)
+	test_wfx.manual_time_of_day = 0.0
+	assert_almost_eq(light.light_energy, 0.15, 0.01)
+
+	# Biome change updates light tint
+	test_wfx.set_biome(ClimateData.BiomeZone.VOLCANIC_CRATER)
+	test_wfx.manual_time_of_day = 12.0
+	assert_almost_eq(light.light_color.r, 1.0, 0.01)
+	assert_almost_eq(light.light_color.g, 0.7, 0.01)
+	assert_almost_eq(light.light_color.b, 0.5, 0.01)
+
 
 
 
