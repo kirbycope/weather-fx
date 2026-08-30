@@ -399,6 +399,16 @@ func test_grass_field_generation_and_properties() -> void:
 	grass_field.regenerate()
 	assert_not_null(grass_field.multimesh.mesh)
 
+	# Test exclusion radius clearing
+	grass_field.exclusion_radius = 4.0
+	grass_field.exclusion_center = Vector2(0.0, 0.0)
+	grass_field.regenerate()
+	var origins = grass_field.get_instance_origins()
+	assert_eq(origins.size(), grass_field.instance_count)
+	for org in origins:
+		var dist = Vector2(org.x, org.z).length()
+		assert_gt(dist, 3.99, "Grass instances should be outside exclusion radius")
+
 
 func test_grass_material_resource() -> void:
 	var mat = load("res://addons/weather_fx/resources/grass_material.tres") as ShaderMaterial
@@ -486,6 +496,82 @@ func test_wind_vfx_instantiation_and_properties() -> void:
 	wind_inst._process(0.1)
 	for p in wind_inst._airflow_particles:
 		assert_false(p.emitting)
+
+
+func test_precipitation_particles_wind_physics() -> void:
+	var wfx_scene = load("res://addons/weather_fx/scenes/weather_fx.tscn") as PackedScene
+	assert_not_null(wfx_scene)
+	var wfx_inst = wfx_scene.instantiate() as WeatherFX
+	add_child_autofree(wfx_inst)
+	wfx_inst.is_playing = true
+
+	# Set blowing East with strong wind
+	wfx_inst.wind_direction = Vector3(1.0, 0.0, 0.0)
+	wfx_inst.wind_strength_multiplier = 2.0
+	wfx_inst.apply_weather_effects(ClimateData.WeatherType.RAIN)
+
+	# Rain should slant eastward and align with velocity
+	var rain_mat = wfx_inst.rain_particles.process_material as ParticleProcessMaterial
+	assert_not_null(rain_mat)
+	assert_gt(rain_mat.direction.x, 0.2, "Rain fall direction should slant along wind direction")
+	assert_true(rain_mat.particle_flag_align_y, "Rain particles should align Y axis along velocity")
+
+	# Snow test: switch to snow and blow West
+	wfx_inst.wind_direction = Vector3(-1.0, 0.0, 0.0)
+	wfx_inst.apply_weather_effects(ClimateData.WeatherType.SNOW)
+
+	var snow_mat = wfx_inst.snow_particles.process_material as ParticleProcessMaterial
+	assert_not_null(snow_mat)
+	assert_lt(snow_mat.direction.x, -0.2, "Snow fall direction should slant westward along wind")
+	assert_lt(snow_mat.gravity.x, -0.5, "Snow gravity should pull westward")
+	assert_true(snow_mat.turbulence_enabled, "Snow should have turbulence enabled")
+
+
+func test_pond_water_shader_resource() -> void:
+	var mat = load("res://addons/weather_fx/resources/pond_water_material.tres") as ShaderMaterial
+	assert_not_null(mat, "Pond water material should load successfully")
+	assert_not_null(mat.shader, "Pond water shader should be assigned")
+	assert_not_null(mat.get_shader_parameter("shallow_color"))
+	assert_not_null(mat.get_shader_parameter("deep_color"))
+	assert_not_null(mat.get_shader_parameter("wave_amplitude"))
+	assert_not_null(mat.get_shader_parameter("wave_frequency"))
+	assert_not_null(mat.get_shader_parameter("normal_map"))
+
+
+func test_bgs_audio_matching_weather_and_time() -> void:
+	var wfx = WeatherFX.new()
+	var bgs_player = AudioStreamPlayer.new()
+	wfx.add_child(bgs_player)
+	wfx.audio_bgs = bgs_player
+	add_child_autofree(wfx)
+	wfx.is_playing = true
+
+	# Test Day Clear (12:00)
+	wfx.manual_time_of_day = 12.0
+	wfx.apply_weather_effects(ClimateData.WeatherType.BLUE_SKY)
+	assert_eq(bgs_player.stream, wfx.bgs_day_clear, "Day clear should play Forest Day.ogg")
+
+	# Test Day Rain
+	wfx.apply_weather_effects(ClimateData.WeatherType.RAIN)
+	assert_eq(bgs_player.stream, wfx.bgs_day_rain, "Day rain should play Forest Day Rain.ogg")
+
+	# Test Day Storm
+	wfx.apply_weather_effects(ClimateData.WeatherType.STORM)
+	assert_eq(bgs_player.stream, wfx.bgs_day_storm, "Day storm should play Forest Day Storm.ogg")
+
+	# Test Night Clear (22:00)
+	wfx.manual_time_of_day = 22.0
+	wfx.apply_weather_effects(ClimateData.WeatherType.BLUE_SKY)
+	assert_eq(bgs_player.stream, wfx.bgs_night_clear, "Night clear should play Forest Night.ogg")
+
+	# Test Night Rain
+	wfx.apply_weather_effects(ClimateData.WeatherType.RAIN)
+	assert_eq(bgs_player.stream, wfx.bgs_night_rain, "Night rain should play Forest Night Rain.ogg")
+
+	# Test Night Storm
+	wfx.apply_weather_effects(ClimateData.WeatherType.STORM)
+	assert_eq(bgs_player.stream, wfx.bgs_night_storm, "Night storm should play Forest Night Storm.ogg")
+
 
 
 

@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cavaav2nxuv1q"
+path="res://.godot/imported/Forest Day.ogg-4c8a0bf1fc72cab2c6c5bcf345baa7ea.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Day/Forest Day.ogg"
+dest_files=["res://.godot/imported/Forest Day.ogg-4c8a0bf1fc72cab2c6c5bcf345baa7ea.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

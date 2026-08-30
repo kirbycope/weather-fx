@@ -3,20 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dvyfowpuw6y4l"
-path.s3tc="res://.godot/imported/T_VFX_WindNoise1_tv.png-cd1911ce79b520ad0b1cb8ec9214846d.s3tc.ctex"
+path="res://.godot/imported/T_VFX_WindNoise1_tv.png-cd1911ce79b520ad0b1cb8ec9214846d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1_tv.png"
-dest_files=["res://.godot/imported/T_VFX_WindNoise1_tv.png-cd1911ce79b520ad0b1cb8ec9214846d.s3tc.ctex"]
+dest_files=["res://.godot/imported/T_VFX_WindNoise1_tv.png-cd1911ce79b520ad0b1cb8ec9214846d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7

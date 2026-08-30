@@ -3,20 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bi60tcwsalyeh"
-path.s3tc="res://.godot/imported/T_LineVanishW1_g.png-544f976487ea3209225842a8c1a419de.s3tc.ctex"
+path="res://.godot/imported/T_LineVanishW1_g.png-544f976487ea3209225842a8c1a419de.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://addons/weather_fx/assets/vfx/wind/textures/T_LineVanishW1_g.png"
-dest_files=["res://.godot/imported/T_LineVanishW1_g.png-544f976487ea3209225842a8c1a419de.s3tc.ctex"]
+dest_files=["res://.godot/imported/T_LineVanishW1_g.png-544f976487ea3209225842a8c1a419de.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7

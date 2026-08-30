@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Antigravity Contributors
+# SPDX-License-Identifier: MIT
+
 @tool
 class_name GrassField
 extends MultiMeshInstance3D
@@ -62,6 +65,28 @@ const QUATERNIUS_MESH_PATHS = {
 		if is_inside_tree():
 			regenerate()
 
+@export_group("Exclusion Zones")
+## Primary circular clearing radius where no grass will spawn (e.g. campfire).
+@export_range(0.0, 50.0, 0.1) var exclusion_radius: float = 0.0:
+	set(val):
+		exclusion_radius = maxf(0.0, val)
+		if is_inside_tree():
+			regenerate()
+
+## 2D center position (X, Z) in local space of primary exclusion circle.
+@export var exclusion_center: Vector2 = Vector2.ZERO:
+	set(val):
+		exclusion_center = val
+		if is_inside_tree():
+			regenerate()
+
+## Additional circular exclusion zones formatted as Vector3(center_x, center_z, radius) for ponds, paths, etc.
+@export var additional_exclusion_zones: Array = []:
+	set(val):
+		additional_exclusion_zones = val
+		if is_inside_tree():
+			regenerate()
+
 @export_group("Rendering")
 @export var cast_grass_shadows: bool = false:
 	set(val):
@@ -73,6 +98,8 @@ const QUATERNIUS_MESH_PATHS = {
 		custom_grass_material = val
 		if custom_grass_material:
 			material_override = custom_grass_material
+
+var _instance_origins: Array[Vector3] = []
 
 
 func _enter_tree() -> void:
@@ -110,9 +137,27 @@ func get_active_mesh() -> Mesh:
 	return load("res://addons/weather_fx/resources/mesh_grass_common_short.tres") as Mesh
 
 
+## Returns the cached 3D origin points of all grass instances.
+func get_instance_origins() -> Array[Vector3]:
+	return _instance_origins
+
+
+## Checks whether a 2D local coordinate (px, pz) falls within any exclusion zone.
+func is_point_excluded(px: float, pz: float) -> bool:
+	if exclusion_radius > 0.0:
+		if Vector2(px - exclusion_center.x, pz - exclusion_center.y).length() < exclusion_radius:
+			return true
+	for zone in additional_exclusion_zones:
+		if zone is Vector3 and zone.z > 0.0:
+			if Vector2(px - zone.x, pz - zone.y).length() < zone.z:
+				return true
+	return false
+
+
 ## Rebuilds the MultiMesh instances within field boundaries.
 func regenerate() -> void:
 	if instance_count <= 0:
+		_instance_origins.clear()
 		if multimesh:
 			multimesh.instance_count = 0
 		return
@@ -137,10 +182,32 @@ func regenerate() -> void:
 	
 	var half_x = field_size.x * 0.5
 	var half_z = field_size.y * 0.5
+	var max_r = maxf(half_x, half_z)
+	var has_exclusions = exclusion_radius > 0.0 or not additional_exclusion_zones.is_empty()
 	
+	_instance_origins.clear()
+	_instance_origins.resize(instance_count)
+
 	for i in range(instance_count):
-		var pos_x = rng.randf_range(-half_x, half_x)
-		var pos_z = rng.randf_range(-half_z, half_z)
+		var pos_x = 0.0
+		var pos_z = 0.0
+		if has_exclusions:
+			var attempts = 0
+			var excluded = true
+			while attempts < 40 and excluded:
+				pos_x = rng.randf_range(-half_x, half_x)
+				pos_z = rng.randf_range(-half_z, half_z)
+				excluded = is_point_excluded(pos_x, pos_z)
+				attempts += 1
+			if excluded:
+				var ang = rng.randf_range(0.0, TAU)
+				var r = rng.randf_range(exclusion_radius + 0.5, maxf(exclusion_radius + 1.0, max_r))
+				pos_x = clampf(exclusion_center.x + cos(ang) * r, -half_x, half_x)
+				pos_z = clampf(exclusion_center.y + sin(ang) * r, -half_z, half_z)
+		else:
+			pos_x = rng.randf_range(-half_x, half_x)
+			pos_z = rng.randf_range(-half_z, half_z)
+
 		var rot_y = rng.randf_range(0.0, TAU)
 		var scl = rng.randf_range(min_scale, max_scale)
 		
@@ -149,6 +216,7 @@ func regenerate() -> void:
 		t = t.scaled(Vector3(scl, scl, scl))
 		t.origin = Vector3(pos_x, 0.0, pos_z)
 		
+		_instance_origins[i] = t.origin
 		mm.set_instance_transform(i, t)
 		
 	multimesh = mm

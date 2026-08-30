@@ -3,20 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b1iiignfvm2jw"
-path.s3tc="res://.godot/imported/T_WindWaveAnim.png-8e4a5b8ecd49fecdc4221aa93a1ed946.s3tc.ctex"
+path="res://.godot/imported/T_WindWaveAnim.png-8e4a5b8ecd49fecdc4221aa93a1ed946.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://addons/weather_fx/assets/vfx/wind/textures/T_WindWaveAnim.png"
-dest_files=["res://.godot/imported/T_WindWaveAnim.png-8e4a5b8ecd49fecdc4221aa93a1ed946.s3tc.ctex"]
+dest_files=["res://.godot/imported/T_WindWaveAnim.png-8e4a5b8ecd49fecdc4221aa93a1ed946.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/Leaves_NormalTree.png-9a6fc15ed7042b0430fa127
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7

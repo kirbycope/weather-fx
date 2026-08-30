@@ -9,25 +9,27 @@
 [ext_resource type="PackedScene" path="res://addons/weather_fx/scenes/wind_vfx.tscn" id="7_windvfx"]
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rain"]
+particle_flag_align_y = true
 emission_shape = 3
-emission_box_extents = Vector3(20, 1, 20)
+emission_box_extents = Vector3(25, 1, 25)
 direction = Vector3(0, -1, 0)
-spread = 5.0
+spread = 2.0
 initial_velocity_min = 22.0
-initial_velocity_max = 24.0
+initial_velocity_max = 26.0
+gravity = Vector3(0, -9.8, 0)
 sub_emitter_mode = 2
 sub_emitter_amount_at_end = 1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rain"]
 transparency = 1
-albedo_color = Color(0.65, 0.82, 1, 0.6)
+cull_mode = 2
+albedo_color = Color(0.7, 0.85, 1, 0.6)
 emission_enabled = true
-emission = Color(0.4, 0.7, 0.9, 1)
-billboard_mode = 2
+emission = Color(0.4, 0.7, 0.95, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_rain"]
 material = SubResource("StandardMaterial3D_rain")
-size = Vector3(0.02, 0.35, 0.02)
+size = Vector3(0.015, 0.45, 0.015)
 
 [sub_resource type="Gradient" id="Gradient_splash_alpha"]
 offsets = PackedFloat32Array(0, 0.7, 1)

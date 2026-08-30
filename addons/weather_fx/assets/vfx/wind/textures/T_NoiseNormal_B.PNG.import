@@ -3,20 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bt8nctjc5h4x2"
-path.s3tc="res://.godot/imported/T_NoiseNormal_B.PNG-561ad78c84682f838db7eb8fe16c9343.s3tc.ctex"
+path="res://.godot/imported/T_NoiseNormal_B.PNG-561ad78c84682f838db7eb8fe16c9343.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://addons/weather_fx/assets/vfx/wind/textures/T_NoiseNormal_B.PNG"
-dest_files=["res://.godot/imported/T_NoiseNormal_B.PNG-561ad78c84682f838db7eb8fe16c9343.s3tc.ctex"]
+dest_files=["res://.godot/imported/T_NoiseNormal_B.PNG-561ad78c84682f838db7eb8fe16c9343.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7

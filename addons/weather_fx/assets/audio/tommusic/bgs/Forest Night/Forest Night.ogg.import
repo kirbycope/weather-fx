@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://d37fk5jwriglv"
+path="res://.godot/imported/Forest Night.ogg-fed6ec8d5c269dc20a0c237f7e7491ea.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Night/Forest Night.ogg"
+dest_files=["res://.godot/imported/Forest Night.ogg-fed6ec8d5c269dc20a0c237f7e7491ea.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

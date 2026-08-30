@@ -3,20 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://behahyuyu7cud"
-path.s3tc="res://.godot/imported/T_PerlinNoise_Tiled11_inv.png-0aadc3f6aaecd16cda5dbc61d22026ba.s3tc.ctex"
+path="res://.godot/imported/T_PerlinNoise_Tiled11_inv.png-0aadc3f6aaecd16cda5dbc61d22026ba.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://addons/weather_fx/assets/vfx/wind/textures/T_PerlinNoise_Tiled11_inv.png"
-dest_files=["res://.godot/imported/T_PerlinNoise_Tiled11_inv.png-0aadc3f6aaecd16cda5dbc61d22026ba.s3tc.ctex"]
+dest_files=["res://.godot/imported/T_PerlinNoise_Tiled11_inv.png-0aadc3f6aaecd16cda5dbc61d22026ba.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7

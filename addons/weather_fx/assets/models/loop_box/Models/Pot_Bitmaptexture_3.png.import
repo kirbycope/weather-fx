@@ -2,20 +2,23 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqwbd5fjb4g5l"
-path="res://.godot/imported/index.apple-touch-icon.png-b21a756d869f84af832970a74d8371bc.ctex"
+uid="uid://c24lpx766qwou"
+path="res://.godot/imported/Pot_Bitmaptexture_3.png-c2592a6fb193b62bb0ebe6fd4d998f55.ctex"
 metadata={
 "vram_texture": false
+}
+generator_parameters={
+"md5": "44b607a06077298da7206f223459f2ca"
 }
 
 [deps]
 
-source_file="res://docs/index.apple-touch-icon.png"
-dest_files=["res://.godot/imported/index.apple-touch-icon.png-b21a756d869f84af832970a74d8371bc.ctex"]
+source_file="res://addons/weather_fx/assets/models/loop_box/Models/Pot_Bitmaptexture_3.png"
+dest_files=["res://.godot/imported/Pot_Bitmaptexture_3.png-c2592a6fb193b62bb0ebe6fd4d998f55.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7
@@ -24,7 +27,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -38,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

@@ -3,20 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ci60kyykaogvw"
-path.s3tc="res://.godot/imported/Bark_NormalTree.png-4190dd80a9a9592d14356b879b4c9eac.s3tc.ctex"
+path="res://.godot/imported/Bark_NormalTree.png-4190dd80a9a9592d14356b879b4c9eac.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://addons/weather_fx/assets/models/quaternius/stylized-nature-megakit/Bark_NormalTree.png"
-dest_files=["res://.godot/imported/Bark_NormalTree.png-4190dd80a9a9592d14356b879b4c9eac.s3tc.ctex"]
+dest_files=["res://.godot/imported/Bark_NormalTree.png-4190dd80a9a9592d14356b879b4c9eac.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7

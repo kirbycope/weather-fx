@@ -17,8 +17,17 @@ config/icon="res://icon.svg"
 
 [display]
 
+window/size/viewport_width=1280
+window/size/viewport_height=800
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+
+[importer_defaults]
+
+texture={
+&"compress/mode": 1,
+&"detect_3d/compress_to": 2,
+&"process/size_limit": 1024
+}
 
 [input_devices]
 
