@@ -19,6 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://1bi231avm5ny" path="res://addons/weather_fx/assets/models/loop_box/Models/Pot_Bitmaptexture.png" id="15_d6p6k"]
 [ext_resource type="Material" uid="uid://bfcrrq7vpylax" path="res://addons/weather_fx/resources/pond_water_material.tres" id="15_watermat"]
 [ext_resource type="Texture2D" uid="uid://ue316wcv83v0" path="res://addons/weather_fx/assets/models/loop_box/Models/Pot_Normal_Bump.png" id="16_6hrkb"]
+[ext_resource type="PackedScene" uid="uid://df2moxe7vqkyp" path="res://addons/weather_fx/scenes/bgs.tscn" id="17_bgs"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_demo"]
 sky_horizon_color = Color(0.65, 0.72, 0.8, 1)
@@ -224,13 +225,18 @@ current = true
 script = ExtResource("2_dtd")
 current_time = 7.0
 
-[node name="WeatherFX" parent="." unique_id=632517924 node_paths=PackedStringArray("date_and_time_node", "target_node", "sun_light", "world_environment", "audio_bgs") instance=ExtResource("3_wfxscene")]
+[node name="WeatherFX" parent="." unique_id=632517924 node_paths=PackedStringArray("date_and_time_node", "target_node", "sun_light", "world_environment", "audio_bgs_day_clear", "audio_bgs_day_rain", "audio_bgs_day_storm", "audio_bgs_night_clear", "audio_bgs_night_rain", "audio_bgs_night_storm") instance=ExtResource("3_wfxscene")]
 date_and_time_node = NodePath("../DateAndTime")
 manual_time_of_day = 7.0
 target_node = NodePath("../DemonstrationTarget")
 sun_light = NodePath("../DirectionalLight3D")
 world_environment = NodePath("../WorldEnvironment")
-audio_bgs = NodePath("../BackGroundSounds")
+audio_bgs_day_clear = NodePath("../BackGroundSounds/BGS_Day_Clear")
+audio_bgs_day_rain = NodePath("../BackGroundSounds/BGS_Day_Rain")
+audio_bgs_day_storm = NodePath("../BackGroundSounds/BGS_Day_Storm")
+audio_bgs_night_clear = NodePath("../BackGroundSounds/BGS_Night_Clear")
+audio_bgs_night_rain = NodePath("../BackGroundSounds/BGS_Night_Rain")
+audio_bgs_night_storm = NodePath("../BackGroundSounds/BGS_Night_Storm")
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1795185480]
 
@@ -481,6 +487,4 @@ script = ExtResource("12_wddial")
 weather_fx_node = NodePath("../../../WeatherFX")
 dial_radius = 16.0
 
-[node name="BackGroundSounds" type="AudioStreamPlayer3D" parent="." unique_id=467843491]
-unit_size = 50.0
-max_distance = 250.0
+[node name="BackGroundSounds" parent="." unique_id=467843491 instance=ExtResource("17_bgs")]

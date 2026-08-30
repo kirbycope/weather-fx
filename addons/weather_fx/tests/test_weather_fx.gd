@@ -540,37 +540,76 @@ func test_pond_water_shader_resource() -> void:
 
 func test_bgs_audio_matching_weather_and_time() -> void:
 	var wfx = WeatherFX.new()
-	var bgs_player = AudioStreamPlayer.new()
-	wfx.add_child(bgs_player)
-	wfx.audio_bgs = bgs_player
+	var bgs_dc = AudioStreamPlayer.new()
+	var bgs_dr = AudioStreamPlayer.new()
+	var bgs_ds = AudioStreamPlayer.new()
+	var bgs_nc = AudioStreamPlayer.new()
+	var bgs_nr = AudioStreamPlayer.new()
+	var bgs_ns = AudioStreamPlayer.new()
+
+	wfx.add_child(bgs_dc)
+	wfx.add_child(bgs_dr)
+	wfx.add_child(bgs_ds)
+	wfx.add_child(bgs_nc)
+	wfx.add_child(bgs_nr)
+	wfx.add_child(bgs_ns)
+
+	wfx.audio_bgs_day_clear = bgs_dc
+	wfx.audio_bgs_day_rain = bgs_dr
+	wfx.audio_bgs_day_storm = bgs_ds
+	wfx.audio_bgs_night_clear = bgs_nc
+	wfx.audio_bgs_night_rain = bgs_nr
+	wfx.audio_bgs_night_storm = bgs_ns
+
 	add_child_autofree(wfx)
 	wfx.is_playing = true
 
 	# Test Day Clear (12:00)
 	wfx.manual_time_of_day = 12.0
 	wfx.apply_weather_effects(ClimateData.WeatherType.BLUE_SKY)
-	assert_eq(bgs_player.stream, wfx.bgs_day_clear, "Day clear should play Forest Day.ogg")
+	assert_eq(wfx.get_target_bgs_player(), bgs_dc, "Day clear should target bgs_day_clear player")
 
 	# Test Day Rain
 	wfx.apply_weather_effects(ClimateData.WeatherType.RAIN)
-	assert_eq(bgs_player.stream, wfx.bgs_day_rain, "Day rain should play Forest Day Rain.ogg")
+	assert_eq(wfx.get_target_bgs_player(), bgs_dr, "Day rain should target bgs_day_rain player")
 
 	# Test Day Storm
 	wfx.apply_weather_effects(ClimateData.WeatherType.STORM)
-	assert_eq(bgs_player.stream, wfx.bgs_day_storm, "Day storm should play Forest Day Storm.ogg")
+	assert_eq(wfx.get_target_bgs_player(), bgs_ds, "Day storm should target bgs_day_storm player")
 
 	# Test Night Clear (22:00)
 	wfx.manual_time_of_day = 22.0
 	wfx.apply_weather_effects(ClimateData.WeatherType.BLUE_SKY)
-	assert_eq(bgs_player.stream, wfx.bgs_night_clear, "Night clear should play Forest Night.ogg")
+	assert_eq(wfx.get_target_bgs_player(), bgs_nc, "Night clear should target bgs_night_clear player")
 
 	# Test Night Rain
 	wfx.apply_weather_effects(ClimateData.WeatherType.RAIN)
-	assert_eq(bgs_player.stream, wfx.bgs_night_rain, "Night rain should play Forest Night Rain.ogg")
+	assert_eq(wfx.get_target_bgs_player(), bgs_nr, "Night rain should target bgs_night_rain player")
 
 	# Test Night Storm
 	wfx.apply_weather_effects(ClimateData.WeatherType.STORM)
-	assert_eq(bgs_player.stream, wfx.bgs_night_storm, "Night storm should play Forest Night Storm.ogg")
+	assert_eq(wfx.get_target_bgs_player(), bgs_ns, "Night storm should target bgs_night_storm player")
+
+
+func test_bgs_unassigned_optional_behavior() -> void:
+	var wfx = WeatherFX.new()
+	# Without any BGS nodes assigned, WeatherFX should operate cleanly with zero errors
+	assert_null(wfx.audio_bgs_day_clear)
+	assert_null(wfx.audio_bgs_day_rain)
+	assert_null(wfx.audio_bgs_day_storm)
+	assert_null(wfx.audio_bgs_night_clear)
+	assert_null(wfx.audio_bgs_night_rain)
+	assert_null(wfx.audio_bgs_night_storm)
+	add_child_autofree(wfx)
+	wfx.is_playing = true
+
+	# Applying weather and changing time should execute without errors
+	wfx.apply_weather_effects(ClimateData.WeatherType.RAIN)
+	wfx.manual_time_of_day = 22.0
+	wfx.apply_weather_effects(ClimateData.WeatherType.STORM)
+	wfx.clear_all_effects()
+	assert_null(wfx.get_target_bgs_player(), "Target BGS player should be null when unassigned")
+
 
 
 

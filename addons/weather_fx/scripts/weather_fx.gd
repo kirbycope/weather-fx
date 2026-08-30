@@ -170,13 +170,14 @@ var current_wind_strength: float = 0.0
 @export var world_environment: WorldEnvironment
 
 @export_group("Background Sounds (BGS)")
-@export var audio_bgs: Node ## AudioStreamPlayer or AudioStreamPlayer3D for ambient background loops.
-@export var bgs_day_clear: AudioStream = preload("res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Day/Forest Day.ogg")
-@export var bgs_day_rain: AudioStream = preload("res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Day/Forest Day Rain.ogg")
-@export var bgs_day_storm: AudioStream = preload("res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Day/Forest Day Storm.ogg")
-@export var bgs_night_clear: AudioStream = preload("res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Night/Forest Night.ogg")
-@export var bgs_night_rain: AudioStream = preload("res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Night/Forest Night Rain.ogg")
-@export var bgs_night_storm: AudioStream = preload("res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Night/Forest Night Storm.ogg")
+## Separate AudioStreamPlayer / AudioStreamPlayer3D nodes for each ambient condition.
+## If not assigned, background ambient audio simulation is bypassed with zero overhead.
+@export var audio_bgs_day_clear: Node
+@export var audio_bgs_day_rain: Node
+@export var audio_bgs_day_storm: Node
+@export var audio_bgs_night_clear: Node
+@export var audio_bgs_night_rain: Node
+@export var audio_bgs_night_storm: Node
 
 # ------------------------------------------------------------------------------
 # Internal State
@@ -215,15 +216,6 @@ func _ready() -> void:
 		var found_player = get_tree().root.find_child("Player", true, false)
 		if found_player is Node3D:
 			target_node = found_player
-
-	if audio_bgs == null and not Engine.is_editor_hint():
-		var found_bgs = get_tree().root.find_child("BackGroundSounds", true, false)
-		if found_bgs != null:
-			audio_bgs = found_bgs
-	elif audio_bgs == null and Engine.is_editor_hint() and get_tree().edited_scene_root:
-		var found_bgs = get_tree().edited_scene_root.find_child("BackGroundSounds", true, false)
-		if found_bgs != null:
-			audio_bgs = found_bgs
 
 	ensure_shader_globals()
 	clear_all_effects()
@@ -650,8 +642,7 @@ func clear_all_effects() -> void:
 	if is_instance_valid(audio_rain_heavy): audio_rain_heavy.stop()
 	if is_instance_valid(audio_storm): audio_storm.stop()
 	if is_instance_valid(audio_wind): audio_wind.stop()
-	if is_instance_valid(audio_bgs) and bool(audio_bgs.get("playing")):
-		audio_bgs.call("stop")
+	_stop_bgs()
 	
 	if is_instance_valid(world_environment) and world_environment.environment:
 		world_environment.environment.fog_enabled = false
@@ -734,41 +725,52 @@ func _play_audio(player: AudioStreamPlayer) -> void:
 		player.play()
 
 
-## Returns the appropriate BGS stream based on time of day and weather.
-func get_target_bgs_stream(weather_override: int = -1) -> AudioStream:
+## Returns the appropriate BGS player node based on time of day and weather.
+func get_target_bgs_player(weather_override: int = -1) -> Node:
 	var daytime: bool = is_daylight()
 	var w = weather_override if weather_override >= 0 else active_weather
 	match w:
 		ClimateData.WeatherType.STORM:
-			return bgs_day_storm if daytime else bgs_night_storm
+			return audio_bgs_day_storm if daytime else audio_bgs_night_storm
 		ClimateData.WeatherType.RAIN, ClimateData.WeatherType.HEAVY_RAIN:
-			return bgs_day_rain if daytime else bgs_night_rain
+			return audio_bgs_day_rain if daytime else audio_bgs_night_rain
 		_:
-			return bgs_day_clear if daytime else bgs_night_clear
+			return audio_bgs_day_clear if daytime else audio_bgs_night_clear
 
 
 ## Updates BGS playback to match current weather and time of day.
 func _update_bgs(weather_override: int = -1) -> void:
-	if not is_instance_valid(audio_bgs):
-		return
-	if not _can_simulate():
-		if bool(audio_bgs.get("playing")):
-			audio_bgs.call("stop")
-		return
+	var target_player: Node = get_target_bgs_player(weather_override) if _can_simulate() else null
+	var all_bgs: Array[Node] = [
+		audio_bgs_day_clear,
+		audio_bgs_day_rain,
+		audio_bgs_day_storm,
+		audio_bgs_night_clear,
+		audio_bgs_night_rain,
+		audio_bgs_night_storm
+	]
+	for player_node in all_bgs:
+		if is_instance_valid(player_node):
+			if player_node == target_player:
+				if player_node.is_inside_tree() and not bool(player_node.get("playing")):
+					player_node.call("play")
+			else:
+				if bool(player_node.get("playing")):
+					player_node.call("stop")
 
-	var target_stream = get_target_bgs_stream(weather_override)
-	if target_stream == null:
-		if bool(audio_bgs.get("playing")):
-			audio_bgs.call("stop")
-		return
 
-	if audio_bgs.get("stream") != target_stream:
-		audio_bgs.set("stream", target_stream)
-		if audio_bgs.is_inside_tree():
-			audio_bgs.call("play")
-	elif not bool(audio_bgs.get("playing")):
-		if audio_bgs.is_inside_tree():
-			audio_bgs.call("play")
+func _stop_bgs() -> void:
+	var all_bgs: Array[Node] = [
+		audio_bgs_day_clear,
+		audio_bgs_day_rain,
+		audio_bgs_day_storm,
+		audio_bgs_night_clear,
+		audio_bgs_night_rain,
+		audio_bgs_night_storm
+	]
+	for player_node in all_bgs:
+		if is_instance_valid(player_node) and bool(player_node.get("playing")):
+			player_node.call("stop")
 
 
 func _on_external_time_changed(time: float) -> void:
