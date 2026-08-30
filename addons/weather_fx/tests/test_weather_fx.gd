@@ -2,6 +2,7 @@ extends GutTest
 
 const GaugeNeedleScript: Script = preload("res://addons/weather_fx/scripts/gauge_needle.gd")
 const TemperatureGaugeDisplayScript: Script = preload("res://addons/weather_fx/scripts/temperature_gauge_display.gd")
+const WindVFXScript: Script = preload("res://addons/weather_fx/scripts/wind_vfx.gd")
 
 var wfx: WeatherFX
 
@@ -361,8 +362,7 @@ func test_grass_field_generation_and_properties() -> void:
 	
 	grass_field.instance_count = 100
 	grass_field.field_size = Vector2(20.0, 20.0)
-	grass_field.blades_per_tuft = 6
-	grass_field.blade_segments = 4
+	grass_field.mesh_type = GrassField.GrassMeshType.COMMON_SHORT
 	grass_field.regenerate()
 	
 	assert_not_null(grass_field.multimesh)
@@ -372,7 +372,7 @@ func test_grass_field_generation_and_properties() -> void:
 	assert_not_null(mesh)
 	assert_gt(mesh.get_surface_count(), 0)
 	
-	# Verify stylized mesh attributes
+	# Verify Quaternius mesh attributes
 	var arrays = mesh.surface_get_arrays(0)
 	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
@@ -386,6 +386,19 @@ func test_grass_field_generation_and_properties() -> void:
 	var t0 = grass_field.multimesh.get_instance_transform(0)
 	assert_almost_eq(t0.origin.y, 0.0, 0.01)
 
+	# Test switching to other Quaternius types
+	grass_field.mesh_type = GrassField.GrassMeshType.WISPY_SHORT
+	grass_field.regenerate()
+	assert_not_null(grass_field.multimesh.mesh)
+
+	grass_field.mesh_type = GrassField.GrassMeshType.COMMON_TALL
+	grass_field.regenerate()
+	assert_not_null(grass_field.multimesh.mesh)
+
+	grass_field.mesh_type = GrassField.GrassMeshType.WISPY_TALL
+	grass_field.regenerate()
+	assert_not_null(grass_field.multimesh.mesh)
+
 
 func test_grass_material_resource() -> void:
 	var mat = load("res://addons/weather_fx/resources/grass_material.tres") as ShaderMaterial
@@ -393,6 +406,7 @@ func test_grass_material_resource() -> void:
 	assert_not_null(mat.shader)
 	assert_not_null(mat.get_shader_parameter("color_base"))
 	assert_not_null(mat.get_shader_parameter("color_tip"))
+	assert_not_null(mat.get_shader_parameter("texture_albedo"))
 	assert_not_null(mat.get_shader_parameter("wind_speed"))
 
 
@@ -444,6 +458,35 @@ func test_sun_light_time_and_biome_updates() -> void:
 	assert_almost_eq(light.light_color.r, 1.0, 0.01)
 	assert_almost_eq(light.light_color.g, 0.7, 0.01)
 	assert_almost_eq(light.light_color.b, 0.5, 0.01)
+
+
+func test_wind_vfx_instantiation_and_properties() -> void:
+	var wind_scn = load("res://addons/weather_fx/scenes/wind_vfx.tscn") as PackedScene
+	assert_not_null(wind_scn)
+	var wind_inst = wind_scn.instantiate()
+	add_child_autofree(wind_inst)
+	assert_not_null(wind_inst)
+	assert_true(is_instance_of(wind_inst, WindVFXScript))
+	assert_true(wind_inst.enabled)
+	
+	# Test disabling and process handling
+	wind_inst.enabled = false
+	assert_false(wind_inst.visible)
+	wind_inst.enabled = true
+	assert_true(wind_inst.visible)
+	
+	# Test active emission when wind strength >= min_wind_threshold
+	WeatherFX.active_wind_strength = 5.0
+	wind_inst._process(0.1)
+	for p in wind_inst._airflow_particles:
+		assert_true(p.emitting)
+		
+	# Test shutdown when wind strength drops below threshold
+	WeatherFX.active_wind_strength = 0.0
+	wind_inst._process(0.1)
+	for p in wind_inst._airflow_particles:
+		assert_false(p.emitting)
+
 
 
 

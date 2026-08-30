@@ -1,0 +1,114 @@
+[gd_scene load_steps=21 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_windslash.tres" id="1_wdih8"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/generated/N_noise_xk44.tres" id="2_eai0j"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_NoiseNormal_B.PNG" id="3_2tkob"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_NHU85.png" id="4_bahiv"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_gradient_oklab5511.png" id="5_kge6b"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_windslash_stretched.obj" id="6_501s3"]
+
+[sub_resource type="Gradient" id="Gradient_ht627"]
+offsets = PackedFloat32Array(0, 0.908602, 1)
+colors = PackedColorArray(0.18694, 0.22654, 0.212936, 0, 0.6072, 0.66, 0.64152, 1, 0.66, 0.966, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_rr1fe"]
+gradient = SubResource("Gradient_ht627")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_c8vgh"]
+render_priority = 0
+shader = ExtResource("1_wdih8")
+shader_parameter/Scale_Water = Vector2(1, 1)
+shader_parameter/Speed_X_Y = Vector2(1, 1)
+shader_parameter/RefStregnht = 0.04
+shader_parameter/Scale_XY = Vector2(1.4, 0.4)
+shader_parameter/Speed_XY = Vector2(0.3, 0.8)
+shader_parameter/Substract_Scale_XY = Vector2(1, 0.3)
+shader_parameter/Substract_Speed_XY = Vector2(-0.3, 2)
+shader_parameter/outter_margin = 3.535
+shader_parameter/inner_margin = 0.15
+shader_parameter/Color_Intensity = 2.2
+shader_parameter/Texture_substract_2 = ExtResource("5_kge6b")
+shader_parameter/NORMAL_MAP_WATER = ExtResource("3_2tkob")
+shader_parameter/Base_noise = ExtResource("2_eai0j")
+shader_parameter/Texture_substract = ExtResource("4_bahiv")
+shader_parameter/Gradient_Color_1D = SubResource("GradientTexture1D_rr1fe")
+
+[sub_resource type="Gradient" id="Gradient_do6y5"]
+offsets = PackedFloat32Array(0, 0.330396, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.808952, 0.957359, 0.903324, 0.669604, 0.74978, 0.74978, 0.74978, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_q7l53"]
+gradient = SubResource("Gradient_do6y5")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.474359)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8aba8"]
+render_priority = 3
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = SubResource("GradientTexture2D_q7l53")
+
+[sub_resource type="Curve" id="Curve_rgbem"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.234568, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.043956), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_e1w7a"]
+texture_mode = 1
+curve = SubResource("Curve_rgbem")
+
+[sub_resource type="Curve" id="Curve_f1711"]
+_data = [Vector2(0, 0.0219779), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="Curve" id="Curve_6fxnp"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_3bibu"]
+_data = [Vector2(0, 0.483516), 0.0, 0.0, 0, 0, Vector2(0.19802, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.362637), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_fewq8"]
+curve_x = SubResource("Curve_f1711")
+curve_y = SubResource("Curve_6fxnp")
+curve_z = SubResource("Curve_3bibu")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ihutn"]
+lifetime_randomness = 0.1
+emission_shape = 3
+emission_box_extents = Vector3(1, 0.2, 1)
+direction = Vector3(0, 0, 1)
+spread = 0.0
+initial_velocity_min = 3.0
+initial_velocity_max = 10.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_curve = SubResource("CurveXYZTexture_fewq8")
+color = Color(1.2, 1.2, 1.2, 1)
+alpha_curve = SubResource("CurveTexture_e1w7a")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_sgbfi"]
+
+[node name="VFX_WindCut" type="Node3D"]
+
+[node name="SmWindslash" type="MeshInstance3D" parent="."]
+layers = 4
+material_override = SubResource("ShaderMaterial_c8vgh")
+mesh = ExtResource("6_501s3")
+skeleton = NodePath("../..")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+layers = 5
+material_override = SubResource("StandardMaterial3D_8aba8")
+cast_shadow = 0
+amount = 80
+lifetime = 0.5
+fixed_fps = 60
+visibility_aabb = AABB(-3, -1.5, -7, 6, 3, 14)
+process_material = SubResource("ParticleProcessMaterial_ihutn")
+draw_pass_1 = SubResource("PlaneMesh_sgbfi")
+
+

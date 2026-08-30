@@ -1,0 +1,47 @@
+[gd_resource type="ShaderMaterial" load_steps=10 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_windpanner_1_p_ds.tres" id="1_iuaq7"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_PerlinNoise_Tiled11_inv.png" id="2_qujx0"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_Noise_531.png" id="3_ecwup"]
+
+[sub_resource type="Gradient" id="Gradient_fqsaj"]
+offsets = PackedFloat32Array(0.242525, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_q18rx"]
+gradient = SubResource("Gradient_fqsaj")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.487179)
+
+[sub_resource type="Gradient" id="Gradient_hqxkp"]
+colors = PackedColorArray(0.758192, 0.758192, 0.758192, 0, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_86xq8"]
+gradient = SubResource("Gradient_hqxkp")
+
+[sub_resource type="Gradient" id="Gradient_6i0o2"]
+offsets = PackedFloat32Array(0, 0.0332226, 0.966777, 1)
+colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_f21a2"]
+gradient = SubResource("Gradient_6i0o2")
+height = 512
+fill_to = Vector2(0, 1)
+
+[resource]
+render_priority = 2
+shader = ExtResource("1_iuaq7")
+shader_parameter/scroll_offset = 0.0
+shader_parameter/speed = Vector2(0, 1)
+shader_parameter/scale = Vector2(1, 1)
+shader_parameter/wind_speed = Vector2(0, -1)
+shader_parameter/wind_scale = Vector2(0.27, 0.41)
+shader_parameter/wind_2_speed = Vector2(0, 1.2)
+shader_parameter/wind_2_scale = Vector2(0.5, 0.9)
+shader_parameter/BaseTexture = SubResource("GradientTexture2D_q18rx")
+shader_parameter/Wind_1_texture = ExtResource("2_qujx0")
+shader_parameter/Wind_2_texture_subs = ExtResource("3_ecwup")
+shader_parameter/Multiply_Mask = SubResource("GradientTexture2D_f21a2")
+shader_parameter/Color1DGradient = SubResource("GradientTexture1D_86xq8")
+

@@ -1,0 +1,93 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_Blood_bulb_UJ1_testtyy.png" id="1_oiwss"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_slashTypeG51.obj" id="2_dusk7"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bh1fa"]
+transparency = 2
+alpha_scissor_threshold = 0.153
+alpha_antialiasing_mode = 0
+blend_mode = 1
+cull_mode = 2
+diffuse_mode = 3
+specular_mode = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("1_oiwss")
+metallic_specular = 0.0
+roughness = 0.78
+rim_enabled = true
+rim_tint = 0.0
+uv1_scale = Vector3(0.6, 0.7, 0.5)
+
+[sub_resource type="Curve" id="Curve_lqjk6"]
+_data = [Vector2(0, 1), 0.0, -1.84728, 0, 0, Vector2(1, 0.135429), 0.0803164, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_u3crp"]
+texture_mode = 1
+curve = SubResource("Curve_lqjk6")
+
+[sub_resource type="Curve" id="Curve_suw3d"]
+_data = [Vector2(0, 1), 0.0, -0.13527, 0, 0, Vector2(1, 0.638452), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_74ro7"]
+curve = SubResource("Curve_suw3d")
+
+[sub_resource type="Curve" id="Curve_n12rc"]
+_data = [Vector2(0, 0.614873), 0.0, 0.0558723, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_3qwtu"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_bl515"]
+_data = [Vector2(0, 0.614873), 0.0, 0.0558723, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_aex25"]
+curve_x = SubResource("Curve_n12rc")
+curve_y = SubResource("Curve_3qwtu")
+curve_z = SubResource("Curve_bl515")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ucms0"]
+lifetime_randomness = 0.1
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.3
+emission_ring_radius = 0.2
+emission_ring_inner_radius = 0.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+angular_velocity_min = -800.0
+angular_velocity_max = -700.0
+angular_velocity_curve = SubResource("CurveTexture_74ro7")
+gravity = Vector3(0, 0, 0)
+scale_max = 1.2
+scale_curve = SubResource("CurveXYZTexture_aex25")
+color = Color(0.85, 1, 0.95, 1)
+alpha_curve = SubResource("CurveTexture_u3crp")
+hue_variation_min = -2.23517e-08
+hue_variation_max = -2.23517e-08
+
+[node name="VFX_WindMuzzle_Spinner" type="Node3D"]
+
+[node name="tornado8" type="GPUParticles3D" parent="."]
+transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
+layers = 4
+material_override = SubResource("StandardMaterial3D_bh1fa")
+cast_shadow = 0
+amount = 1
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-2, -1, -2, 4, 2, 4)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_ucms0")
+draw_pass_1 = ExtResource("2_dusk7")
+
+

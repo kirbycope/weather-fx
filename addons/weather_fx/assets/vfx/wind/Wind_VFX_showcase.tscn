@@ -1,0 +1,759 @@
+[gd_scene load_steps=54 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindCut.tscn" id="1_3wmdy"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_AirFlowUP.tscn" id="2_rnab3"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_AirFlowUP_strong.tscn" id="3_rf2yp"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_Wind_Shield.tscn" id="4_5inrp"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindShock_A1.tscn" id="5_8wiap"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindShot_Burst_1.tscn" id="6_1bxjv"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindShot_Burst_2.tscn" id="7_pqttk"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindShot_Ray.tscn" id="8_txnk6"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindShot_Burst_3.tscn" id="9_pcwny"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindBlow_1.tscn" id="10_in8yh"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindBlow_2.tscn" id="11_57oet"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindBlow_Ring.tscn" id="12_02iot"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindBlow_3.tscn" id="13_xmt32"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindArea_1.tscn" id="14_cxhkw"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindArea_2.tscn" id="15_xjlae"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindArea_Jump.tscn" id="16_tgsya"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindArea_Burst_1.tscn" id="17_gyvb8"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindArea_Burst_2.tscn" id="18_dtldw"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindBurst_1.tscn" id="19_cs6yi"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindHit_K1.tscn" id="20_4h3wd"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindBlow_Sphere.tscn" id="21_1uwcu"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindHit_K2.tscn" id="22_o3jmb"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindMuzzle_K1.tscn" id="23_uv1uc"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindMuzzle_K2.tscn" id="24_6sdaq"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindAura_1.tscn" id="25_ov0rn"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindAura_2.tscn" id="26_oky1d"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindExtras_1.tscn" id="27_a3usn"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindMuzzle_M1.tscn" id="28_5bqgh"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindExtras_2.tscn" id="29_yl07f"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindTornado_Toon.tscn" id="30_uggu0"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindTornado_Mystic.tscn" id="31_pq2gn"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindSpinner_A.tscn" id="32_jtmlh"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindSpinner_B.tscn" id="33_b0o5a"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindMuzzle_Spinner.tscn" id="34_aqihg"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_AirFlow.tscn" id="35_ybgak"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindExtras_3.tscn" id="36_3suye"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindExtras_4.tscn" id="37_xindo"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_WindShuriken.tscn" id="38_2m2ol"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/Misc/sm_barrell001.obj" id="39_03gf4"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_sphere_A1.obj" id="40_g2ehw"]
+[ext_resource type="Material" path="res://addons/weather_fx/assets/vfx/wind/materials/m_TextType005W.tres" id="41_ng0cb"]
+
+[sub_resource type="GDScript" id="GDScript_slljm"]
+resource_name = "vfx_showcaser"
+script/source = "@tool
+extends Node
+
+@export var my_num:int = 0:
+	set(new_my_num):
+		my_num = new_my_num
+		self.play_all_animations(my_num)
+
+func _ready() -> void:
+	$misc/AnimationPlayer.play(\"Init\")
+
+
+func _run():
+	$misc/AnimationPlayer.play(\"Init\")
+	
+	$VFX_AirFlow.find_child(\"AnimationPlayer\").play(\"Init\")
+	$VFX_WindShuriken.find_child(\"AnimationPlayer\").play(\"Init\")
+	
+	$VFX_WindTornado_Mystic.find_child(\"AnimationPlayer\").play(\"Init\")
+	$VFX_WindTornado_Toon.find_child(\"AnimationPlayer\").play(\"Init\")
+	$VFX_WindAura_2.find_child(\"AnimationPlayer\").play(\"Init\")
+	$VFX_WindAura_1.find_child(\"AnimationPlayer\").play(\"Init\")
+	$VFX_WindArea_2.find_child(\"AnimationPlayer\").play(\"Init\")
+	$VFX_WindArea_1.find_child(\"AnimationPlayer\").play(\"Init\")
+	$VFX_Wind_Shield.find_child(\"AnimationPlayer\").play(\"Init\")
+	$VFX_AirFlowUP_strong.find_child(\"AnimationPlayer\").play(\"Init\")
+	$VFX_AirFlowUP.find_child(\"AnimationPlayer\").play(\"Init\")
+	
+
+
+func play_all_animations(_num:int)->void:
+	match _num:
+		0:
+			$VFX_WindBlow_Sphere.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindArea_Jump.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindArea_Burst_1.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindBlow_1.find_child(\"AnimationPlayer\").play(\"Init\")
+			
+		1:
+			$VFX_WindBurst_1.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindArea_Burst_2.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindBlow_Ring.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindShot_Burst_2.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindShot_Burst_1.find_child(\"AnimationPlayer\").play(\"Init\")
+			
+		2:
+			$VFX_WindBlow_2.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindShot_Burst_3.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindShot_Ray.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindSpinner_B.find_child(\"AnimationPlayer\").play(\"Init\")
+			
+		3:
+			$VFX_WindShot_Burst_2.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindShot_Burst_1.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindShock_A1.find_child(\"AnimationPlayer\").play(\"Init\")
+			$VFX_WindBlow_3.find_child(\"AnimationPlayer\").play(\"Init\")
+			
+"
+
+[sub_resource type="Animation" id="Animation_n75w4"]
+resource_name = "Init"
+length = 3.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:my_num")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.233333, 0.9, 1.7, 2.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4t0ph"]
+_data = {
+"Init": SubResource("Animation_n75w4")
+}
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_mshe0"]
+sky_top_color = Color(0, 0, 0, 1)
+sky_horizon_color = Color(0.489622, 0.489622, 0.489622, 1)
+sky_curve = 0.0923359
+ground_bottom_color = Color(0.294, 0.297, 0.3, 1)
+ground_horizon_color = Color(0.51361, 0.517862, 0.522116, 1)
+
+[sub_resource type="Sky" id="Sky_hl42f"]
+sky_material = SubResource("ProceduralSkyMaterial_mshe0")
+
+[sub_resource type="Environment" id="Environment_s7c71"]
+background_mode = 2
+background_energy_multiplier = 0.7
+sky = SubResource("Sky_hl42f")
+ambient_light_source = 2
+ambient_light_color = Color(0.176451, 0.261009, 0.323173, 1)
+ambient_light_energy = 1.33
+tonemap_mode = 1
+glow_enabled = true
+glow_blend_mode = 1
+fog_enabled = true
+fog_light_color = Color(0.0509463, 0.0567984, 0.0662132, 1)
+fog_depth_curve = 0.466517
+fog_depth_begin = 0.0
+fog_depth_end = 224.3
+volumetric_fog_density = 0.0188
+
+[sub_resource type="Gradient" id="Gradient_a1knu"]
+offsets = PackedFloat32Array(0.546729, 0.663551)
+colors = PackedColorArray(0.753984, 0.753984, 0.753984, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_bxa62"]
+gradient = SubResource("Gradient_a1knu")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bb1hs"]
+albedo_texture = SubResource("GradientTexture2D_bxa62")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_acr4s"]
+albedo_color = Color(0.281187, 0.281187, 0.281187, 1)
+metallic_specular = 0.6
+roughness = 0.8
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_08on8"]
+size = Vector2(999, 999)
+subdivide_width = 2
+subdivide_depth = 2
+
+[sub_resource type="QuadMesh" id="QuadMesh_mwets"]
+
+[node name="Map" type="Node"]
+script = SubResource("GDScript_slljm")
+my_num = 3
+
+[node name="VFX_WindCut" parent="." instance=ExtResource("1_3wmdy")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -20.5717, 1.24967, 38.2725)
+
+[node name="VFX_AirFlowUP" parent="." instance=ExtResource("2_rnab3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.6415, 0, 0)
+
+[node name="VFX_AirFlowUP_strong" parent="." instance=ExtResource("3_rf2yp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.32148, 0, -0.132498)
+
+[node name="VFX_Wind_Shield" parent="." instance=ExtResource("4_5inrp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.95243, -1.90735e-06, -0.0558251)
+
+[node name="VFX_WindShock_A1" parent="." instance=ExtResource("5_8wiap")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.2962, -1.90735e-06, 12.3665)
+
+[node name="VFX_WindShot_Burst_1" parent="." instance=ExtResource("6_1bxjv")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -1.16475, 1.08989, 38.3378)
+
+[node name="VFX_WindShot_Burst_2" parent="." instance=ExtResource("7_pqttk")]
+transform = Transform3D(-0.0145031, 0, -0.999895, 0, 1, 0, 0.999895, 0, -0.0145031, 9.99546, 1.09898, 38.3409)
+
+[node name="VFX_WindShot_Ray" parent="." instance=ExtResource("8_txnk6")]
+transform = Transform3D(-0.0145031, 0, -0.999895, 0, 1, 0, 0.999895, 0, -0.0145031, 20.9648, 1.13491, 38.3243)
+
+[node name="VFX_WindShot_Burst_3" parent="." instance=ExtResource("9_pcwny")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -11.1989, 1.08862, 38.2676)
+
+[node name="VFX_WindBlow_1" parent="." instance=ExtResource("10_in8yh")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -5.72908, -3.8147e-06, 24.9227)
+
+[node name="VFX_WindBlow_2" parent="." instance=ExtResource("11_57oet")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 6.40801, 0, 24.8629)
+
+[node name="VFX_WindBlow_Ring" parent="." instance=ExtResource("12_02iot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.79564, 0, 12.3434)
+
+[node name="VFX_WindBlow_3" parent="." instance=ExtResource("13_xmt32")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 18.0481, 1.06204, 24.8666)
+
+[node name="VFX_WindArea_1" parent="." instance=ExtResource("14_cxhkw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.3082, 0, 11.9387)
+
+[node name="VFX_WindArea_2" parent="." instance=ExtResource("15_xjlae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.2099, 1.90735e-06, 12.1584)
+
+[node name="VFX_WindArea_Jump" parent="." instance=ExtResource("16_tgsya")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -37.4732, 1.90735e-06, 12.0667)
+
+[node name="VFX_WindArea_Burst_1" parent="." instance=ExtResource("17_gyvb8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.8701, 0, 12.282)
+
+[node name="VFX_WindArea_Burst_2" parent="." instance=ExtResource("18_dtldw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.95026, 0, 12.3563)
+
+[node name="VFX_WindBurst_1" parent="." instance=ExtResource("19_cs6yi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.594, 0, 24.9062)
+
+[node name="VFX_WindHit_K1" parent="." instance=ExtResource("20_4h3wd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.0446, 1.77276, -16.3816)
+
+[node name="VFX_WindBlow_Sphere" parent="." instance=ExtResource("21_1uwcu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.3557, 0.54593, 12.2616)
+
+[node name="VFX_WindHit_K2" parent="." instance=ExtResource("22_o3jmb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.0289, 1.6838, -22.5802)
+
+[node name="VFX_WindMuzzle_K1" parent="." instance=ExtResource("23_uv1uc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.1643, -2.86102e-06, -22.4774)
+
+[node name="VFX_WindMuzzle_K2" parent="." instance=ExtResource("24_6sdaq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.1988, -3.8147e-06, -22.7049)
+
+[node name="VFX_WindAura_1" parent="." instance=ExtResource("25_ov0rn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30.4379, 9.53675e-07, 24.8155)
+
+[node name="VFX_WindAura_2" parent="." instance=ExtResource("26_oky1d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.2053, 2.86102e-06, 24.8368)
+
+[node name="VFX_WindExtras_1" parent="." instance=ExtResource("27_a3usn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.9161, 0.827045, -16.2641)
+
+[node name="VFX_WindMuzzle_M1" parent="." instance=ExtResource("28_5bqgh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.9822, 1.12721, -22.4888)
+
+[node name="VFX_WindExtras_2" parent="." instance=ExtResource("29_yl07f")]
+transform = Transform3D(1.595, 0, 0, 0, 1.595, 0, 0, 0, 1.595, -18.1794, -3.8147e-06, -16.6259)
+
+[node name="VFX_WindTornado_Toon" parent="." instance=ExtResource("30_uggu0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.796, 0, -0.0201881)
+
+[node name="VFX_WindTornado_Mystic" parent="." instance=ExtResource("31_pq2gn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.7214, -1.52588e-05, -0.0662708)
+
+[node name="VFX_WindSpinner_A" parent="." instance=ExtResource("32_jtmlh")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -21.6788, 1.60709, -0.0403302)
+
+[node name="VFX_WindSpinner_B" parent="." instance=ExtResource("33_b0o5a")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -35.5776, 1.87193, -0.0310349)
+
+[node name="VFX_WindMuzzle_Spinner" parent="." instance=ExtResource("34_aqihg")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -28.2512, 1.69799, -0.0357842)
+
+[node name="VFX_AirFlow" parent="." instance=ExtResource("35_ybgak")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5088, -1.90735e-06, -18.6891)
+
+[node name="VFX_WindExtras_3" parent="." instance=ExtResource("36_3suye")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.8987, -0.0283395, 24.9394)
+
+[node name="VFX_WindExtras_4" parent="." instance=ExtResource("37_xindo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.9945, 0.707404, -16.4906)
+
+[node name="VFX_WindShuriken" parent="." instance=ExtResource("38_2m2ol")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5561, 2.0384, 0.0506191)
+
+[node name="misc" type="Node" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="misc"]
+libraries = {
+"": SubResource("AnimationLibrary_4t0ph")
+}
+autoplay = "Init"
+
+[node name="SpotLight3D" type="SpotLight3D" parent="misc"]
+transform = Transform3D(1, 0, 0, 0, 0.257268, 0.96634, 0, -0.96634, 0.257268, -0.0571897, 61.0866, 29.2161)
+light_color = Color(0.94, 1, 0.975, 1)
+light_energy = 25.0
+shadow_enabled = true
+spot_range = 128.348
+spot_attenuation = 0.7
+metadata/_edit_lock_ = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="misc"]
+transform = Transform3D(-0.868258, -0.46464, -0.173891, 0.00921352, -0.365549, 0.930747, -0.496028, 0.806526, 0.321672, 25.1551, 4.55222, -27.4839)
+visible = false
+light_energy = 0.0
+shadow_enabled = true
+metadata/_edit_lock_ = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="misc"]
+environment = SubResource("Environment_s7c71")
+
+[node name="Turret_1" type="Node3D" parent="misc"]
+transform = Transform3D(-1, 0, 8.74227e-08, 0, 1, 0, -8.74227e-08, 0, -1, -12.3875, 1.10108, 38.3195)
+metadata/_edit_lock_ = true
+
+[node name="SmBarrell001" type="MeshInstance3D" parent="misc/Turret_1"]
+transform = Transform3D(-1.55175e-08, -0.355, 0, 0.355, -1.55175e-08, 0, 0, 0, 0.355, -0.565283, 0, 0)
+material_override = SubResource("StandardMaterial3D_bb1hs")
+mesh = ExtResource("39_03gf4")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="SmSphereA1" type="MeshInstance3D" parent="misc/Turret_1"]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -0.0845776, 0, 0)
+mesh = ExtResource("40_g2ehw")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="Turret_2" type="Node3D" parent="misc"]
+transform = Transform3D(-1, 0, 8.74227e-08, 0, 1, 0, -8.74227e-08, 0, -1, -2.23222, 1.10108, 38.3195)
+metadata/_edit_lock_ = true
+
+[node name="SmBarrell001" type="MeshInstance3D" parent="misc/Turret_2"]
+transform = Transform3D(-1.55175e-08, -0.355, 0, 0.355, -1.55175e-08, 0, 0, 0, 0.355, -0.565283, 0, 0)
+material_override = SubResource("StandardMaterial3D_bb1hs")
+mesh = ExtResource("39_03gf4")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="SmSphereA1" type="MeshInstance3D" parent="misc/Turret_2"]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -0.0845776, 0, 0)
+mesh = ExtResource("40_g2ehw")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="Turret_3" type="Node3D" parent="misc"]
+transform = Transform3D(-1, 0, 8.74227e-08, 0, 1, 0, -8.74227e-08, 0, -1, 8.11417, 1.10108, 38.3195)
+metadata/_edit_lock_ = true
+
+[node name="SmBarrell001" type="MeshInstance3D" parent="misc/Turret_3"]
+transform = Transform3D(-1.55175e-08, -0.355, 0, 0.355, -1.55175e-08, 0, 0, 0, 0.355, -0.565283, 0, 0)
+material_override = SubResource("StandardMaterial3D_bb1hs")
+mesh = ExtResource("39_03gf4")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="SmSphereA1" type="MeshInstance3D" parent="misc/Turret_3"]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -0.0845776, 0, 0)
+mesh = ExtResource("40_g2ehw")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="Turret_4" type="Node3D" parent="misc"]
+transform = Transform3D(-1, 0, 8.74227e-08, 0, 1, 0, -8.74227e-08, 0, -1, 20.2707, 1.10108, 38.3195)
+metadata/_edit_lock_ = true
+
+[node name="SmBarrell001" type="MeshInstance3D" parent="misc/Turret_4"]
+transform = Transform3D(-1.55175e-08, -0.355, 0, 0.355, -1.55175e-08, 0, 0, 0, 0.355, -0.565283, 0, 0)
+material_override = SubResource("StandardMaterial3D_bb1hs")
+mesh = ExtResource("39_03gf4")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="SmSphereA1" type="MeshInstance3D" parent="misc/Turret_4"]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -0.0845776, 0, 0)
+mesh = ExtResource("40_g2ehw")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="Turret_5" type="Node3D" parent="misc"]
+transform = Transform3D(-1, 0, 8.74227e-08, 0, 1, 0, -8.74227e-08, 0, -1, -6.72625, 1.10108, 24.8848)
+metadata/_edit_lock_ = true
+
+[node name="SmBarrell001" type="MeshInstance3D" parent="misc/Turret_5"]
+transform = Transform3D(-1.55175e-08, -0.355, 0, 0.355, -1.55175e-08, 0, 0, 0, 0.355, -0.565283, 0, 0)
+material_override = SubResource("StandardMaterial3D_bb1hs")
+mesh = ExtResource("39_03gf4")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="SmSphereA1" type="MeshInstance3D" parent="misc/Turret_5"]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -0.0845776, 0, 0)
+mesh = ExtResource("40_g2ehw")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="Turret_6" type="Node3D" parent="misc"]
+transform = Transform3D(-1, 0, 8.74227e-08, 0, 1, 0, -8.74227e-08, 0, -1, 4.43365, 1.10108, 24.8848)
+metadata/_edit_lock_ = true
+
+[node name="SmBarrell001" type="MeshInstance3D" parent="misc/Turret_6"]
+transform = Transform3D(-1.55175e-08, -0.355, 0, 0.355, -1.55175e-08, 0, 0, 0, 0.355, -0.565283, 0, 0)
+material_override = SubResource("StandardMaterial3D_bb1hs")
+mesh = ExtResource("39_03gf4")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="SmSphereA1" type="MeshInstance3D" parent="misc/Turret_6"]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -0.0845776, 0, 0)
+mesh = ExtResource("40_g2ehw")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="SmSphereA2" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(-0.6, 0, 5.24536e-08, 0, 0.6, 0, -5.24536e-08, 0, -0.6, -14.7084, 1.10108, 24.8848)
+mesh = ExtResource("40_g2ehw")
+metadata/_edit_lock_ = true
+
+[node name="Turret_7" type="Node3D" parent="misc"]
+transform = Transform3D(-1, 0, 8.74227e-08, 0, 1, 0, -8.74227e-08, 0, -1, 16.684, 1.10108, 24.8848)
+metadata/_edit_lock_ = true
+
+[node name="SmBarrell001" type="MeshInstance3D" parent="misc/Turret_7"]
+transform = Transform3D(-1.55175e-08, -0.355, 0, 0.355, -1.55175e-08, 0, 0, 0, 0.355, -0.565283, 0, 0)
+material_override = SubResource("StandardMaterial3D_bb1hs")
+mesh = ExtResource("39_03gf4")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="SmSphereA1" type="MeshInstance3D" parent="misc/Turret_7"]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -0.0845776, 0, 0)
+mesh = ExtResource("40_g2ehw")
+skeleton = NodePath("../..")
+metadata/_edit_lock_ = true
+
+[node name="floor" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.003, -0.003, -1.795)
+layers = 32
+material_override = SubResource("StandardMaterial3D_acr4s")
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_08on8")
+skeleton = NodePath("../../..")
+metadata/_edit_lock_ = true
+
+[node name="text3d_00" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -30.3724, 0.0766172, 27.5896)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.395)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_01" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -22.1745, 0.0766172, 27.5896)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.37)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_02" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -14.6253, 0.0766172, 27.5896)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.45)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_03" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -4.76985, 0.0766172, 27.5896)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.21)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_04" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 7.84857, 0.0766172, 27.5896)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.24)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_05" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 19.085, 0.0766172, 27.5896)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.29)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_06" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 35.343, 0.0766172, 27.5896)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.105)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_07" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -20.8767, 0.0766172, 41.0934)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.025)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_08" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -10.2371, 0.0766172, 41.0934)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.185)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_09" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 0.0817466, 0.0766172, 41.0934)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.105)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_10" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 11.1137, 0.0766172, 41.0934)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.13)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_11" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 22.2493, 0.0766172, 41.0934)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.16)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_12" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -37.533, 0.0766134, 16.5559)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.37)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_13" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -27.388, 0.0766134, 16.5559)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.315)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_14" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -17.1558, 0.0766134, 16.5559)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.34)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_15" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -6.9394, 0.0766134, 16.5559)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.395)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_16" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 4.71049, 0.0766134, 16.5559)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.265)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_17" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 15.3675, 0.0766134, 16.5559)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.5)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_18" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 24.7458, 0.0766134, 16.5559)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.395)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_19" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 35.4004, 0.0766134, 16.5559)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.08)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_20" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -35.5542, 0.0766172, 3.73897)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.185)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_21" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -28.2539, 0.0766172, 3.73897)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.155)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_22" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -21.6665, 0.0766172, 3.73897)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.21)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_23" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -13.6533, 0.0766172, 3.73897)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_24" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -4.32823, 0.0766172, 3.73897)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.025)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_25" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 4.96828, 0.0766172, 3.73897)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.055)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_26" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 14.55, 0.0766172, 3.73897)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.05)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_27" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 23.8465, 0.0766172, 3.73897)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.26)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_28" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, 35.738, 0.0766172, 3.73897)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.235)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_29" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -29.0427, 0.0766172, -13.0797)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.475)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_30" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -24.0026, 0.0766172, -13.0797)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.075)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_31" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -18.1373, 0.0766172, -13.0797)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.29)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_32" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -12.8909, 0.0766172, -13.0797)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.34)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_33" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -29.0427, 0.0766172, -20.8313)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, 0.525)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_34" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -24.0026, 0.0766172, -20.8313)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.425)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_35" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -18.1373, 0.0766172, -20.8313)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.445)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_36" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(2.165, 0, 0, 0, 0.2135, 1.10392, 0, -0.206463, 1.14154, -12.8909, 0.0766172, -20.8313)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.315)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+[node name="text3d_37" type="MeshInstance3D" parent="misc"]
+transform = Transform3D(5.035, 0, 0, 0, 0.496728, 2.56723, 0, -0.480357, 2.65473, 16.0866, 0.267381, -11.7952)
+material_override = ExtResource("41_ng0cb")
+cast_shadow = 0
+instance_shader_parameters/uv_offset = Vector2(0, -0.135)
+mesh = SubResource("QuadMesh_mwets")
+metadata/_edit_lock_ = true
+
+

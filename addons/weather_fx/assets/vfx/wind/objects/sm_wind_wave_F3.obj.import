@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://vt3eb3xp1rlr"
+path="res://.godot/imported/sm_wind_wave_F3.obj-d88f0b7aec68fe7cd186923c5dffd131.mesh"
+
+[deps]
+
+files=["res://.godot/imported/sm_wind_wave_F3.obj-d88f0b7aec68fe7cd186923c5dffd131.mesh"]
+
+source_file="res://addons/weather_fx/assets/vfx/wind/objects/sm_wind_wave_F3.obj"
+dest_files=["res://.godot/imported/sm_wind_wave_F3.obj-d88f0b7aec68fe7cd186923c5dffd131.mesh", "res://.godot/imported/sm_wind_wave_F3.obj-d88f0b7aec68fe7cd186923c5dffd131.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

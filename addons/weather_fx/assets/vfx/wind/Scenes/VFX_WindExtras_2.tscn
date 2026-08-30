@@ -1,0 +1,56 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_PolarPanning_ds.tres" id="1_0jsvy"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_Noise_5.PNG" id="2_cq4yp"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1.png" id="3_pi0bf"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_windCylinder_projectedUVs.obj" id="4_aa4ou"]
+
+[sub_resource type="Gradient" id="Gradient_lwkur"]
+interpolation_mode = 2
+colors = PackedColorArray(0.65834, 0.65834, 0.65834, 0, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_cj6b8"]
+gradient = SubResource("Gradient_lwkur")
+
+[sub_resource type="Gradient" id="Gradient_833ox"]
+offsets = PackedFloat32Array(0.0171674, 0.304721, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tkbr3"]
+gradient = SubResource("Gradient_833ox")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fi8fb"]
+render_priority = -1
+shader = ExtResource("1_0jsvy")
+shader_parameter/Intensity = 1.3
+shader_parameter/Enable_Proximity_Fade = false
+shader_parameter/Enable_Distortion = false
+shader_parameter/Dist_Zoom_Strenght = 1.0
+shader_parameter/Diost_repeat_strenght = 1.0
+shader_parameter/Distortion_Speed_XY = Vector2(0, 0)
+shader_parameter/Distortion_Attenuation = 5.0
+shader_parameter/Zoom_Strenght = 0.5
+shader_parameter/repeat = 1.0
+shader_parameter/Speed_XY = Vector2(-1, 0.3)
+shader_parameter/Power = 0.5
+shader_parameter/Proximity_Fade = 0.1
+shader_parameter/Transparency = 1.0
+shader_parameter/Distortion_Texture = ExtResource("2_cq4yp")
+shader_parameter/Texture_Main = ExtResource("3_pi0bf")
+shader_parameter/Texture_Substract = SubResource("GradientTexture2D_tkbr3")
+shader_parameter/Color_1D_Gradient = SubResource("GradientTexture1D_cj6b8")
+
+[node name="VFX_WindExtras_2" type="Node3D"]
+
+[node name="windsoil" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.2, 0, 0, 0, 1.5, 0, 0, 0, 1.2, 0, 0, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_fi8fb")
+cast_shadow = 0
+mesh = ExtResource("4_aa4ou")
+skeleton = NodePath("../../..")
+
+

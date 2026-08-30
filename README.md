@@ -55,7 +55,8 @@ Dynamically synchronizes weather parameters with Godot's global shader variables
 These can be accessed directly in any Godot shader without extra script bindings. The project includes ready-to-use spatial shaders and procedural foliage tools:
 - **`materials/grass_wind.gdshader`**: Feature-rich wind-reactive grass shader (macro/micro wind gusts, 3-stop vertical color gradient, root AO, rolling terrain tint, backlight translucency, rain wetness response, player displacement).
 - **`materials/foliage_wind.gdshader`**: Tree canopy and leaf flutter shader reacting to wind direction and velocity.
-- **`scenes/grass_field.tscn` / `GrassField`**: High-performance instanced `MultiMeshInstance3D` grass generator producing procedural 3D curved-blade tufts.
+- **`scenes/grass_field.tscn` / `GrassField`**: High-performance instanced `MultiMeshInstance3D` grass generator featuring Quaternius stylized grass models (`Common Short`, `Common Tall`, `Wispy Short`, `Wispy Tall`) and custom mesh support.
+- **`scenes/wind_vfx.tscn` / `WindVFX`**: Dynamic environmental wind particle effect controller that aligns air flow ribbons, stylized wind streaks, drifting leaf particles, and periodic gust sweeps with global wind direction and velocity.
 
 ```gdshader
 shader_type spatial;

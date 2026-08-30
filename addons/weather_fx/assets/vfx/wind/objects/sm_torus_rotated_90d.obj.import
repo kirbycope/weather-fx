@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dobexuf2u3fgb"
+path="res://.godot/imported/sm_torus_rotated_90d.obj-792fa6d4d0e86a9a1f88beefa8f6de0f.mesh"
+
+[deps]
+
+files=["res://.godot/imported/sm_torus_rotated_90d.obj-792fa6d4d0e86a9a1f88beefa8f6de0f.mesh"]
+
+source_file="res://addons/weather_fx/assets/vfx/wind/objects/sm_torus_rotated_90d.obj"
+dest_files=["res://.godot/imported/sm_torus_rotated_90d.obj-792fa6d4d0e86a9a1f88beefa8f6de0f.mesh", "res://.godot/imported/sm_torus_rotated_90d.obj-792fa6d4d0e86a9a1f88beefa8f6de0f.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

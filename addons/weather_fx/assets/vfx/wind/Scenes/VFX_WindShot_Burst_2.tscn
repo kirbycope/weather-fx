@@ -1,0 +1,205 @@
+[gd_scene load_steps=24 format=3]
+
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1_t.png" id="1_y7b6f"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_icosphere_UVprojected.obj" id="2_q233y"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_torus_rotated_90d.obj" id="6_byf04"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d8kor"]
+transparency = 2
+alpha_scissor_threshold = 0.121
+alpha_antialiasing_mode = 0
+blend_mode = 1
+cull_mode = 2
+diffuse_mode = 3
+specular_mode = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("1_y7b6f")
+metallic_specular = 0.44
+roughness = 0.87
+rim_tint = 0.0
+uv1_scale = Vector3(1, 1, 0.5)
+
+[sub_resource type="Curve" id="Curve_f5a5m"]
+_data = [Vector2(0, 0), 0.0, 5.5177, 0, 0, Vector2(0.223242, 1), 0.0, 0.0, 0, 0, Vector2(0.299694, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -0.280078, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="CurveTexture_oa1qp"]
+texture_mode = 1
+curve = SubResource("Curve_f5a5m")
+
+[sub_resource type="Curve" id="Curve_25f0f"]
+_data = [Vector2(0, 0.056832), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_lfybf"]
+max_value = 2.0
+_data = [Vector2(0, 1.73635), 0.0, 0.0, 0, 0, Vector2(1, 1.16687), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_6g4lr"]
+_data = [Vector2(0, 0.056832), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_bqvvl"]
+curve_x = SubResource("Curve_25f0f")
+curve_y = SubResource("Curve_lfybf")
+curve_z = SubResource("Curve_6g4lr")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ftd6m"]
+lifetime_randomness = 0.1
+particle_flag_align_y = true
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+initial_velocity_min = 10.0
+initial_velocity_max = 14.0
+gravity = Vector3(0, 0, 0)
+scale_curve = SubResource("CurveXYZTexture_bqvvl")
+alpha_curve = SubResource("CurveTexture_oa1qp")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4mqi1"]
+transparency = 2
+alpha_scissor_threshold = 0.137
+alpha_antialiasing_mode = 0
+blend_mode = 1
+cull_mode = 2
+diffuse_mode = 3
+specular_mode = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("1_y7b6f")
+metallic_specular = 0.44
+roughness = 0.87
+rim_enabled = true
+rim_tint = 0.0
+uv1_scale = Vector3(1, 1, 0.5)
+
+[sub_resource type="Curve" id="Curve_yre8e"]
+_data = [Vector2(0, 1), 0.0, -2.67722, 0, 0, Vector2(1, 0.00181377), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_rlf7m"]
+texture_mode = 1
+curve = SubResource("Curve_yre8e")
+
+[sub_resource type="Curve" id="Curve_l3l7b"]
+
+[sub_resource type="Curve" id="Curve_fvb4n"]
+
+[sub_resource type="Curve" id="Curve_s42bg"]
+_data = [Vector2(0, 1), 0.0, -2.05611, 0, 0, Vector2(1, 0.371221), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_xyqg2"]
+curve_x = SubResource("Curve_l3l7b")
+curve_y = SubResource("Curve_fvb4n")
+curve_z = SubResource("Curve_s42bg")
+
+[sub_resource type="Curve" id="Curve_lgd5m"]
+_data = [Vector2(0, 0.252747), 0.0, 1.59047, 0, 0, Vector2(1, 1), -0.124713, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_1lm0h"]
+curve = SubResource("Curve_lgd5m")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_b4g4t"]
+lifetime_randomness = 0.1
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 0.0
+emission_ring_radius = 0.03
+emission_ring_inner_radius = 0.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 0, -1)
+spread = 0.0
+initial_velocity_max = 1.0
+angular_velocity_min = -300.0
+angular_velocity_max = -100.0
+directional_velocity_min = -12.0
+directional_velocity_max = -5.00002
+directional_velocity_curve = SubResource("CurveXYZTexture_xyqg2")
+gravity = Vector3(0, 0, 0)
+scale_min = 0.7
+scale_max = 0.9
+scale_curve = SubResource("CurveTexture_1lm0h")
+alpha_curve = SubResource("CurveTexture_rlf7m")
+hue_variation_min = -2.23517e-08
+hue_variation_max = -2.23517e-08
+
+[sub_resource type="Animation" id="Animation_i1kpf"]
+resource_name = "Init"
+length = 1.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("blowing:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0333333),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("rings:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ktt3d"]
+_data = {
+"Init": SubResource("Animation_i1kpf")
+}
+
+[node name="VFX_WindShot_Burst_2" type="Node3D"]
+
+[node name="blowing" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+layers = 4
+material_override = SubResource("StandardMaterial3D_d8kor")
+cast_shadow = 0
+emitting = false
+amount = 5
+lifetime = 0.6
+one_shot = true
+explosiveness = 0.36
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-2, -1.665, -2, 4, 8, 4)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_ftd6m")
+draw_pass_1 = ExtResource("2_q233y")
+
+[node name="rings" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0593867, 0, 0.0251897)
+layers = 4
+material_override = SubResource("StandardMaterial3D_4mqi1")
+cast_shadow = 0
+emitting = false
+amount = 4
+one_shot = true
+explosiveness = 0.38
+fixed_fps = 60
+visibility_aabb = AABB(-2, -2, -3.15, 4, 4, 4)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_b4g4t")
+draw_pass_1 = ExtResource("6_byf04")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_ktt3d")
+}
+autoplay = "Init"
+
+

@@ -31,6 +31,11 @@ const WEATHER_NAMES: Dictionary = {
 @onready var time_value_label: Label = %TimeValueLabel
 @onready var altitude_slider: HSlider = %AltitudeSlider
 @onready var altitude_value_label: Label = %AltitudeValueLabel
+@onready var wind_slider: HSlider = %WindSlider
+@onready var wind_value_label: Label = %WindValueLabel
+@onready var wind_direction_dial: WindDirectionDial = %WindDirectionDial
+@onready var wind_dir_slider: HSlider = %WindDirSlider
+@onready var wind_dir_value_label: Label = %WindDirValueLabel
 @onready var play_pause_button: Button = %PlayPauseButton
 @onready var advance_cycle_button: Button = %AdvanceCycleButton
 @onready var unit_button: Button = %UnitButton
@@ -94,6 +99,11 @@ func _setup_ui_signals() -> void:
 	weather_option_button.item_selected.connect(_on_weather_selected)
 	time_slider.value_changed.connect(_on_time_slider_changed)
 	altitude_slider.value_changed.connect(_on_altitude_slider_changed)
+	wind_slider.value_changed.connect(_on_wind_slider_changed)
+	if is_instance_valid(wind_direction_dial):
+		wind_direction_dial.direction_changed.connect(_on_wind_dial_changed)
+	if is_instance_valid(wind_dir_slider):
+		wind_dir_slider.value_changed.connect(_on_wind_dir_slider_changed)
 	play_pause_button.pressed.connect(_on_play_pause_pressed)
 	advance_cycle_button.pressed.connect(_on_advance_cycle_pressed)
 	unit_button.pressed.connect(_on_unit_button_pressed)
@@ -101,42 +111,66 @@ func _setup_ui_signals() -> void:
 	weather_fx.weather_changed.connect(func(_new, _old): _update_ui_state())
 	weather_fx.biome_changed.connect(func(_new, _old): _update_ui_state())
 	weather_fx.temperature_changed.connect(func(_temp): _update_ui_state())
+	weather_fx.wind_changed.connect(func(_strength, _dir): _update_ui_state())
 
 
 # ------------------------------------------------------------------------------
-# UI Callbacks
+# UI Signal Handlers
 # ------------------------------------------------------------------------------
 func _on_biome_selected(index: int) -> void:
-	var biome_zone: ClimateData.BiomeZone = index as ClimateData.BiomeZone
-	weather_fx.set_biome(biome_zone)
-	_apply_biome_ambient(biome_zone)
+	weather_fx.current_biome = index as ClimateData.BiomeZone
+	_update_ui_state()
 
 
 func _on_weather_selected(index: int) -> void:
-	var weather_id = weather_option_button.get_item_id(index)
-	if weather_id < 0:
-		weather_fx.resume_forecast()
+	var weather_id: int = weather_option_button.get_item_id(index)
+	if weather_id == -1:
+		weather_fx.force_weather = false
 	else:
-		weather_fx.set_weather(weather_id as ClimateData.WeatherType)
+		weather_fx.force_weather = true
+		weather_fx.manual_weather = weather_id as ClimateData.WeatherType
+	_update_ui_state()
 
 
 func _on_time_slider_changed(value: float) -> void:
-	if is_instance_valid(date_and_time):
-		date_and_time.current_time = value
 	weather_fx.manual_time_of_day = value
+	if is_instance_valid(date_and_time) and "current_time" in date_and_time:
+		date_and_time.current_time = value
 	time_value_label.text = "%02d:%02d" % [int(value), int(fmod(value * 60.0, 60.0))]
 
 
 func _on_altitude_slider_changed(value: float) -> void:
+	weather_fx.current_altitude = value
 	if is_instance_valid(target_marker):
 		target_marker.position.y = value
-	weather_fx.current_altitude = value
 	altitude_value_label.text = "%d m" % int(value)
 
 
+func _on_wind_slider_changed(value: float) -> void:
+	weather_fx.wind_strength_multiplier = value
+	wind_value_label.text = "%.1fx" % value
+
+
+func _on_wind_dial_changed(_dir: Vector3, angle_deg: float) -> void:
+	if is_instance_valid(wind_dir_slider):
+		wind_dir_slider.set_value_no_signal(angle_deg)
+	if is_instance_valid(wind_dir_value_label) and is_instance_valid(wind_direction_dial):
+		wind_dir_value_label.text = "%d° %s" % [int(angle_deg), wind_direction_dial.get_cardinal_name()]
+
+
+func _on_wind_dir_slider_changed(value: float) -> void:
+	if is_instance_valid(wind_direction_dial):
+		wind_direction_dial.set_angle_degrees(value, true)
+		if is_instance_valid(wind_dir_value_label):
+			wind_dir_value_label.text = "%d° %s" % [int(value), wind_direction_dial.get_cardinal_name()]
+	else:
+		var rad = deg_to_rad(value)
+		weather_fx.wind_direction = Vector3(cos(rad), 0.0, sin(rad))
+
+
 func _on_play_pause_pressed() -> void:
-	weather_fx.toggle_pause()
-	play_pause_button.text = "Resume" if not weather_fx.is_playing else "Pause"
+	weather_fx.is_playing = !weather_fx.is_playing
+	play_pause_button.text = "Resume" if !weather_fx.is_playing else "Pause"
 
 
 func _on_advance_cycle_pressed() -> void:
@@ -162,7 +196,33 @@ func _update_ui_state() -> void:
 	altitude_slider.set_value_no_signal(weather_fx.current_altitude)
 	altitude_value_label.text = "%d m" % int(weather_fx.current_altitude)
 	
+	wind_slider.set_value_no_signal(weather_fx.wind_strength_multiplier)
+	wind_value_label.text = "%.1fx" % weather_fx.wind_strength_multiplier
+	
+	if is_instance_valid(wind_direction_dial):
+		var angle_deg = wind_direction_dial.get_angle_degrees()
+		if is_instance_valid(wind_dir_slider):
+			wind_dir_slider.set_value_no_signal(angle_deg)
+		if is_instance_valid(wind_dir_value_label):
+			wind_dir_value_label.text = "%d° %s" % [int(angle_deg), wind_direction_dial.get_cardinal_name()]
+	
 	play_pause_button.text = "Pause" if weather_fx.is_playing else "Resume"
+
+
+static func get_wind_cardinal(dir: Vector3) -> String:
+	var angle_deg = wrapf(rad_to_deg(atan2(dir.z, dir.x)), 0.0, 360.0)
+	var dirs = ["East", "SE", "South", "SW", "West", "NW", "North", "NE"]
+	var index = int(round(angle_deg / 45.0)) % 8
+	return dirs[index]
+
+
+static func get_wind_rating(strength: float) -> String:
+	if strength < 1.5: return "Calm"
+	elif strength < 3.5: return "Light Air"
+	elif strength < 5.5: return "Breeze"
+	elif strength < 8.5: return "Moderate Wind"
+	elif strength < 12.0: return "Strong Gale"
+	else: return "Storm Force"
 
 
 func _update_status_display() -> void:
@@ -173,17 +233,26 @@ func _update_status_display() -> void:
 	var temp_f = ClimateData.celsius_to_fahrenheit(temp_c)
 	var prog = weather_fx.get_cycle_progress() * 100.0
 	var timer_rem = maxf(0.0, weather_fx.cycle_duration_seconds - weather_fx.get_cycle_timer())
-
-	status_label.text = "Biome: %s\nWeather: %s%s\nTemp: %.1f°C / %.1f°F\nAltitude: %d m\nCycle: %d%% (%02d:%02d left)" % [
+	var wind_spd = weather_fx.current_wind_strength
+	var wind_dir = weather_fx.wind_direction
+	var wind_card = get_wind_cardinal(wind_dir)
+	var wind_desc = get_wind_rating(wind_spd)
+	var fps = Engine.get_frames_per_second()
+	
+	status_label.text = "Biome: %s\nWeather: %s%s\nTemp: %.1f°C / %.1f°F\nWind: %.1f m/s (%s - %s)\nAltitude: %d m\nCycle: %d%% (%02d:%02d left)\nFPS: %d" % [
 		b_name,
 		w_name,
 		" (Forced)" if weather_fx.force_weather else " (Simulated)",
 		temp_c,
 		temp_f,
+		wind_spd,
+		wind_desc,
+		wind_card,
 		int(weather_fx.current_altitude),
 		int(prog),
 		int(timer_rem / 60.0),
-		int(fmod(timer_rem, 60.0))
+		int(fmod(timer_rem, 60.0)),
+		fps
 	]
 
 

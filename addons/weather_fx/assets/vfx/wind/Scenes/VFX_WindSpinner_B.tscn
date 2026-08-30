@@ -1,0 +1,201 @@
+[gd_scene load_steps=28 format=3]
+
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_Blood_bulb_UJ1_testtyy.png" id="1_84rti"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_slashTypeG51.obj" id="2_qfsur"]
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_master_fire_treshold_dss.tres" id="3_55w4a"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/Misc/axe.obj" id="3_aj3vk"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1.png" id="4_2n7ra"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u2qqq"]
+transparency = 2
+alpha_scissor_threshold = 0.164
+alpha_antialiasing_mode = 0
+blend_mode = 1
+cull_mode = 2
+specular_mode = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("1_84rti")
+metallic_specular = 0.0
+roughness = 0.78
+rim_enabled = true
+rim = 0.5
+rim_tint = 0.0
+uv1_scale = Vector3(0.6, 0.7, 0.5)
+
+[sub_resource type="Curve" id="Curve_3cucu"]
+_data = [Vector2(0, 1), 0.0, -1.84728, 0, 0, Vector2(1, 0.135429), 0.0803164, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_8n75h"]
+texture_mode = 1
+curve = SubResource("Curve_3cucu")
+
+[sub_resource type="Curve" id="Curve_u8taa"]
+_data = [Vector2(0, 1), 0.0, -0.13527, 0, 0, Vector2(1, 0.638452), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_ji53a"]
+curve = SubResource("Curve_u8taa")
+
+[sub_resource type="Curve" id="Curve_26sdf"]
+_data = [Vector2(0, 0.614873), 0.0, 0.0558723, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_plpaf"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_k81uq"]
+_data = [Vector2(0, 0.614873), 0.0, 0.0558723, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_h2uyn"]
+curve_x = SubResource("Curve_26sdf")
+curve_y = SubResource("Curve_plpaf")
+curve_z = SubResource("Curve_k81uq")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_m1nvs"]
+lifetime_randomness = 0.1
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.3
+emission_ring_radius = 0.1
+emission_ring_inner_radius = 0.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+angular_velocity_min = -800.0
+angular_velocity_max = -700.0
+angular_velocity_curve = SubResource("CurveTexture_ji53a")
+gravity = Vector3(0, 0, 0)
+scale_min = 0.8
+scale_max = 0.85
+scale_curve = SubResource("CurveXYZTexture_h2uyn")
+color = Color(0.7921, 0.89, 0.875315, 1)
+alpha_curve = SubResource("CurveTexture_8n75h")
+hue_variation_min = -2.23517e-08
+hue_variation_max = -2.23517e-08
+
+[sub_resource type="Gradient" id="Gradient_0wy5p"]
+colors = PackedColorArray(1, 1, 1, 1, 0.306445, 0.393678, 0.397901, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_8l26k"]
+gradient = SubResource("Gradient_0wy5p")
+fill_from = Vector2(0.764957, 0.935897)
+fill_to = Vector2(0.358974, 0.606838)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ac1bv"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_color = Color(0.91, 1.06, 1, 1)
+albedo_texture = SubResource("GradientTexture2D_8l26k")
+
+[sub_resource type="Gradient" id="Gradient_8h25f"]
+offsets = PackedFloat32Array(0, 0.848875, 0.96463, 1)
+colors = PackedColorArray(0.1525, 0.25, 0.222375, 0, 0.7375, 0.704585, 0.684125, 0.65, 1, 1, 1, 1, 0.55, 0.55, 0.55, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_es554"]
+gradient = SubResource("Gradient_8h25f")
+
+[sub_resource type="Gradient" id="Gradient_c838s"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_5aoiv"]
+gradient = SubResource("Gradient_c838s")
+fill_from = Vector2(1, 1)
+fill_to = Vector2(0, 1)
+
+[sub_resource type="Gradient" id="Gradient_4e8h2"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_8lx4m"]
+gradient = SubResource("Gradient_4e8h2")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jcfgx"]
+render_priority = 0
+shader = ExtResource("3_55w4a")
+shader_parameter/Speed_XY2 = Vector2(3.5, -1)
+shader_parameter/Scale_XY2 = Vector2(1, 1)
+shader_parameter/Color_Intensity2 = 2.1
+shader_parameter/Fill = 1.0
+shader_parameter/AlphaTreshold = 0.139
+shader_parameter/Base_noise2 = ExtResource("4_2n7ra")
+shader_parameter/Texture_add = SubResource("GradientTexture2D_5aoiv")
+shader_parameter/Texture_substract = SubResource("GradientTexture2D_8lx4m")
+shader_parameter/Gradient_Color_1D2 = SubResource("GradientTexture1D_es554")
+
+[sub_resource type="Animation" id="Animation_gvdy8"]
+resource_name = "Init"
+length = 0.5
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("rotator_socket:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0.000767997, 0, 0), Vector3(-6.28319, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4uj7q"]
+_data = {
+"Init": SubResource("Animation_gvdy8")
+}
+
+[node name="VFX_WindSpinner_B" type="Node3D"]
+
+[node name="tornado15" type="GPUParticles3D" parent="."]
+transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
+layers = 4
+material_override = SubResource("StandardMaterial3D_u2qqq")
+cast_shadow = 0
+amount = 3
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-2, -1, -2, 4, 2, 4)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_m1nvs")
+draw_pass_1 = ExtResource("2_qfsur")
+
+[node name="rotator_socket" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.739934, -0.67268, 0, 0.67268, -0.739934, 0, 0, 0)
+
+[node name="Axe" type="MeshInstance3D" parent="rotator_socket"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, -0.370198, 0)
+layers = 4
+mesh = ExtResource("3_aj3vk")
+skeleton = NodePath("../..")
+
+[node name="SmSlashTypeG51" type="MeshInstance3D" parent="rotator_socket"]
+transform = Transform3D(2.84124e-08, -1, 5.68248e-08, 0.465509, -2.97101e-08, -0.453653, 0.453653, 9.31168e-08, 0.465509, 0, 0, 0)
+layers = 4
+material_override = SubResource("StandardMaterial3D_ac1bv")
+cast_shadow = 0
+mesh = ExtResource("2_qfsur")
+skeleton = NodePath("../../..")
+
+[node name="SmSlashTypeG52" type="MeshInstance3D" parent="rotator_socket"]
+transform = Transform3D(2.84124e-08, -0.456, -5.68248e-08, 0.465509, 4.20977e-08, -0.453653, 0.453653, -1.46385e-08, 0.465509, 0, 0, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_jcfgx")
+cast_shadow = 0
+mesh = ExtResource("2_qfsur")
+skeleton = NodePath("../../..")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_4uj7q")
+}
+autoplay = "Init"
+
+

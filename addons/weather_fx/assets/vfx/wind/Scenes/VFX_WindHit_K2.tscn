@@ -1,0 +1,68 @@
+[gd_scene load_steps=10 format=4]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_animated_ds_toon.gdshader" id="1_d8im5"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_WindWaveAnim.png" id="2_mb25n"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_r7lrv"]
+render_priority = 2
+shader = ExtResource("1_d8im5")
+shader_parameter/normal_intensity = 0.0
+shader_parameter/frame_count = Vector2(4, 3)
+shader_parameter/sprite_sheet = ExtResource("2_mb25n")
+
+[sub_resource type="Curve" id="Curve_qqf10"]
+_data = [Vector2(0, 0), 0.0, 1.0, 0, 0, Vector2(1, 1), 1.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_bh647"]
+texture_mode = 1
+curve = SubResource("Curve_qqf10")
+
+[sub_resource type="Curve" id="Curve_trqgw"]
+_data = [Vector2(0, 0.461538), 0.0, 1.23786, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_glt3c"]
+curve = SubResource("Curve_trqgw")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_0vemw"]
+particle_flag_rotate_y = true
+angle_min = -180.0
+angle_max = 180.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.7
+scale_max = 0.9
+scale_curve = SubResource("CurveTexture_glt3c")
+alpha_curve = SubResource("CurveTexture_bh647")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_2tpl3"]
+_surfaces = [{
+"aabb": AABB(-2.34095, -2.25239, -2.31689, 4.51411, 4.51913, 4.63788),
+"attribute_data": PackedByteArray("//8AAP////9U9QAAVPX//6nqAACp6v///98AAP/f//9U1QAAVNX//6nKAACpyv///78AAP+///9UtQAAVLX//6qqAACqqv///58AAP+f//9UlQAAVJX//6qKAACqiv///38AAP9///9UdQAAVHX//6pqAACqav///18AAP9f//9UVQAAVFX//6pKAACqSv///z8AAP8///9VNQAAVTX//6oqAACqKv///x8AAP8f//9VFQAAVRX//6oKAACqCv//AAAAAAAA//9U9f///////1T1AAD//wAAqer//6nqAAD/3////98AAFTV//9U1QAAqcr//6nKAAD/v////78AAFS1//9UtQAAqqr//6qqAAD/n////58AAFSV//9UlQAAqor//6qKAAD/f////38AAFR1//9UdQAAqmr//6pqAAD/X////18AAFRV//9UVQAAqkr//6pKAAD/P////z8AAFU1//9VNQAAqir//6oqAAD/H////x8AAFUV//9VFQAAqgr//6oKAAAAAP//AAAAAP//AAD/////VPUAAFT1//+p6gAAqer////fAAD/3///VNUAAFTV//+pygAAqcr///+/AAD/v///VLUAAFS1//+qqgAAqqr///+fAAD/n///VJUAAFSV//+qigAAqor///9/AAD/f///VHUAAFR1//+qagAAqmr///9fAAD/X///VFUAAFRV//+qSgAAqkr///8/AAD/P///VTUAAFU1//+qKgAAqir///8fAAD/H///VRUAAFUV//+qCgAAqgr//wAAAAAAAP//"),
+"format": 34896613399,
+"index_count": 432,
+"index_data": PackedByteArray("AAABAAIAAgABAAMAAgADAAQABAADAAUABAAFAAYABgAFAAcABgAHAAgACAAHAAkACAAJAAoACgAJAAsACgALAAwADAALAA0ADAANAA4ADgANAA8ADgAPABAAEAAPABEAEAARABIAEgARABMAEgATABQAFAATABUAFAAVABYAFgAVABcAFgAXABgAGAAXABkAGAAZABoAGgAZABsAGgAbABwAHAAbAB0AHAAdAB4AHgAdAB8AHgAfACAAIAAfACEAIAAhACIAIgAhACMAIgAjACQAJAAjACUAJAAlACYAJgAlACcAJgAnACgAKAAnACkAKAApACoAKgApACsAKgArACwALAArAC0ALAAtAC4ALgAtAC8ALgAvADAAMAAvADEAMgAzADQANAAzADUANgAyADcANwAyADQAOAA2ADkAOQA2ADcAOgA4ADsAOwA4ADkAPAA6AD0APQA6ADsAPgA8AD8APwA8AD0AQAA+AEEAQQA+AD8AQgBAAEMAQwBAAEEARABCAEUARQBCAEMARgBEAEcARwBEAEUASABGAEkASQBGAEcASgBIAEsASwBIAEkATABKAE0ATQBKAEsATgBMAE8ATwBMAE0AUABOAFEAUQBOAE8AUgBQAFMAUwBQAFEAVABSAFUAVQBSAFMAVgBUAFcAVwBUAFUAWABWAFkAWQBWAFcAWgBYAFsAWwBYAFkAXABaAF0AXQBaAFsAXgBcAF8AXwBcAF0AYABeAGEAYQBeAF8AYgBgAGMAYwBgAGEAZABlAGYAZgBlAGcAZgBnAGgAaABnAGkAaABpAGoAagBpAGsAagBrAGwAbABrAG0AbABtAG4AbgBtAG8AbgBvAHAAcABvAHEAcABxAHIAcgBxAHMAcgBzAHQAdABzAHUAdAB1AHYAdgB1AHcAdgB3AHgAeAB3AHkAeAB5AHoAegB5AHsAegB7AHwAfAB7AH0AfAB9AH4AfgB9AH8AfgB/AIAAgAB/AIEAgACBAIIAggCBAIMAggCDAIQAhACDAIUAhACFAIYAhgCFAIcAhgCHAIgAiACHAIkAiACJAIoAigCJAIsAigCLAIwAjACLAI0AjACNAI4AjgCNAI8AjgCPAJAAkACPAJEAkACRAJIAkgCRAJMAkgCTAJQAlACTAJUA"),
+"name": "Cylinder",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 150,
+"vertex_data": PackedByteArray("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")
+}]
+blend_shape_mode = 0
+
+[node name="VFX_WindHit_K2" type="Node3D"]
+
+[node name="windimpact5" type="GPUParticles3D" parent="."]
+layers = 4
+material_override = SubResource("ShaderMaterial_r7lrv")
+cast_shadow = 0
+amount = 2
+lifetime = 0.5
+explosiveness = 0.8
+fixed_fps = 60
+visibility_aabb = AABB(-3, -3, -3, 6, 6, 6)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_0vemw")
+draw_pass_1 = SubResource("ArrayMesh_2tpl3")
+
+

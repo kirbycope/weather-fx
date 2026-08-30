@@ -1,0 +1,198 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_disolver_wind_p_ADD.tres" id="1_vpy3m"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1.png" id="2_85uox"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_sphere_A1.obj" id="3_vwbna"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_Blood_bulb_UJ1_testtyy.png" id="4_7phd0"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_tornado_ringed1.obj" id="5_nqht1"]
+
+[sub_resource type="Gradient" id="Gradient_65lfl"]
+offsets = PackedFloat32Array(0, 0.411576, 0.681672, 0.73955, 0.96463)
+colors = PackedColorArray(0, 0, 0, 1, 0.383478, 0.383478, 0.383478, 1, 0.703571, 0.703571, 0.703571, 1, 1, 1, 1, 1, 0.485714, 0.485714, 0.485714, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_n5hsd"]
+gradient = SubResource("Gradient_65lfl")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vxvjx"]
+render_priority = 0
+shader = ExtResource("1_vpy3m")
+shader_parameter/UseProximityFade = true
+shader_parameter/Scale = Vector2(1, 2)
+shader_parameter/Speed_XY = Vector2(-0.4, 0.8)
+shader_parameter/UseFresnel = true
+shader_parameter/FresnelInvert = false
+shader_parameter/FresnelPower = 1.0
+shader_parameter/ProximityFade = 1.0
+shader_parameter/Intensity = 1.0
+shader_parameter/Rought = 1.0
+shader_parameter/AlphaScissor = 1.0
+shader_parameter/Disolver_Texture = ExtResource("2_85uox")
+shader_parameter/Color_1D_Gradient = SubResource("GradientTexture1D_n5hsd")
+
+[sub_resource type="Curve" id="Curve_006un"]
+_data = [Vector2(0.415902, 0), 0.0, 0.0131801, 0, 0, Vector2(1, 1), 3.30446, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_d7i4f"]
+texture_mode = 1
+curve = SubResource("Curve_006un")
+
+[sub_resource type="Curve" id="Curve_ihskm"]
+_data = [Vector2(0.00305811, 0), 0.0, 2.22965, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_2k4x4"]
+curve = SubResource("Curve_ihskm")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_unovo"]
+lifetime_randomness = 0.1
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.0
+emission_ring_radius = 0.2
+emission_ring_inner_radius = 0.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+initial_velocity_min = 1.0
+initial_velocity_max = 1.0
+angular_velocity_min = -1.60933e-05
+angular_velocity_max = 200.0
+gravity = Vector3(0, 0, 0)
+scale_min = 2.0
+scale_max = 2.3
+scale_curve = SubResource("CurveTexture_2k4x4")
+color = Color(0.615279, 0.85983, 0.751901, 1)
+alpha_curve = SubResource("CurveTexture_d7i4f")
+hue_variation_min = -2.23517e-08
+hue_variation_max = -2.23517e-08
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ugdca"]
+transparency = 2
+alpha_scissor_threshold = 0.328
+alpha_antialiasing_mode = 0
+blend_mode = 1
+cull_mode = 2
+diffuse_mode = 3
+specular_mode = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("4_7phd0")
+metallic_specular = 0.0
+roughness = 0.8
+rim_tint = 0.0
+uv1_scale = Vector3(0.6, 0.7, 0.5)
+
+[sub_resource type="Curve" id="Curve_2egqg"]
+_data = [Vector2(0, 1), 0.0, -1.13564, 0, 0, Vector2(1, 0), -0.785868, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_10ya0"]
+texture_mode = 1
+curve = SubResource("Curve_2egqg")
+
+[sub_resource type="Curve" id="Curve_d6l0d"]
+_data = [Vector2(0, 0.237606), 0.0, 2.18072, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_lfjsi"]
+curve = SubResource("Curve_d6l0d")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_cbtj0"]
+lifetime_randomness = 0.1
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.3
+emission_ring_radius = 0.2
+emission_ring_inner_radius = 0.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+angular_velocity_min = 100.0
+angular_velocity_max = 300.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.3
+scale_max = 0.33
+scale_curve = SubResource("CurveTexture_lfjsi")
+color = Color(0.848886, 0.987211, 0.957711, 1)
+alpha_curve = SubResource("CurveTexture_10ya0")
+hue_variation_min = -2.23517e-08
+hue_variation_max = -2.23517e-08
+
+[sub_resource type="Animation" id="Animation_tjyo6"]
+resource_name = "Init"
+length = 1.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("sphere:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.1),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("tornado9:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_vim7i"]
+_data = {
+"Init": SubResource("Animation_tjyo6")
+}
+
+[node name="VFX_WindBlow_Sphere" type="Node3D"]
+
+[node name="sphere" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.432854, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_vxvjx")
+cast_shadow = 0
+emitting = false
+amount = 3
+lifetime = 0.8
+one_shot = true
+explosiveness = 0.58
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-2, -2, -2, 4, 4, 4)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_unovo")
+draw_pass_1 = ExtResource("3_vwbna")
+
+[node name="tornado9" type="GPUParticles3D" parent="."]
+layers = 4
+material_override = SubResource("StandardMaterial3D_ugdca")
+cast_shadow = 0
+emitting = false
+amount = 3
+one_shot = true
+explosiveness = 0.66
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-4, -1.125, -4, 8, 4, 8)
+process_material = SubResource("ParticleProcessMaterial_cbtj0")
+draw_pass_1 = ExtResource("5_nqht1")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_vim7i")
+}
+autoplay = "Init"
+
+

@@ -1,0 +1,84 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_disolver_wind_p_ADD.tres" id="1_1nt5y"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1.png" id="2_dghbv"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_torus_twisted1.obj" id="3_1yjsq"]
+
+[sub_resource type="Gradient" id="Gradient_g76ao"]
+offsets = PackedFloat32Array(0.022508, 0.26045, 1)
+colors = PackedColorArray(0.266575, 0.266575, 0.266575, 1, 0.529067, 0.529067, 0.529067, 1, 0.233925, 0.233926, 0.233925, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_myf3b"]
+gradient = SubResource("Gradient_g76ao")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_figbh"]
+render_priority = 0
+shader = ExtResource("1_1nt5y")
+shader_parameter/UseProximityFade = true
+shader_parameter/Scale = Vector2(1, 2)
+shader_parameter/Speed_XY = Vector2(-0.4, 0.8)
+shader_parameter/UseFresnel = true
+shader_parameter/FresnelInvert = false
+shader_parameter/FresnelPower = 1.0
+shader_parameter/ProximityFade = 1.0
+shader_parameter/Intensity = 1.0
+shader_parameter/Rought = 1.0
+shader_parameter/AlphaScissor = 1.0
+shader_parameter/Disolver_Texture = ExtResource("2_dghbv")
+shader_parameter/Color_1D_Gradient = SubResource("GradientTexture1D_myf3b")
+
+[sub_resource type="Curve" id="Curve_vqu0y"]
+_data = [Vector2(0, 0), 0.0, 0.0131801, 0, 0, Vector2(0.996942, 1), 2.31312, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_xoyhs"]
+texture_mode = 1
+curve = SubResource("Curve_vqu0y")
+
+[sub_resource type="Curve" id="Curve_sfwex"]
+_data = [Vector2(0, 0.252747), 0.0, 1.59047, 0, 0, Vector2(1, 1), -0.124713, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_qi6gx"]
+curve = SubResource("Curve_sfwex")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_q8sxa"]
+lifetime_randomness = 0.1
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.0
+emission_ring_radius = 0.2
+emission_ring_inner_radius = 0.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+initial_velocity_min = 1.0
+initial_velocity_max = 1.0
+angular_velocity_min = -300.0
+angular_velocity_max = -100.0
+gravity = Vector3(0, 0, 0)
+scale_min = 2.5
+scale_max = 3.5
+scale_curve = SubResource("CurveTexture_qi6gx")
+color = Color(0.9, 1.4, 1.3, 1)
+alpha_curve = SubResource("CurveTexture_xoyhs")
+hue_variation_min = -2.23517e-08
+hue_variation_max = -2.23517e-08
+
+[node name="VFX_WindExtras_4" type="Node3D"]
+
+[node name="toruswind" type="GPUParticles3D" parent="."]
+layers = 4
+material_override = SubResource("ShaderMaterial_figbh")
+cast_shadow = 0
+amount = 1
+lifetime = 0.7
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-4, -1.45, -4, 8, 4, 8)
+process_material = SubResource("ParticleProcessMaterial_q8sxa")
+draw_pass_1 = ExtResource("3_1yjsq")
+
+

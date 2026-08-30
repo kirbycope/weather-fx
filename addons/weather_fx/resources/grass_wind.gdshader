@@ -3,8 +3,7 @@ render_mode cull_disabled, diffuse_toon, specular_schlick_ggx;
 
 // =============================================================================
 // WeatherFX - Stylized Wind-Reactive Foliage & Grass Shader
-// Incorporates community open-source shader techniques (CC0/MIT) from
-// Malido, Calico, Bramreth, and 2Retr0 with WeatherFX global atmospheric physics.
+// Incorporates harmonic vegetation sway physics with WeatherFX global wind uniforms.
 // =============================================================================
 
 // WeatherFX Global Atmospheric Uniforms
@@ -14,9 +13,9 @@ global uniform float weather_precipitation_strength;
 
 // Grass Appearance & Gradients
 group_uniforms Shading;
-uniform vec4 color_base : source_color = vec4(0.08, 0.22, 0.08, 1.0);
-uniform vec4 color_mid : source_color = vec4(0.26, 0.56, 0.17, 1.0);
-uniform vec4 color_tip : source_color = vec4(0.58, 0.82, 0.24, 1.0);
+uniform vec4 color_base : source_color = vec4(0.10, 0.24, 0.10, 1.0);
+uniform vec4 color_mid : source_color = vec4(0.40, 0.70, 0.25, 1.0);
+uniform vec4 color_tip : source_color = vec4(0.75, 0.95, 0.40, 1.0);
 uniform vec4 color_dry_variation : source_color = vec4(0.66, 0.62, 0.28, 1.0);
 uniform float dry_patch_scale : hint_range(0.01, 0.5, 0.01) = 0.06;
 uniform float dry_patch_blend : hint_range(0.0, 1.0, 0.05) = 0.18;
@@ -34,7 +33,7 @@ uniform float normal_up_bias : hint_range(0.0, 1.0, 0.05) = 0.55;
 group_uniforms Wind;
 uniform float wind_speed : hint_range(0.1, 10.0, 0.1) = 1.6;
 uniform float wind_turbulence : hint_range(0.0, 3.0, 0.05) = 0.75;
-uniform float wind_wave_size : hint_range(0.01, 1.0, 0.01) = 0.08;
+uniform float wind_wave_size : hint_range(0.01, 1.0, 0.01) = 0.15;
 uniform float sway_strength : hint_range(0.0, 2.0, 0.05) = 0.50;
 
 // Character & Object Interaction
@@ -44,60 +43,53 @@ uniform float player_displacement_strength : hint_range(0.0, 2.0, 0.05) = 0.6;
 uniform float player_displacement_radius : hint_range(0.1, 5.0, 0.1) = 1.2;
 
 varying vec3 v_world_pos;
+varying float v_height;
 
 void vertex() {
 	vec3 world_origin = MODEL_MATRIX[3].xyz;
 	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	
-	// Base stays planted at UV.y = 1.0, tip bends at UV.y = 0.0
-	float height_factor = clamp(1.0 - UV.y, 0.0, 1.0);
+	// Height factor along the blade: roots at VERTEX.y <= 0.0 remain firmly planted
+	float height = max(VERTEX.y, 0.0);
+	v_height = clamp(height / 1.2, 0.0, 1.0);
 	
-	// Direction vector for global wind
+	// Normalized global wind direction vector
 	vec3 wind_dir = weather_wind_direction;
 	if (length(wind_dir) < 0.01) {
 		wind_dir = vec3(1.0, 0.0, 0.0);
 	} else {
 		wind_dir = normalize(wind_dir);
 	}
+	vec3 wind_perp = vec3(-wind_dir.z, 0.0, wind_dir.x);
 	
-	vec3 sway = vec3(0.0);
-
-	if (weather_wind_strength > 0.001) {
-		// Wind intensity scaling (base wind + current weather condition multiplier)
-		float wind_scale = weather_wind_strength / 7.5;
-		float effective_speed = wind_speed * (0.8 + 0.2 * wind_scale);
-		
-		// Sweeping macro wave traveling across field coordinates (unidirectional 0.0 -> 1.0 downwind)
-		float wave_coord = (world_origin.x * wind_dir.x + world_origin.z * wind_dir.z) * wind_wave_size;
-		float raw_wave = sin(TIME * effective_speed + wave_coord);
-		float macro_wave = pow(raw_wave * 0.5 + 0.5, 1.35);
-		
-		// Micro-turbulence / rustle for individual blade organic motion
-		float micro_flutter = sin(TIME * effective_speed * 2.5 + world_origin.x * 0.6 - world_origin.z * 0.6) * wind_turbulence * 0.15;
-		float tip_flutter = sin(TIME * effective_speed * 3.8 + v_world_pos.x * 1.2 + v_world_pos.z * 1.2) * wind_turbulence * 0.10;
-		
-		// Total bend: forward wind wave + subtle organic flutter, clamped to resting vertical baseline
-		float total_bend = max(macro_wave + (macro_wave * 0.4 + 0.2) * (micro_flutter + tip_flutter), 0.0);
-		float bend = total_bend * sway_strength * (0.35 + 0.45 * wind_scale) * pow(height_factor, 1.65);
-		sway += wind_dir * bend;
-		
-		// Dip slightly downward when bending forward to conserve blade length
-		sway.y -= bend * 0.22 * height_factor;
-	}
+	// Harmonic wind sway guided by vegetation_sway sinusoidal wave physics
+	float effective_speed = wind_speed * (0.8 + 0.25 * weather_wind_strength);
+	float wave_coord = (world_origin.x * wind_dir.x + world_origin.z * wind_dir.z) * wind_wave_size;
+	
+	// Main harmonic oscillation + micro turbulence rustle
+	float wave_main = sin(wave_coord + TIME * effective_speed + height * 0.4);
+	float wave_micro = sin(wave_coord * 2.3 + TIME * effective_speed * 1.8 + world_origin.x * 0.5) * 0.3 * wind_turbulence;
+	
+	// Wind push (steady lean + dynamic sway)
+	float lean = weather_wind_strength * 0.05;
+	float sway_oscillation = (wave_main + wave_micro) * (0.08 + 0.03 * weather_wind_strength) * sway_strength;
+	float total_sway = lean + sway_oscillation;
+	
+	vec3 world_sway = (wind_dir * total_sway + wind_perp * (wave_micro * 0.03 * sway_strength)) * height;
 	
 	// Player / entity displacement interaction
 	vec3 push_delta = v_world_pos - player_position;
 	float dist_to_player = length(vec3(push_delta.x, push_delta.y * 1.6, push_delta.z));
 	if (dist_to_player < player_displacement_radius && dist_to_player > 0.001) {
-		float push_factor = smoothstep(player_displacement_radius, 0.0, dist_to_player) * height_factor * player_displacement_strength;
-		sway += normalize(vec3(push_delta.x, -0.25, push_delta.z)) * push_factor;
+		float push_factor = smoothstep(player_displacement_radius, 0.0, dist_to_player) * v_height * player_displacement_strength;
+		world_sway += normalize(vec3(push_delta.x, -0.2, push_delta.z)) * push_factor;
 	}
 	
-	// Transform world sway back to local vertex space
-	vec3 local_sway = (inverse(MODEL_MATRIX) * vec4(sway, 0.0)).xyz;
+	// Apply displacement in local vertex coordinates
+	vec3 local_sway = (inverse(MODEL_MATRIX) * vec4(world_sway, 0.0)).xyz;
 	VERTEX += local_sway;
 	
-	// Soften vertex normals upward towards sky for lush, fluffy volumetric foliage shading
+	// Soften vertex normals upward towards sky for volumetric foliage shading
 	NORMAL = normalize(mix(NORMAL, vec3(0.0, 1.0, 0.0), normal_up_bias));
 }
 
@@ -107,8 +99,7 @@ void fragment() {
 		discard;
 	}
 	
-	// Height factor along the blade (0.0 at root, 1.0 at tip)
-	float h = clamp(1.0 - UV.y, 0.0, 1.0);
+	float h = v_height;
 	
 	// 3-Stop vertical color gradient (Root -> Mid -> Tip)
 	vec3 grad_color;
@@ -119,7 +110,7 @@ void fragment() {
 	}
 	
 	// Root ambient occlusion darkening
-	float ao = pow(UV.y, 3.5) * ambient_occlusion_strength;
+	float ao = pow(1.0 - h, 3.5) * ambient_occlusion_strength;
 	grad_color = mix(grad_color, color_base.rgb * 0.35, ao);
 	
 	// Subtle macro terrain color variation (rolling meadow patches)

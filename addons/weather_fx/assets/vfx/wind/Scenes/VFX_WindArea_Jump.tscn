@@ -1,0 +1,302 @@
+[gd_scene load_steps=39 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_wind_disolver3_lit_ds.tres" id="1_sytul"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1.png" id="2_xnk2g"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_waved_gradient413.png" id="3_ibqnt"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_Noise_3c.png" id="4_t5j3y"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_ring211.obj" id="5_2g5xk"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_Smoke_4_alpha.PNG" id="6_4u3y1"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_Smoke_4_N.PNG" id="7_8f8n1"]
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_animated_ds_toon.gdshader" id="8_k5gji"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_wispy_smoke_G9R.png" id="9_eqi0c"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_plane_cross1a.obj" id="10_fvec6"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_46ne0"]
+render_priority = 0
+shader = ExtResource("1_sytul")
+shader_parameter/Alpha_Scale = Vector2(1, 0.5)
+shader_parameter/Alpha_pivot = Vector2(1, 1)
+shader_parameter/Alpha_Speed = Vector2(0, -1)
+shader_parameter/Dissolver_Scale2 = Vector2(1, 1)
+shader_parameter/Dissolver_pivot2 = Vector2(0, 0)
+shader_parameter/Speed_disolver = Vector2(0, 0)
+shader_parameter/Opacity = 1.0
+shader_parameter/Enable_Proximity_Fade = false
+shader_parameter/ProximityFade = 0.315
+shader_parameter/Enable_Fresnel = false
+shader_parameter/Invert_Fresnel = false
+shader_parameter/Fresnel_power = 0.275
+shader_parameter/Alpha_Texture = ExtResource("2_xnk2g")
+shader_parameter/Multiply_Mask = ExtResource("3_ibqnt")
+shader_parameter/dissolver_texture = ExtResource("4_t5j3y")
+
+[sub_resource type="Curve" id="Curve_trvc7"]
+_data = [Vector2(0, 0.0468019), 0.0, -0.164522, 0, 0, Vector2(1, 1), 2.82157, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_cdbdt"]
+texture_mode = 1
+curve = SubResource("Curve_trvc7")
+
+[sub_resource type="Curve" id="Curve_jx4ib"]
+max_value = 2.0
+_data = [Vector2(0, 0.704367), 0.0, 4.03462, 0, 0, Vector2(0.997135, 2), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_d22fj"]
+_data = [Vector2(0, 0.570549), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="Curve" id="Curve_souo5"]
+max_value = 2.0
+_data = [Vector2(0, 0.704367), 0.0, 4.03462, 0, 0, Vector2(0.997135, 2), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_oiaab"]
+curve_x = SubResource("Curve_jx4ib")
+curve_y = SubResource("Curve_d22fj")
+curve_z = SubResource("Curve_souo5")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_g8c8f"]
+lifetime_randomness = 0.05
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.0
+emission_ring_radius = 0.3
+emission_ring_inner_radius = 0.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+angular_velocity_min = -1.60933e-05
+angular_velocity_max = 200.0
+gravity = Vector3(0, 0, 0)
+scale_max = 1.3
+scale_curve = SubResource("CurveXYZTexture_oiaab")
+alpha_curve = SubResource("CurveTexture_cdbdt")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l6spp"]
+render_priority = -1
+transparency = 1
+specular_mode = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("6_4u3y1")
+normal_enabled = true
+normal_scale = 0.3
+normal_texture = ExtResource("7_8f8n1")
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 4
+particles_anim_v_frames = 4
+particles_anim_loop = false
+proximity_fade_enabled = true
+
+[sub_resource type="Curve" id="Curve_tp5o8"]
+_data = [Vector2(0, 0.902133), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_xct7t"]
+texture_mode = 1
+curve = SubResource("Curve_tp5o8")
+
+[sub_resource type="Curve" id="Curve_vsttg"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_f32ag"]
+curve_y = SubResource("Curve_vsttg")
+
+[sub_resource type="Curve" id="Curve_xtqg0"]
+_data = [Vector2(0.0641509, 1), 0.0, -3.43365, 0, 0, Vector2(1, 0.168487), 0.636444, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_yj3kl"]
+texture_mode = 1
+curve = SubResource("Curve_xtqg0")
+
+[sub_resource type="Curve" id="Curve_icohi"]
+_data = [Vector2(0, 0.351014), 0.0, 1.58071, 0, 0, Vector2(1, 1), 1.0586, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_07nep"]
+curve = SubResource("Curve_icohi")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_1pxih"]
+lifetime_randomness = 0.1
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.0
+emission_ring_radius = 0.3
+emission_ring_inner_radius = 0.1
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+angular_velocity_min = -50.0
+angular_velocity_max = 80.0
+directional_velocity_min = 0.799984
+directional_velocity_max = 1.99998
+directional_velocity_curve = SubResource("CurveXYZTexture_f32ag")
+radial_velocity_min = 7.99998
+radial_velocity_max = 11.0
+radial_velocity_curve = SubResource("CurveTexture_yj3kl")
+gravity = Vector3(0, 0, 0)
+scale_min = 2.0
+scale_max = 2.5
+scale_curve = SubResource("CurveTexture_07nep")
+color = Color(0.920995, 0.920995, 0.920994, 1)
+alpha_curve = SubResource("CurveTexture_xct7t")
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_w5akg"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2jexn"]
+render_priority = 1
+shader = ExtResource("8_k5gji")
+shader_parameter/normal_intensity = 0.0
+shader_parameter/frame_count = Vector2(8, 5)
+shader_parameter/sprite_sheet = ExtResource("9_eqi0c")
+
+[sub_resource type="Curve" id="Curve_4ao23"]
+_data = [Vector2(0, 0), 0.0, 2.56318, 0, 0, Vector2(1, 1), 0.75793, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_1mso6"]
+texture_mode = 1
+curve = SubResource("Curve_4ao23")
+
+[sub_resource type="Curve" id="Curve_jamd2"]
+max_value = 2.0
+_data = [Vector2(0, 1.38018), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="Curve" id="Curve_fw8l7"]
+max_value = 3.0
+_data = [Vector2(1e-05, 1.77666), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_dgnte"]
+curve_x = SubResource("Curve_jamd2")
+curve_y = SubResource("Curve_fw8l7")
+curve_z = SubResource("Curve_jamd2")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_0sxx8"]
+lifetime_randomness = 0.1
+particle_flag_align_y = true
+particle_flag_rotate_y = true
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+initial_velocity_min = 0.1
+initial_velocity_max = 0.2
+gravity = Vector3(0, 0, 0)
+scale_max = 1.2
+scale_curve = SubResource("CurveXYZTexture_dgnte")
+alpha_curve = SubResource("CurveTexture_1mso6")
+
+[sub_resource type="Animation" id="Animation_4ao1x"]
+resource_name = "Init"
+length = 0.9
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("clouds_external2:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0666667),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("smoke2init7:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("VFX_Smoke_A2:emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ydixy"]
+_data = {
+"Init": SubResource("Animation_4ao1x")
+}
+
+[node name="VFX_WindArea_Jump" type="Node3D"]
+
+[node name="clouds_external2" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1.5, 0, 0, 0, 1, 0, 0.548, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_46ne0")
+cast_shadow = 0
+emitting = false
+amount = 1
+lifetime = 0.5
+one_shot = true
+fixed_fps = 60
+visibility_aabb = AABB(-3, -1, -3, 6, 2, 6)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_g8c8f")
+draw_pass_1 = ExtResource("5_2g5xk")
+
+[node name="smoke2init7" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, 0)
+layers = 4
+material_override = SubResource("StandardMaterial3D_l6spp")
+cast_shadow = 0
+emitting = false
+amount = 30
+lifetime = 0.7
+one_shot = true
+explosiveness = 0.8
+fixed_fps = 60
+visibility_aabb = AABB(-3, -1.515, -3, 6, 3.245, 6)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_1pxih")
+draw_pass_1 = SubResource("QuadMesh_w5akg")
+
+[node name="VFX_Smoke_A2" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_2jexn")
+cast_shadow = 0
+emitting = false
+amount = 1
+lifetime = 0.6
+one_shot = true
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-2, -0.86, -2, 4, 5.395, 4)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_0sxx8")
+draw_pass_1 = ExtResource("10_fvec6")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_ydixy")
+}
+autoplay = "Init"
+
+

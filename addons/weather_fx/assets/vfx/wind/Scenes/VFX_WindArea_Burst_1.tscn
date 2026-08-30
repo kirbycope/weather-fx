@@ -1,0 +1,255 @@
+[gd_scene load_steps=29 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_Disolver2.tres" id="1_dcxml"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_Noise_075.png" id="2_8cmqk"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_ring211.obj" id="3_3d72q"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_smoke_K97_ws.png" id="4_bbugk"]
+
+[sub_resource type="Gradient" id="Gradient_0050w"]
+offsets = PackedFloat32Array(0.57958, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_83cc4"]
+gradient = SubResource("Gradient_0050w")
+fill_from = Vector2(1, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_meryd"]
+render_priority = 0
+shader = ExtResource("1_dcxml")
+shader_parameter/UseProximityFade = false
+shader_parameter/Scale = Vector2(1, 1)
+shader_parameter/Speed = Vector2(0, 0)
+shader_parameter/Texture_substract_scale = Vector2(1, 2)
+shader_parameter/Texture_substract_speed = Vector2(0, 0)
+shader_parameter/Proximity_Fade = 0.5
+shader_parameter/Opacity = 0.454
+shader_parameter/Use_Fresnel = false
+shader_parameter/Fresnel_Invert = false
+shader_parameter/Fresnel_Power = 1.0
+shader_parameter/Texture = SubResource("GradientTexture2D_83cc4")
+shader_parameter/Texture_Substract = ExtResource("2_8cmqk")
+
+[sub_resource type="Curve" id="Curve_mj4p4"]
+_data = [Vector2(0, 0.119261), 0.0, 1.72086, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_0wkaw"]
+texture_mode = 1
+curve = SubResource("Curve_mj4p4")
+
+[sub_resource type="Curve" id="Curve_1br7q"]
+max_value = 2.0
+_data = [Vector2(0, 0.704367), 0.0, 4.03462, 0, 0, Vector2(0.997135, 2), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_6wr7l"]
+_data = [Vector2(0, 0.570549), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="Curve" id="Curve_toauy"]
+max_value = 2.0
+_data = [Vector2(0, 0.704367), 0.0, 4.03462, 0, 0, Vector2(0.997135, 2), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_r5d43"]
+curve_x = SubResource("Curve_1br7q")
+curve_y = SubResource("Curve_6wr7l")
+curve_z = SubResource("Curve_toauy")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_mfis8"]
+lifetime_randomness = 0.05
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.0
+emission_ring_radius = 0.3
+emission_ring_inner_radius = 0.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+angular_velocity_min = -1.60933e-05
+angular_velocity_max = 200.0
+gravity = Vector3(0, 0, 0)
+scale_max = 1.5
+scale_curve = SubResource("CurveXYZTexture_r5d43")
+color = Color(0.86, 1, 0.944, 1)
+alpha_curve = SubResource("CurveTexture_0wkaw")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_givw3"]
+transparency = 1
+diffuse_mode = 3
+specular_mode = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("4_bbugk")
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 8
+particles_anim_v_frames = 8
+particles_anim_loop = false
+proximity_fade_enabled = true
+proximity_fade_distance = 1.3
+
+[sub_resource type="Curve" id="Curve_n6hyq"]
+_data = [Vector2(0.735849, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_1rxxm"]
+texture_mode = 1
+curve = SubResource("Curve_n6hyq")
+
+[sub_resource type="Curve" id="Curve_lju4c"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_un0xm"]
+curve_y = SubResource("Curve_lju4c")
+
+[sub_resource type="Curve" id="Curve_2idn7"]
+_data = [Vector2(0.0641509, 1), 0.0, -3.43365, 0, 0, Vector2(1, 0.168487), 0.636444, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_duxwm"]
+texture_mode = 1
+curve = SubResource("Curve_2idn7")
+
+[sub_resource type="Curve" id="Curve_756i3"]
+_data = [Vector2(0, 0.351014), 0.0, 1.58071, 0, 0, Vector2(1, 1), 1.0586, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_uh65i"]
+curve = SubResource("Curve_756i3")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_4r4y6"]
+lifetime_randomness = 0.1
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.0
+emission_ring_radius = 0.3
+emission_ring_inner_radius = 0.1
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+angular_velocity_min = -50.0
+angular_velocity_max = 80.0
+directional_velocity_min = 0.799984
+directional_velocity_max = 1.99998
+directional_velocity_curve = SubResource("CurveXYZTexture_un0xm")
+radial_velocity_min = 7.99998
+radial_velocity_max = 11.0
+radial_velocity_curve = SubResource("CurveTexture_duxwm")
+gravity = Vector3(0, 0, 0)
+scale_min = 3.0
+scale_max = 3.5
+scale_curve = SubResource("CurveTexture_uh65i")
+color = Color(0.8924, 0.97, 0.955773, 1)
+alpha_curve = SubResource("CurveTexture_1rxxm")
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_w5akg"]
+
+[sub_resource type="Animation" id="Animation_ld03i"]
+resource_name = "Init"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("clouds_external:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0666667),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("smoke2init5:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_dbwof"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("clouds_external:emitting")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("smoke2init5:emitting")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_a4ks1"]
+_data = {
+"Init": SubResource("Animation_ld03i"),
+"RESET": SubResource("Animation_dbwof")
+}
+
+[node name="VFX_WindArea_Burst_1" type="Node3D"]
+
+[node name="clouds_external" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1.5, 0, 0, 0, 1, 0, 0.233858, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_meryd")
+cast_shadow = 0
+amount = 2
+lifetime = 0.4
+one_shot = true
+explosiveness = 0.54
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-4, -0.57, -4, 8, 2, 8)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_mfis8")
+draw_pass_1 = ExtResource("3_3d72q")
+
+[node name="smoke2init5" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, 0)
+layers = 4
+material_override = SubResource("StandardMaterial3D_givw3")
+cast_shadow = 0
+amount = 30
+lifetime = 0.7
+one_shot = true
+explosiveness = 0.8
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-4, -1.325, -4, 8, 4, 8)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_4r4y6")
+draw_pass_1 = SubResource("QuadMesh_w5akg")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_a4ks1")
+}
+autoplay = "Init"
+
+

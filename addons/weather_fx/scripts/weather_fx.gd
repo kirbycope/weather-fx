@@ -31,7 +31,7 @@ signal wind_changed(strength: float, direction: Vector3)
 			_update_playback_state()
 
 ## Allows simulation to tick inside the editor viewport.
-@export var editor_weather_enabled: bool = true :
+@export var editor_weather_enabled: bool = false :
 	set(value):
 		if editor_weather_enabled != value:
 			editor_weather_enabled = value
@@ -121,6 +121,8 @@ var active_weather: ClimateData.WeatherType = ClimateData.WeatherType.BLUE_SKY
 ## Current altitude in meters. If target_node is assigned, this is updated automatically.
 @export_range(0.0, 1500.0, 1.0) var current_altitude: float = 0.0 :
 	set(value):
+		if is_equal_approx(current_altitude, value):
+			return
 		current_altitude = value
 		_update_temperature_and_weather()
 
@@ -160,6 +162,7 @@ var current_wind_strength: float = 0.0
 @export var rain_particles: GPUParticles3D
 @export var rain_splash_particles: GPUParticles3D
 @export var snow_particles: GPUParticles3D
+@export var wind_vfx_node: Node3D
 @export var audio_rain_light: AudioStreamPlayer
 @export var audio_rain_heavy: AudioStreamPlayer
 @export var audio_storm: AudioStreamPlayer
@@ -273,8 +276,11 @@ func _process(delta: float) -> void:
 	# Check if simulation can tick
 	var can_tick = _can_simulate()
 
+	if not can_tick:
+		return
+
 	# Update altitude and center particle emitters over target node if available
-	if is_instance_valid(target_node):
+	if is_instance_valid(target_node) and target_node.is_inside_tree():
 		current_altitude = maxf(0.0, target_node.global_position.y)
 		var target_pos = target_node.global_position
 		if is_instance_valid(rain_particles):
@@ -283,12 +289,11 @@ func _process(delta: float) -> void:
 			rain_splash_particles.global_position = Vector3(target_pos.x, target_pos.y, target_pos.z)
 		if is_instance_valid(snow_particles):
 			snow_particles.global_position = Vector3(target_pos.x, target_pos.y + 12.0, target_pos.z)
+		if is_instance_valid(wind_vfx_node):
+			wind_vfx_node.global_position = Vector3(target_pos.x, target_pos.y + 1.5, target_pos.z)
 
 	_update_temperature()
 	_update_sun_lighting()
-
-	if not can_tick:
-		return
 
 	# Advance cycle timer
 	_cycle_timer += delta
@@ -445,6 +450,10 @@ func _update_sun_lighting() -> void:
 
 
 func _update_active_weather(force_apply: bool = false) -> void:
+	if not _can_simulate():
+		clear_all_effects()
+		return
+
 	var target_weather: ClimateData.WeatherType
 	if force_weather:
 		target_weather = manual_weather
@@ -461,16 +470,38 @@ func _update_active_weather(force_apply: bool = false) -> void:
 		emit_signal("weather_changed", active_weather, old)
 
 
+# Global static cache of current wind and precipitation values for CPU scripts
+static var active_wind_strength: float = 0.0
+static var active_wind_direction: Vector3 = Vector3(1.0, 0.0, 0.0)
+static var active_precipitation_strength: float = 0.0
+
+static func get_wind_strength() -> float:
+	return active_wind_strength
+
+static func get_wind_direction() -> Vector3:
+	return active_wind_direction
+
+static func get_precipitation_strength() -> float:
+	return active_precipitation_strength
+
+
 ## Updates global shader parameters for wind and precipitation.
 func _update_wind_globals() -> void:
 	if not _can_simulate():
 		current_wind_strength = 0.0
+		active_wind_strength = 0.0
+		active_wind_direction = wind_direction
+		active_precipitation_strength = 0.0
 		emit_signal("wind_changed", 0.0, wind_direction)
 		if update_global_shader_variables:
 			ensure_shader_globals()
 			RenderingServer.global_shader_parameter_set(&"weather_wind_strength", 0.0)
 			RenderingServer.global_shader_parameter_set(&"weather_wind_direction", wind_direction)
 			RenderingServer.global_shader_parameter_set(&"weather_precipitation_strength", 0.0)
+		if is_instance_valid(wind_vfx_node):
+			if "enabled" in wind_vfx_node:
+				wind_vfx_node.enabled = false
+			wind_vfx_node.visible = false
 		return
 
 	var biome_info = ClimateData.get_biome_data(current_biome)
@@ -489,16 +520,25 @@ func _update_wind_globals() -> void:
 		
 	var final_strength = base_power * weather_mult * wind_strength_multiplier
 	current_wind_strength = final_strength
+	active_wind_strength = final_strength
+	active_wind_direction = wind_direction
+	
+	var precip_val = 0.0
+	match active_weather:
+		ClimateData.WeatherType.RAIN, ClimateData.WeatherType.SNOW: precip_val = 0.5
+		ClimateData.WeatherType.HEAVY_RAIN, ClimateData.WeatherType.HEAVY_SNOW: precip_val = 1.0
+		ClimateData.WeatherType.STORM: precip_val = 1.2
+	active_precipitation_strength = precip_val
+
 	emit_signal("wind_changed", final_strength, wind_direction)
+	
+	if is_instance_valid(wind_vfx_node):
+		if "enabled" in wind_vfx_node:
+			wind_vfx_node.enabled = true
+		wind_vfx_node.visible = true
 	
 	if update_global_shader_variables:
 		ensure_shader_globals()
-		var precip_val = 0.0
-		match active_weather:
-			ClimateData.WeatherType.RAIN, ClimateData.WeatherType.SNOW: precip_val = 0.5
-			ClimateData.WeatherType.HEAVY_RAIN, ClimateData.WeatherType.HEAVY_SNOW: precip_val = 1.0
-			ClimateData.WeatherType.STORM: precip_val = 1.2
-			
 		RenderingServer.global_shader_parameter_set(&"weather_wind_strength", final_strength)
 		RenderingServer.global_shader_parameter_set(&"weather_wind_direction", wind_direction)
 		RenderingServer.global_shader_parameter_set(&"weather_precipitation_strength", precip_val)
@@ -531,6 +571,11 @@ func apply_weather_effects(weather_type: ClimateData.WeatherType) -> void:
 
 	if not _can_simulate():
 		return
+
+	if is_instance_valid(wind_vfx_node):
+		if "enabled" in wind_vfx_node:
+			wind_vfx_node.enabled = true
+		wind_vfx_node.visible = true
 
 	match weather_type:
 		ClimateData.WeatherType.BLUE_SKY:
@@ -567,6 +612,13 @@ func clear_all_effects() -> void:
 		rain_splash_particles.emitting = false
 	if is_instance_valid(snow_particles):
 		snow_particles.emitting = false
+	if is_instance_valid(wind_vfx_node):
+		if "enabled" in wind_vfx_node:
+			wind_vfx_node.enabled = false
+		wind_vfx_node.visible = false
+		for child in wind_vfx_node.find_children("*", "GPUParticles3D", true, false):
+			if child is GPUParticles3D:
+				child.emitting = false
 		
 	if is_instance_valid(audio_rain_light): audio_rain_light.stop()
 	if is_instance_valid(audio_rain_heavy): audio_rain_heavy.stop()
@@ -596,6 +648,11 @@ func _apply_snow(amount: int, gravity_y: float) -> void:
 
 
 func _apply_fog(volumetric: bool, density: float) -> void:
+	if not _can_simulate():
+		if is_instance_valid(world_environment) and world_environment.environment:
+			world_environment.environment.fog_enabled = false
+			world_environment.environment.volumetric_fog_enabled = false
+		return
 	if is_instance_valid(world_environment) and world_environment.environment:
 		world_environment.environment.fog_enabled = true
 		world_environment.environment.fog_density = density
@@ -605,6 +662,9 @@ func _apply_fog(volumetric: bool, density: float) -> void:
 
 
 func _play_audio(player: AudioStreamPlayer) -> void:
+	if not _can_simulate():
+		if is_instance_valid(player): player.stop()
+		return
 	if is_instance_valid(player) and player.is_inside_tree() and not player.playing:
 		player.play()
 

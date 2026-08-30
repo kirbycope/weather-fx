@@ -63,7 +63,8 @@ These can be accessed directly in any Godot shader without extra script bindings
   - Dynamic character / object push-aside displacement.
   - Rain wetness response (darkened soaked albedo, reduced roughness, glossy specular highlights).
 - **`materials/foliage_wind.gdshader`**: Tree canopy and leaf flutter shader reacting to wind direction and velocity.
-- **`scenes/grass_field.tscn` / `GrassField`**: High-performance instanced `MultiMeshInstance3D` grass generator that creates procedural 3D curved-blade tufts (multi-segment tapered blades with organic radial distribution and volumetric normals).
+- **`scenes/grass_field.tscn` / `GrassField`**: High-performance instanced `MultiMeshInstance3D` grass generator featuring Quaternius stylized grass models (`Common Short`, `Common Tall`, `Wispy Short`, `Wispy Tall`) and custom mesh support.
+- **`scenes/wind_vfx.tscn` / `WindVFX`**: Dynamic environmental wind particle effect controller that aligns air flow ribbons, stylized wind streaks, drifting leaf particles, and periodic gust sweeps with global wind direction and velocity.
 
 ```gdshader
 shader_type spatial;

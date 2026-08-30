@@ -5,6 +5,27 @@ extends MultiMeshInstance3D
 ## High-performance, wind-reactive grass field populated using MultiMesh.
 ## Instances sway dynamically in response to WeatherFX global shader uniforms.
 
+enum GrassMeshType {
+	COMMON_SHORT,
+	COMMON_TALL,
+	WISPY_SHORT,
+	WISPY_TALL,
+	CUSTOM
+}
+
+const QUATERNIUS_MESH_PATHS = {
+	GrassMeshType.COMMON_SHORT: "res://addons/weather_fx/resources/mesh_grass_common_short.tres",
+	GrassMeshType.COMMON_TALL: "res://addons/weather_fx/resources/mesh_grass_common_tall.tres",
+	GrassMeshType.WISPY_SHORT: "res://addons/weather_fx/resources/mesh_grass_wispy_short.tres",
+	GrassMeshType.WISPY_TALL: "res://addons/weather_fx/resources/mesh_grass_wispy_tall.tres",
+}
+
+@export var mesh_type: GrassMeshType = GrassMeshType.COMMON_SHORT:
+	set(val):
+		mesh_type = val
+		if is_inside_tree():
+			regenerate()
+
 @export var instance_count: int = 1000:
 	set(val):
 		instance_count = max(0, val)
@@ -32,43 +53,6 @@ extends MultiMeshInstance3D
 @export var seed_value: int = 12345:
 	set(val):
 		seed_value = val
-		if is_inside_tree():
-			regenerate()
-
-@export_group("Tuft Geometry")
-@export_range(1, 16) var blades_per_tuft: int = 6:
-	set(val):
-		blades_per_tuft = clampi(val, 1, 16)
-		if is_inside_tree():
-			regenerate()
-
-@export_range(2, 6) var blade_segments: int = 4:
-	set(val):
-		blade_segments = clampi(val, 2, 6)
-		if is_inside_tree():
-			regenerate()
-
-@export_range(0.05, 1.0, 0.01) var tuft_radius: float = 0.18:
-	set(val):
-		tuft_radius = maxf(0.01, val)
-		if is_inside_tree():
-			regenerate()
-
-@export_range(0.1, 3.0, 0.05) var blade_height: float = 0.85:
-	set(val):
-		blade_height = maxf(0.05, val)
-		if is_inside_tree():
-			regenerate()
-
-@export_range(0.02, 0.5, 0.01) var blade_width: float = 0.09:
-	set(val):
-		blade_width = maxf(0.01, val)
-		if is_inside_tree():
-			regenerate()
-
-@export_range(0.0, 1.0, 0.05) var blade_curve: float = 0.35:
-	set(val):
-		blade_curve = clampf(val, 0.0, 1.0)
 		if is_inside_tree():
 			regenerate()
 
@@ -112,129 +96,18 @@ func _notification(what: int) -> void:
 				regenerate()
 
 
-## Generates an optimized stylized 3D grass tuft mesh with curved, tapered blades and volumetric spherical normals.
-static func create_stylized_grass_mesh(
-	height: float = 0.85,
-	width: float = 0.09,
-	blades_count: int = 6,
-	segments_per_blade: int = 4,
-	tuft_rad: float = 0.18,
-	curve_strength: float = 0.35
-) -> ArrayMesh:
-	var st = SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	
-	for b in range(blades_count):
-		# Distribute blades around the tuft with organic angle and radius jitter
-		var base_angle = (float(b) / float(blades_count)) * TAU
-		var jitter_angle = (float((b * 17) % 7) / 7.0 - 0.5) * 0.45
-		var angle = base_angle + jitter_angle
-		
-		var r = tuft_rad * (0.35 + 0.65 * (float((b * 13) % 5) / 5.0))
-		var dir = Vector2(cos(angle), sin(angle))
-		var base_pos = Vector3(dir.x * r, 0.0, dir.y * r)
-		
-		var outward = Vector3(dir.x, 0.0, dir.y).normalized()
-		var tangent = Vector3(-dir.y, 0.0, dir.x).normalized()
-		
-		# Organic height, width, and outward curvature multipliers per blade
-		var h_mult = 0.75 + 0.35 * (float((b * 23) % 7) / 7.0)
-		var w_mult = 0.85 + 0.30 * (float((b * 11) % 5) / 5.0)
-		var c_mult = curve_strength * (0.7 + 0.6 * (float((b * 31) % 7) / 7.0))
-		
-		var cur_height = height * h_mult
-		var cur_width = width * w_mult
-		
-		# Generate vertices along the curved blade spine
-		var left_verts: Array[Vector3] = []
-		var right_verts: Array[Vector3] = []
-		var normals: Array[Vector3] = []
-		var uvs_left: Array[Vector2] = []
-		var uvs_right: Array[Vector2] = []
-		
-		for s in range(segments_per_blade + 1):
-			var t = float(s) / float(segments_per_blade) # 0.0 (base) to 1.0 (tip)
-			var y = cur_height * t
-			
-			# Parabolic outward arch curve
-			var disp = outward * (c_mult * pow(t, 1.5))
-			var center = base_pos + disp + Vector3(0.0, y, 0.0)
-			
-			# Taper width towards a sharp pointy tip
-			var half_w = (cur_width * 0.5) * maxf(0.0, 1.0 - pow(t, 1.15))
-			if s == segments_per_blade:
-				half_w = 0.0
-				
-			var v_l = center - tangent * half_w
-			var v_r = center + tangent * half_w
-			
-			# Volumetric normal: blend upward with outward radial vector from clump center
-			var radial = (Vector3(center.x, 0.0, center.z).normalized() * 0.4 + Vector3.UP * 0.6).normalized()
-			
-			left_verts.append(v_l)
-			right_verts.append(v_r)
-			normals.append(radial)
-			uvs_left.append(Vector2(0.0, 1.0 - t))
-			uvs_right.append(Vector2(1.0, 1.0 - t))
-		
-		# Triangulate quad segments and tip
-		for s in range(segments_per_blade):
-			var v0 = left_verts[s]
-			var v1 = right_verts[s]
-			var v2 = left_verts[s + 1]
-			var v3 = right_verts[s + 1]
-			
-			var n0 = normals[s]
-			var n1 = normals[s + 1]
-			
-			var uv0_l = uvs_left[s]
-			var uv0_r = uvs_right[s]
-			var uv1_l = uvs_left[s + 1]
-			var uv1_r = uvs_right[s + 1]
-			
-			if s == segments_per_blade - 1:
-				# Apex triangle (v0, v1, v2 where v2 == v3 is the tip point)
-				st.set_normal(n0)
-				st.set_uv(uv0_l)
-				st.add_vertex(v0)
-				
-				st.set_normal(n0)
-				st.set_uv(uv0_r)
-				st.add_vertex(v1)
-				
-				st.set_normal(n1)
-				st.set_uv(uv1_l)
-				st.add_vertex(v2)
-			else:
-				# Quad segment (v0, v1, v3, v2)
-				# Triangle 1
-				st.set_normal(n0)
-				st.set_uv(uv0_l)
-				st.add_vertex(v0)
-				
-				st.set_normal(n0)
-				st.set_uv(uv0_r)
-				st.add_vertex(v1)
-				
-				st.set_normal(n1)
-				st.set_uv(uv1_r)
-				st.add_vertex(v3)
-				
-				# Triangle 2
-				st.set_normal(n0)
-				st.set_uv(uv0_l)
-				st.add_vertex(v0)
-				
-				st.set_normal(n1)
-				st.set_uv(uv1_r)
-				st.add_vertex(v3)
-				
-				st.set_normal(n1)
-				st.set_uv(uv1_l)
-				st.add_vertex(v2)
-				
-	var mesh = st.commit()
-	return mesh
+## Returns the active mesh based on mesh_type or custom_mesh.
+func get_active_mesh() -> Mesh:
+	if mesh_type == GrassMeshType.CUSTOM and custom_mesh:
+		return custom_mesh
+	if QUATERNIUS_MESH_PATHS.has(mesh_type):
+		var res_path: String = QUATERNIUS_MESH_PATHS[mesh_type]
+		var loaded_mesh = load(res_path) as Mesh
+		if loaded_mesh:
+			return loaded_mesh
+	if custom_mesh:
+		return custom_mesh
+	return load("res://addons/weather_fx/resources/mesh_grass_common_short.tres") as Mesh
 
 
 ## Rebuilds the MultiMesh instances within field boundaries.
@@ -244,16 +117,7 @@ func regenerate() -> void:
 			multimesh.instance_count = 0
 		return
 	
-	var mesh_to_use: Mesh = custom_mesh
-	if mesh_to_use == null:
-		mesh_to_use = create_stylized_grass_mesh(
-			blade_height,
-			blade_width,
-			blades_per_tuft,
-			blade_segments,
-			tuft_radius,
-			blade_curve
-		)
+	var mesh_to_use: Mesh = get_active_mesh()
 		
 	var mat: Material = custom_grass_material
 	if mat == null:
@@ -262,7 +126,6 @@ func regenerate() -> void:
 		material_override = mat
 		if mesh_to_use and mesh_to_use.get_surface_count() > 0:
 			mesh_to_use.surface_set_material(0, mat)
-
 
 	var mm = MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D

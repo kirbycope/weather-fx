@@ -1,0 +1,96 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_wind_disolver3_lit_ds.tres" id="1_y6jke"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1.png" id="2_tb686"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_cylinder_wave_twisted1.obj" id="3_biyc0"]
+
+[sub_resource type="Gradient" id="Gradient_svoed"]
+offsets = PackedFloat32Array(0, 0.281125, 0.779116, 1)
+colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_vekha"]
+gradient = SubResource("Gradient_svoed")
+fill_from = Vector2(1, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qgj7m"]
+render_priority = 0
+shader = ExtResource("1_y6jke")
+shader_parameter/Alpha_Scale = Vector2(1, 1)
+shader_parameter/Alpha_pivot = Vector2(1, 1)
+shader_parameter/Alpha_Speed = Vector2(0, 0)
+shader_parameter/Dissolver_Scale2 = Vector2(1, 1)
+shader_parameter/Dissolver_pivot2 = Vector2(0, 0)
+shader_parameter/Speed_disolver = Vector2(0, 1)
+shader_parameter/Opacity = 1.0
+shader_parameter/Enable_Proximity_Fade = false
+shader_parameter/ProximityFade = 0.315
+shader_parameter/Enable_Fresnel = false
+shader_parameter/Invert_Fresnel = false
+shader_parameter/Fresnel_power = 1.095
+shader_parameter/Alpha_Texture = ExtResource("2_tb686")
+shader_parameter/Multiply_Mask = SubResource("GradientTexture2D_vekha")
+shader_parameter/dissolver_texture = ExtResource("2_tb686")
+
+[sub_resource type="Curve" id="Curve_agc6h"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.211111, 0.108232), 0.936357, 0.936357, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_bqlkl"]
+texture_mode = 1
+curve = SubResource("Curve_agc6h")
+
+[sub_resource type="Curve" id="Curve_i8gwm"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -3.20028, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_tye1t"]
+curve = SubResource("Curve_i8gwm")
+
+[sub_resource type="Curve" id="Curve_ft8vq"]
+_data = [Vector2(0, 0.147866), 0.0, 1.29712, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_kumdn"]
+_data = [Vector2(0, 0.920732), 0.0, 0.0, 0, 0, Vector2(1, 0.272116), -1.07406, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_jd1nn"]
+_data = [Vector2(0, 0.147866), 0.0, 1.29712, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_17ak5"]
+curve_x = SubResource("Curve_ft8vq")
+curve_y = SubResource("Curve_kumdn")
+curve_z = SubResource("Curve_jd1nn")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rirc8"]
+lifetime_randomness = 0.1
+particle_flag_rotate_y = true
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+radial_velocity_curve = SubResource("CurveTexture_tye1t")
+gravity = Vector3(0, 0, 0)
+scale_min = 1.7
+scale_max = 1.9
+scale_curve = SubResource("CurveXYZTexture_17ak5")
+color = Color(1.1, 1.1, 1.1, 1)
+alpha_curve = SubResource("CurveTexture_bqlkl")
+
+[node name="VFX_WindMuzzle_K2" type="Node3D"]
+
+[node name="external_base_ring3" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1.5, 0, 0, 0, 1, 0, 0, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_qgj7m")
+amount = 1
+lifetime = 0.8
+explosiveness = 0.5
+fixed_fps = 60
+visibility_aabb = AABB(-2, -0.33, -2, 4, 1.12, 4)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_rirc8")
+draw_pass_1 = ExtResource("3_biyc0")
+
+

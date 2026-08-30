@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/models/quaternius/stylized-nature-megakit/Leaves_NormalTree_C.png" id="1_leaftex"]
+
+[resource]
+transparency = 2
+alpha_scissor_threshold = 0.2
+cull_mode = 2
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.42, 0.68, 0.18, 1)
+albedo_texture = ExtResource("1_leaftex")
+roughness = 0.6
+backlight_enabled = true
+backlight = Color(0.2, 0.38, 0.1, 1)

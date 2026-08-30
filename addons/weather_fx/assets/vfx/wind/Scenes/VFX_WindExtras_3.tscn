@@ -1,0 +1,104 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_1spark123.jpg" id="1_8h4ts"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_14ufm"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+diffuse_mode = 3
+specular_mode = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_color = Color(0.687215, 0.687215, 0.687215, 1)
+albedo_texture = ExtResource("1_8h4ts")
+albedo_texture_msdf = true
+proximity_fade_enabled = true
+
+[sub_resource type="Curve" id="Curve_hbbsa"]
+_data = [Vector2(0.149485, 1), 0.0, -5.9299e-07, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_t57fd"]
+texture_mode = 1
+curve = SubResource("Curve_hbbsa")
+
+[sub_resource type="Curve" id="Curve_btjvb"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="Curve" id="Curve_63vwh"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="Curve" id="Curve_veysq"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_521aj"]
+curve_x = SubResource("Curve_btjvb")
+curve_y = SubResource("Curve_63vwh")
+curve_z = SubResource("Curve_veysq")
+
+[sub_resource type="Curve" id="Curve_s220v"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_571ha"]
+max_value = 2.0
+_data = [Vector2(0, 2), 0.0, -0.0969031, 0, 0, Vector2(1, 0.813187), -3.08753, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_2mvns"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_4vex3"]
+curve_x = SubResource("Curve_s220v")
+curve_y = SubResource("Curve_571ha")
+curve_z = SubResource("Curve_2mvns")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_4f2cn"]
+particle_flag_align_y = true
+emission_shape = 1
+emission_sphere_radius = 1.8
+spread = 0.0
+initial_velocity_min = -12.0
+initial_velocity_max = 12.0
+directional_velocity_min = -0.800016
+directional_velocity_max = 0.799984
+directional_velocity_curve = SubResource("CurveXYZTexture_521aj")
+radial_velocity_min = -2.23517e-05
+radial_velocity_max = -2.23517e-05
+gravity = Vector3(0, 0, 0)
+scale_curve = SubResource("CurveXYZTexture_4vex3")
+alpha_curve = SubResource("CurveTexture_t57fd")
+
+[sub_resource type="QuadMesh" id="QuadMesh_w2ynf"]
+size = Vector2(0.7, 5)
+center_offset = Vector3(0, 1, 0)
+
+[sub_resource type="QuadMesh" id="QuadMesh_dpfa0"]
+size = Vector2(0.7, 5)
+center_offset = Vector3(0, 1, 0)
+orientation = 0
+
+[node name="VFX_WindExtras_3" type="Node3D"]
+
+[node name="windlines" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.143, 0)
+layers = 4
+material_override = SubResource("StandardMaterial3D_14ufm")
+cast_shadow = 0
+amount = 9
+lifetime = 0.6
+explosiveness = 0.8
+fixed_fps = 60
+visibility_aabb = AABB(-5, -2, -2, 10, 4, 4)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_4f2cn")
+draw_passes = 2
+draw_pass_1 = SubResource("QuadMesh_w2ynf")
+draw_pass_2 = SubResource("QuadMesh_dpfa0")
+
+

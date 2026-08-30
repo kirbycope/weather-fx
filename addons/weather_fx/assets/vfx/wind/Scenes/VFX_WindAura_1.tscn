@@ -1,0 +1,243 @@
+[gd_scene load_steps=27 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_master_fire_fresneled_ds.tres" id="1_d8wud"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_Spiral_31a.jpg" id="2_tpctq"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_cylinder.obj" id="3_wdmg8"]
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_PolarPanning.tres" id="5_og3ux"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_Noise_3.PNG" id="6_hv3p4"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1.png" id="7_i1c8k"]
+
+[sub_resource type="Gradient" id="Gradient_38bgd"]
+interpolation_color_space = 1
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_g080t"]
+gradient = SubResource("Gradient_38bgd")
+
+[sub_resource type="Gradient" id="Gradient_o4iab"]
+offsets = PackedFloat32Array(0.00290698, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_g015p"]
+gradient = SubResource("Gradient_o4iab")
+
+[sub_resource type="Gradient" id="Gradient_4hlcv"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_wjux8"]
+gradient = SubResource("Gradient_4hlcv")
+fill_from = Vector2(1, 1)
+
+[sub_resource type="Gradient" id="Gradient_8gixb"]
+offsets = PackedFloat32Array(0, 0.820598, 0.933555, 1)
+colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_mhjyx"]
+gradient = SubResource("Gradient_8gixb")
+fill_to = Vector2(0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wwhi2"]
+render_priority = 0
+shader = ExtResource("1_d8wud")
+shader_parameter/Scale_XY = Vector2(1, 1)
+shader_parameter/Speed_XY = Vector2(0.3, 1)
+shader_parameter/Color_Intensity = 1.0
+shader_parameter/Fresnel_Invert = true
+shader_parameter/Fresnel_power = 1.0
+shader_parameter/Opacity = 1.0
+shader_parameter/Base_noise = ExtResource("2_tpctq")
+shader_parameter/Texture_add = SubResource("GradientTexture2D_wjux8")
+shader_parameter/Gradient_Color_1D = SubResource("GradientTexture1D_g015p")
+shader_parameter/Texture_alpha_Multiply = SubResource("GradientTexture2D_mhjyx")
+shader_parameter/Fresnel_Gradient_Color_1D = SubResource("GradientTexture1D_g080t")
+
+[sub_resource type="Gradient" id="Gradient_d6y0t"]
+offsets = PackedFloat32Array(0.00332226, 1)
+colors = PackedColorArray(0.408329, 0.408329, 0.408329, 0, 0.77084, 0.770839, 0.770839, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_8tqie"]
+gradient = SubResource("Gradient_d6y0t")
+
+[sub_resource type="Gradient" id="Gradient_dmu16"]
+offsets = PackedFloat32Array(0, 0.315615, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.93845, 0.93845, 0.93845, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ok1h5"]
+gradient = SubResource("Gradient_dmu16")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Gradient" id="Gradient_crl1k"]
+interpolation_color_space = 2
+offsets = PackedFloat32Array(0.700965, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_yyot2"]
+gradient = SubResource("Gradient_crl1k")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_flckb"]
+render_priority = -1
+shader = ExtResource("5_og3ux")
+shader_parameter/Intensity = 1.0
+shader_parameter/Enable_Proximity_Fade = false
+shader_parameter/Enable_Distortion = false
+shader_parameter/Dist_Zoom_Strenght = 1.0
+shader_parameter/Diost_repeat_strenght = 1.0
+shader_parameter/Distortion_Speed_XY = Vector2(0, 0)
+shader_parameter/Distortion_Attenuation = 5.0
+shader_parameter/Zoom_Strenght = 0.4
+shader_parameter/repeat = 1.0
+shader_parameter/Speed_XY = Vector2(-1, 0.2)
+shader_parameter/Power = 0.8
+shader_parameter/Proximity_Fade = 0.1
+shader_parameter/Transparency = 1.0
+shader_parameter/Texture_Add = SubResource("GradientTexture2D_ok1h5")
+shader_parameter/Distortion_Texture = ExtResource("6_hv3p4")
+shader_parameter/Texture_Main = ExtResource("7_i1c8k")
+shader_parameter/Texture_Substract = SubResource("GradientTexture2D_yyot2")
+shader_parameter/Color_1D_Gradient = SubResource("GradientTexture1D_8tqie")
+
+[sub_resource type="QuadMesh" id="QuadMesh_5kf1s"]
+size = Vector2(4, 4)
+orientation = 1
+
+[sub_resource type="Animation" id="Animation_e06r0"]
+resource_name = "Init"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SmCylinder3:material_override:shader_parameter/Opacity")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0666667, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 1.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("floor_flash4:material_override:shader_parameter/Transparency")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0666667, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 1.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("floor_flash4:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.0333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("SmCylinder3:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.0333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("OmniLight3D:light_energy")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0.133333, 0.7),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 2.855]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("OmniLight3D:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.0333333),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
+[sub_resource type="Animation" id="Animation_7djhx"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("floor_flash4:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("SmCylinder3:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0kely"]
+_data = {
+"Init": SubResource("Animation_e06r0"),
+"RESET": SubResource("Animation_7djhx")
+}
+
+[node name="VFX_WindAura_1" type="Node3D"]
+
+[node name="SmCylinder3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.67, 0, 0, 0, 1.345, 0, 0, 0, 0.67, 0, -0.048, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_wwhi2")
+cast_shadow = 0
+mesh = ExtResource("3_wdmg8")
+skeleton = NodePath("../..")
+
+[node name="floor_flash4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.126, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_flckb")
+cast_shadow = 0
+mesh = SubResource("QuadMesh_5kf1s")
+skeleton = NodePath("../../../..")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.377692, 0)
+layers = 4
+light_energy = 2.855
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_0kely")
+}
+autoplay = "Init"
+
+
