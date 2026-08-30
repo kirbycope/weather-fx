@@ -27,7 +27,7 @@ uniform sampler2D normal_map : hint_normal, filter_linear_mipmap;
 uniform float normal_scale : hint_range(0.0, 1.0) = 0.35;
 uniform vec2 uv_scale = vec2(2.5, 2.5);
 
-uniform sampler2D depth_texture : hint_depth_texture, filter_linear_mipmap;
+uniform sampler2D depth_texture : hint_depth_texture, repeat_disable, filter_linear;
 
 varying vec3 v_world_pos;
 varying vec2 v_uv;
@@ -94,7 +94,14 @@ void fragment() {
 
 	// 1. Scene contact foam via Depth Texture (where water intersects terrain/objects)
 	float depth_raw = texture(depth_texture, SCREEN_UV).r;
-	vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth_raw);
+	vec3 ndc;
+	if (OUTPUT_IS_SRGB) {
+		// Compatibility renderer (OpenGL / WebGL): NDC Z range is [-1.0, 1.0]
+		ndc = vec3(SCREEN_UV, depth_raw) * 2.0 - 1.0;
+	} else {
+		// Forward+ / Mobile renderer (Vulkan / Metal / D3D12): NDC Z range is [0.0, 1.0]
+		ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth_raw);
+	}
 	vec4 view_coords = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	view_coords.xyz /= view_coords.w;
 	float linear_scene_depth = -view_coords.z;

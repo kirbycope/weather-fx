@@ -153,7 +153,7 @@ use_collision = true
 size = Vector3(60, 1, 60)
 material = SubResource("StandardMaterial3D_5xw05")
 
-[node name="Pond" type="CSGCylinder3D" parent="Ground" unique_id=232655275]
+[node name="Hole" type="CSGCylinder3D" parent="Ground" unique_id=232655275]
 transform = Transform3D(-1, -8.742278e-08, 0, 8.742278e-08, -1, 0, 0, 0, 1, -0.5, -0.39999998, 0.5)
 operation = 2
 radius = 1.5
@@ -161,8 +161,8 @@ sides = 16
 cone = true
 material = SubResource("StandardMaterial3D_5xw05")
 
-[node name="Water" type="MeshInstance3D" parent="Ground/Pond" unique_id=546813984]
-transform = Transform3D(-1, 8.742278e-08, 0, -8.742278e-08, -1, 0, 0, 0, 1, 6.9938224e-08, -0.79999995, 0)
+[node name="Water" type="MeshInstance3D" parent="Ground" unique_id=546813984]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.39999998, 0.5)
 material_override = ExtResource("15_watermat")
 cast_shadow = 0
 mesh = SubResource("PlaneMesh_5xw05")

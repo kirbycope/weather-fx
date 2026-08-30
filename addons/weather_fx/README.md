@@ -209,10 +209,6 @@ void fragment() {
 Special thanks and attributions to open-source creators whose models, textures, shaders, and techniques inspired WeatherFX:
 
 - **Quaternius** – *Stylized Nature Megakit* ([CC0 Public Domain / quaternius.com](https://quaternius.com/)) for tree models, bark, and foliage textures.
-- **Malido** – *Stylized Multimesh Grass Shader* ([GodotShaders](https://godotshaders.com/shader/stylized-multimesh-grass-shader/), CC0 Public Domain / [GitHub](https://github.com/Malidos/Grass-Shader-Example))
-- **Calico** – *Stylized Customable Grass* ([GodotShaders](https://godotshaders.com/shader/stylized-customable-grass/), CC0 Public Domain)
-- **Bramreth (Bramwell)** – *Godot 4 3D Stylized Grass* ([GitHub](https://github.com/bramreth/Godot-4-3D-Stylized-Grass), MIT License)
-- **2Retr0** – *GodotGrass* ([GitHub](https://github.com/2Retr0/GodotGrass), MIT License)
 
 ---
 
