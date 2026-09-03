@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_BlastHalf.PNG" id="3_pxtah"]
 [ext_resource type="Material" path="res://addons/weather_fx/assets/vfx/wind/materials/m_windstreaks13.tres" id="4_0372v"]
 [ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_spin_trail_cyl1.obj" id="5_lk63e"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_crossed_planes_vertical2.obj" id="5_cross_planes"]
 [ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_Leaf_001.png" id="6_p8imy"]
 
 [sub_resource type="Gradient" id="Gradient_50yig"]
@@ -152,16 +153,16 @@ hue_variation_max = 0.1
 [node name="VFX_AirFlowUP" type="Node3D"]
 
 [node name="WindUpFlow" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1.28792, 0, 0, 0, 1, 0, 0.0041461, 0)
-layers = 4
+transform = Transform3D(1.8, 0, 0, 0, 2.2, 0, 0, 0, 1.8, 0, 0, 0)
+layers = 1
 material_override = SubResource("ShaderMaterial_qu8ji")
 cast_shadow = 0
-mesh = SubResource("QuadMesh_7mxi6")
+mesh = ExtResource("5_cross_planes")
 skeleton = NodePath("../..")
 
 [node name="windflowz" type="GPUParticles3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0148295, 0.197563)
-layers = 4
+layers = 1
 material_override = ExtResource("4_0372v")
 cast_shadow = 0
 amount = 5
@@ -173,7 +174,7 @@ process_material = SubResource("ParticleProcessMaterial_iqntk")
 draw_pass_1 = ExtResource("5_lk63e")
 
 [node name="leafflowz" type="GPUParticles3D" parent="."]
-layers = 4
+layers = 1
 material_override = SubResource("StandardMaterial3D_qh7k8")
 amount = 7
 fixed_fps = 60
@@ -184,7 +185,7 @@ process_material = SubResource("ParticleProcessMaterial_2443i")
 draw_pass_1 = SubResource("QuadMesh_0ckkr")
 
 [node name="leafflowz2" type="GPUParticles3D" parent="."]
-layers = 4
+layers = 1
 material_override = SubResource("StandardMaterial3D_qh7k8")
 amount = 7
 fixed_fps = 60

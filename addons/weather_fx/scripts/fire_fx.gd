@@ -1,16 +1,14 @@
 # Copyright (c) 2026 Antigravity Contributors
 # SPDX-License-Identifier: MIT
 
-@tool
 class_name FireFX
 extends Node3D
 
-## Manages stylized campfire / torch visual effects, aligning smoke particle trajectories,
-## spark physics, flame dancing, and light flicker with WeatherFX global wind physics.
+## Stylized campfire / torch effects: smoke and spark drift follow the wind reported by
+## WeatherFX.wind_changed, and the light flickers with a warm breathing pattern.
 
-# ------------------------------------------------------------------------------
-# Exported Properties
-# ------------------------------------------------------------------------------
+@export var weather_fx: WeatherFX
+
 @export_group("Particle & Light Bindings")
 @export var smoke_particles: GPUParticles3D
 @export var spark_particles: GPUParticles3D
@@ -23,41 +21,39 @@ extends Node3D
 @export var wind_spark_drift: float = 0.45
 @export var enable_light_flicker: bool = true
 
-# ------------------------------------------------------------------------------
-# Lifecycle
-# ------------------------------------------------------------------------------
+var _wind_strength: float = 0.0
+var _wind_direction: Vector3 = Vector3.RIGHT
+
+
 func _ready() -> void:
-	if smoke_particles == null:
-		smoke_particles = find_child("Smoke", true, false) as GPUParticles3D
-	if spark_particles == null:
-		spark_particles = find_child("Sparks", true, false) as GPUParticles3D
-	if fire_light == null:
-		fire_light = find_child("Light", true, false) as OmniLight3D
+	if weather_fx == null:
+		weather_fx = get_tree().get_first_node_in_group(&"WeatherFX") as WeatherFX
+	if not is_instance_valid(weather_fx):
+		return
+	weather_fx.wind_changed.connect(_on_wind_changed)
+	_on_wind_changed(weather_fx.current_wind_strength, weather_fx.wind_direction)
+
+
+func _on_wind_changed(strength: float, direction: Vector3) -> void:
+	_wind_strength = strength
+	_wind_direction = direction.normalized() if not direction.is_zero_approx() else Vector3.RIGHT
+	var smoke_mat: ParticleProcessMaterial = smoke_particles.process_material as ParticleProcessMaterial if is_instance_valid(smoke_particles) else null
+	if smoke_mat:
+		smoke_mat.turbulence_noise_strength = 0.05 + 0.12 * clampf(strength / 8.0, 0.0, 1.0)
 
 
 func _process(delta: float) -> void:
-	var wind_strength: float = WeatherFX.get_wind_strength()
-	var wind_dir: Vector3 = WeatherFX.get_wind_direction()
-	if wind_dir.is_zero_approx():
-		wind_dir = Vector3(1.0, 0.0, 0.0)
-	else:
-		wind_dir = wind_dir.normalized()
-
-	# Update Smoke particles drift (natural gentle plume)
-	if is_instance_valid(smoke_particles) and smoke_particles.process_material is ParticleProcessMaterial:
-		var s_mat = smoke_particles.process_material as ParticleProcessMaterial
-		var target_gravity = Vector3(0.0, base_smoke_ascent, 0.0) + wind_dir * (wind_strength * wind_smoke_drift)
-		s_mat.gravity = s_mat.gravity.lerp(target_gravity, clampf(delta * 4.0, 0.0, 1.0))
-		s_mat.turbulence_noise_strength = 0.05 + 0.12 * clampf(wind_strength / 8.0, 0.0, 1.0)
-
-	# Update Sparks particles drift
-	if is_instance_valid(spark_particles) and spark_particles.process_material is ParticleProcessMaterial:
-		var sp_mat = spark_particles.process_material as ParticleProcessMaterial
-		var target_sp_gravity = Vector3(0.0, base_spark_ascent, 0.0) + wind_dir * (wind_strength * wind_spark_drift)
-		sp_mat.gravity = sp_mat.gravity.lerp(target_sp_gravity, clampf(delta * 4.0, 0.0, 1.0))
-
+	var weight: float = clampf(delta * 4.0, 0.0, 1.0)
+	# Smoke: natural gentle plume leaning downwind
+	var smoke_mat: ParticleProcessMaterial = smoke_particles.process_material as ParticleProcessMaterial if is_instance_valid(smoke_particles) else null
+	if smoke_mat:
+		smoke_mat.gravity = smoke_mat.gravity.lerp(Vector3(0.0, base_smoke_ascent, 0.0) + _wind_direction * (_wind_strength * wind_smoke_drift), weight)
+	# Sparks
+	var spark_mat: ParticleProcessMaterial = spark_particles.process_material as ParticleProcessMaterial if is_instance_valid(spark_particles) else null
+	if spark_mat:
+		spark_mat.gravity = spark_mat.gravity.lerp(Vector3(0.0, base_spark_ascent, 0.0) + _wind_direction * (_wind_strength * wind_spark_drift), weight)
 	# Dynamic campfire light flicker (smooth warm breathing)
 	if enable_light_flicker and is_instance_valid(fire_light):
-		var t = Time.get_ticks_msec() * 0.008
-		var flicker = sin(t * 3.5) * 0.12 + sin(t * 7.1) * 0.06 + sin(t * 13.7) * 0.04
-		fire_light.light_energy = maxf(0.8, 2.0 + flicker * (1.0 + clampf(wind_strength * 0.08, 0.0, 1.0)))
+		var t: float = Time.get_ticks_msec() * 0.008
+		var flicker: float = sin(t * 3.5) * 0.12 + sin(t * 7.1) * 0.06 + sin(t * 13.7) * 0.04
+		fire_light.light_energy = maxf(0.8, 2.0 + flicker * (1.0 + clampf(_wind_strength * 0.08, 0.0, 1.0)))

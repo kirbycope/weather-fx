@@ -106,7 +106,7 @@ turbulence_enabled = true
 turbulence_noise_strength = 0.8
 turbulence_noise_scale = 1.2
 
-[node name="Tree_1" type="Node3D" unique_id=481840691]
+[node name="Tree_1" type="Node3D" unique_id=481840691 groups=["Tree"]]
 
 [node name="Mesh" type="MeshInstance3D" parent="." unique_id=293084115]
 mesh = SubResource("ArrayMesh_vnyc5")

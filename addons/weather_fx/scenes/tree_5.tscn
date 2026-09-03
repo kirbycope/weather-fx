@@ -106,7 +106,7 @@ turbulence_enabled = true
 turbulence_noise_strength = 0.8
 turbulence_noise_scale = 1.2
 
-[node name="Tree_5" type="Node3D" unique_id=408229252]
+[node name="Tree_5" type="Node3D" unique_id=408229252 groups=["Tree"]]
 
 [node name="Mesh" type="MeshInstance3D" parent="." unique_id=244305330]
 mesh = SubResource("ArrayMesh_e2oxs")

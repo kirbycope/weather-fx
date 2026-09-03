@@ -72,6 +72,9 @@ WeatherFX synchronizes real-time atmospheric wind parameters across GPU shaders 
 
 ---
 
+### 7. Interactive Pond Water (`resources/pond_water.gdshader`)
+Toon-banded pond surface with wind-driven vertex waves, contact/edge foam and rain impact ripples. Exposes swimmer interaction uniforms (`swimmer_active`, `swimmer_position`, `swimmer_direction`, `swimmer_speed`) for a V wake while moving and treading ripples at rest. The surface reads the stencil buffer (`stencil_mode read, compare_not_equal, 1`), so any mesh drawn with a stencil-writing mask (a boat hull) cuts a hole in the water; the vertex waves are a plain function of position, TIME, the wave uniforms and the wind globals, so gameplay code can mirror them for buoyancy.
+
 ## Scene Tree Architecture
 
 ```text

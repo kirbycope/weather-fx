@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://c5q3xvfak4rb8"]
+
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/burnable_grass.gd" id="1_burnable"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/resources/mesh_grass_common_tall.tres" id="2_grassmesh"]
+[ext_resource type="Material" uid="uid://dnb46gq1n57a5" path="res://addons/weather_fx/resources/grass_material.tres" id="3_grassmat"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/scenes/vfx_flame.tscn" id="4_firevfx"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/assets/vfx/wind/Scenes/VFX_AirFlowUP_strong.tscn" id="5_updraftvfx"]
+[ext_resource type="AudioStream" path="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Wind/heavy wind.ogg" id="7_audio"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_updraft"]
+height = 20.0
+radius = 4.5
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hitbox"]
+size = Vector3(3, 2, 3)
+
+[node name="BurnableGrass" type="Node3D" groups=["BurnableGrass"]]
+script = ExtResource("1_burnable")
+
+[node name="GrassMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
+material_override = ExtResource("3_grassmat")
+mesh = ExtResource("2_grassmesh")
+
+[node name="FireVFX" parent="." instance=ExtResource("4_firevfx")]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 0, 0, 0)
+visible = false
+
+[node name="UpdraftVFX" parent="." instance=ExtResource("5_updraftvfx")]
+transform = Transform3D(1.8, 0, 0, 0, 2, 0, 0, 0, 1.8, 0, 0, 0)
+visible = false
+
+[node name="ThermalUpdraftArea" type="Area3D" parent="." groups=["Thermal", "Updraft"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ThermalUpdraftArea"]
+shape = SubResource("CylinderShape3D_updraft")
+
+[node name="HitboxArea" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HitboxArea"]
+shape = SubResource("BoxShape3D_hitbox")
+
+[node name="FireAudio" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("7_audio")
+unit_size = 8.0
+max_distance = 25.0
+
+[node name="BurnTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="SpreadTimer" type="Timer" parent="."]
+wait_time = 2.5
+
+[connection signal="area_entered" from="HitboxArea" to="." method="_on_area_entered"]
+[connection signal="body_entered" from="HitboxArea" to="." method="_on_body_entered"]
+[connection signal="body_exited" from="HitboxArea" to="." method="_on_body_exited"]
+[connection signal="timeout" from="BurnTimer" to="." method="burn_out"]
+[connection signal="timeout" from="SpreadTimer" to="." method="spread_to_neighbors"]

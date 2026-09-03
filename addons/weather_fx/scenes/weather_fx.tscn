@@ -7,6 +7,8 @@
 [ext_resource type="AudioStream" uid="uid://f82y5pv4d1g7" path="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Wind/heavy wind.ogg" id="5_3q7bx"]
 [ext_resource type="Texture2D" uid="uid://hedor1y1abff" path="res://addons/weather_fx/assets/textures/ripple.svg" id="6_ripple"]
 [ext_resource type="PackedScene" path="res://addons/weather_fx/scenes/wind_vfx.tscn" id="7_windvfx"]
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/precipitation_fx.gd" id="8_precip"]
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/weather_audio.gd" id="9_audio"]
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rain"]
 particle_flag_align_y = true
@@ -106,21 +108,22 @@ particles_anim_loop = false
 material = SubResource("StandardMaterial3D_snow")
 size = Vector2(0.08, 0.08)
 
-[node name="WeatherFX" type="Node3D" unique_id=1080350456 node_paths=PackedStringArray("rain_particles", "rain_splash_particles", "snow_particles", "wind_vfx_node", "audio_rain_light", "audio_rain_heavy", "audio_storm", "audio_wind")]
+[node name="WeatherFX" type="Node3D" unique_id=1080350456 node_paths=PackedStringArray("cycle_timer")]
 script = ExtResource("1_wfx")
+cycle_timer = NodePath("CycleTimer")
 wind_direction = Vector3(1, 0, 0)
+
+[node name="CycleTimer" type="Timer" parent="." unique_id=1080350457]
+wait_time = 240.0
+
+[node name="PrecipitationFX" type="Node3D" parent="." unique_id=1080350458 node_paths=PackedStringArray("weather_fx", "rain_particles", "rain_splash_particles", "snow_particles")]
+script = ExtResource("8_precip")
+weather_fx = NodePath("..")
 rain_particles = NodePath("RainParticles")
 rain_splash_particles = NodePath("RainSplashParticles")
 snow_particles = NodePath("SnowParticles")
-wind_vfx_node = NodePath("WindVFX")
-audio_rain_light = NodePath("RainLightSFX")
-audio_rain_heavy = NodePath("RainHeavySFX")
-audio_storm = NodePath("StormSFX")
-audio_wind = NodePath("WindSFX")
 
-[node name="WindVFX" parent="." unique_id=1412723581 instance=ExtResource("7_windvfx")]
-
-[node name="RainParticles" type="GPUParticles3D" parent="." unique_id=1560518735]
+[node name="RainParticles" type="GPUParticles3D" parent="PrecipitationFX" unique_id=1560518735]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
 emitting = false
 amount = 1000
@@ -130,7 +133,7 @@ visibility_aabb = AABB(-25, -20, -25, 50, 25, 50)
 process_material = SubResource("ParticleProcessMaterial_rain")
 draw_pass_1 = SubResource("BoxMesh_rain")
 
-[node name="RainSplashParticles" type="GPUParticles3D" parent="." unique_id=1560518736]
+[node name="RainSplashParticles" type="GPUParticles3D" parent="PrecipitationFX" unique_id=1560518736]
 emitting = false
 amount = 2000
 lifetime = 0.35
@@ -140,7 +143,7 @@ draw_passes = 2
 draw_pass_1 = SubResource("QuadMesh_splash_droplet")
 draw_pass_2 = SubResource("QuadMesh_ripple")
 
-[node name="SnowParticles" type="GPUParticles3D" parent="." unique_id=888760288]
+[node name="SnowParticles" type="GPUParticles3D" parent="PrecipitationFX" unique_id=888760288]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
 emitting = false
 amount = 3000
@@ -149,17 +152,30 @@ visibility_aabb = AABB(-25, -20, -25, 50, 25, 50)
 process_material = SubResource("ParticleProcessMaterial_snow")
 draw_pass_1 = SubResource("QuadMesh_snow")
 
-[node name="RainLightSFX" type="AudioStreamPlayer" parent="." unique_id=2028836351]
+[node name="WindVFX" parent="." unique_id=1412723581 node_paths=PackedStringArray("weather_fx") instance=ExtResource("7_windvfx")]
+weather_fx = NodePath("..")
+
+[node name="WeatherAudio" type="Node" parent="." unique_id=1080350459 node_paths=PackedStringArray("weather_fx", "audio_rain_light", "audio_rain_heavy", "audio_storm", "audio_wind")]
+script = ExtResource("9_audio")
+weather_fx = NodePath("..")
+audio_rain_light = NodePath("RainLightSFX")
+audio_rain_heavy = NodePath("RainHeavySFX")
+audio_storm = NodePath("StormSFX")
+audio_wind = NodePath("WindSFX")
+
+[node name="RainLightSFX" type="AudioStreamPlayer" parent="WeatherAudio" unique_id=2028836351]
 stream = ExtResource("2_shyyd")
 volume_db = -6.0
 
-[node name="RainHeavySFX" type="AudioStreamPlayer" parent="." unique_id=617510328]
+[node name="RainHeavySFX" type="AudioStreamPlayer" parent="WeatherAudio" unique_id=617510328]
 stream = ExtResource("3_xywsf")
 volume_db = -3.0
 
-[node name="StormSFX" type="AudioStreamPlayer" parent="." unique_id=1613677526]
+[node name="StormSFX" type="AudioStreamPlayer" parent="WeatherAudio" unique_id=1613677526]
 stream = ExtResource("4_tkp72")
 
-[node name="WindSFX" type="AudioStreamPlayer" parent="." unique_id=682283832]
+[node name="WindSFX" type="AudioStreamPlayer" parent="WeatherAudio" unique_id=682283832]
 stream = ExtResource("5_3q7bx")
 volume_db = -8.0
+
+[connection signal="timeout" from="CycleTimer" to="." method="advance_cycle"]

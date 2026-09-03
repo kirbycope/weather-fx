@@ -6,8 +6,8 @@
 [ext_resource type="Material" uid="uid://dnb46gq1n57a5" path="res://addons/weather_fx/resources/grass_material.tres" id="3_prvut"]
 [ext_resource type="PackedScene" uid="uid://do6j5qhjt8bsf" path="res://addons/weather_fx/scenes/weather_fx.tscn" id="3_wfxscene"]
 [ext_resource type="PackedScene" uid="uid://decgf2x3tagdu" path="res://addons/weather_fx/scenes/grass_field.tscn" id="4_gfield"]
-[ext_resource type="Script" uid="uid://hf7o6rfms5xs" path="res://addons/weather_fx/scripts/weather_forecast_display.gd" id="5_wfdisplay"]
-[ext_resource type="Script" uid="uid://c066077ej7yf8" path="res://addons/weather_fx/scripts/temperature_gauge_display.gd" id="6_tgdisplay"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/scenes/weather_forecast_display.tscn" id="5_wfdisplay"]
+[ext_resource type="PackedScene" path="res://addons/weather_fx/scenes/temperature_gauge_display.tscn" id="6_tgdisplay"]
 [ext_resource type="PackedScene" path="res://addons/weather_fx/scenes/tree_1.tscn" id="7_tree1"]
 [ext_resource type="PackedScene" path="res://addons/weather_fx/scenes/tree_2.tscn" id="8_tree2"]
 [ext_resource type="AudioStream" uid="uid://brdgm8pmr2mks" path="res://addons/weather_fx/assets/audio/tommusic/sfx/Torch/Torch Loop.ogg" id="9_18hq3"]
@@ -113,28 +113,6 @@ shadow_size = 8
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hud"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_18hq3"]
-content_margin_left = 0.0
-content_margin_top = 4.0
-content_margin_right = 0.0
-content_margin_bottom = 4.0
-bg_color = Color(0.1, 0.1, 0.1, 0.6)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mficu"]
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.1, 0.1, 0.1, 0.6)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-
 [node name="WeatherFXDemo" type="Node3D" unique_id=1870745780]
 script = ExtResource("1_demogd")
 
@@ -225,18 +203,20 @@ current = true
 script = ExtResource("2_dtd")
 current_time = 7.0
 
-[node name="WeatherFX" parent="." unique_id=632517924 node_paths=PackedStringArray("date_and_time_node", "target_node", "sun_light", "world_environment", "audio_bgs_day_clear", "audio_bgs_day_rain", "audio_bgs_day_storm", "audio_bgs_night_clear", "audio_bgs_night_rain", "audio_bgs_night_storm") instance=ExtResource("3_wfxscene")]
+[node name="WeatherFX" parent="." unique_id=632517924 node_paths=PackedStringArray("date_and_time_node", "target_node", "sun_light", "world_environment") instance=ExtResource("3_wfxscene")]
 date_and_time_node = NodePath("../DateAndTime")
 manual_time_of_day = 7.0
 target_node = NodePath("../DemonstrationTarget")
 sun_light = NodePath("../DirectionalLight3D")
 world_environment = NodePath("../WorldEnvironment")
-audio_bgs_day_clear = NodePath("../BackGroundSounds/BGS_Day_Clear")
-audio_bgs_day_rain = NodePath("../BackGroundSounds/BGS_Day_Rain")
-audio_bgs_day_storm = NodePath("../BackGroundSounds/BGS_Day_Storm")
-audio_bgs_night_clear = NodePath("../BackGroundSounds/BGS_Night_Clear")
-audio_bgs_night_rain = NodePath("../BackGroundSounds/BGS_Night_Rain")
-audio_bgs_night_storm = NodePath("../BackGroundSounds/BGS_Night_Storm")
+
+[node name="WeatherAudio" parent="WeatherFX" node_paths=PackedStringArray("bgs_day_clear", "bgs_day_rain", "bgs_day_storm", "bgs_night_clear", "bgs_night_rain", "bgs_night_storm")]
+bgs_day_clear = NodePath("../../BackGroundSounds/BGS_Day_Clear")
+bgs_day_rain = NodePath("../../BackGroundSounds/BGS_Day_Rain")
+bgs_day_storm = NodePath("../../BackGroundSounds/BGS_Day_Storm")
+bgs_night_clear = NodePath("../../BackGroundSounds/BGS_Night_Clear")
+bgs_night_rain = NodePath("../../BackGroundSounds/BGS_Night_Rain")
+bgs_night_storm = NodePath("../../BackGroundSounds/BGS_Night_Storm")
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1795185480]
 
@@ -364,12 +344,12 @@ custom_minimum_size = Vector2(70, 0)
 layout_mode = 2
 text = "Wind Dir:"
 
-[node name="WindDirectionDial" type="Control" parent="HUD/ControlPanel/VBox/WindDirRow" unique_id=1411353983 node_paths=PackedStringArray("weather_fx_node")]
+[node name="WindDirectionDial" type="Control" parent="HUD/ControlPanel/VBox/WindDirRow" unique_id=1411353983 node_paths=PackedStringArray("weather_fx")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 script = ExtResource("12_wddial")
-weather_fx_node = NodePath("../../../../../WeatherFX")
+weather_fx = NodePath("../../../../../WeatherFX")
 dial_radius = 16.0
 
 [node name="WindDirSlider" type="HSlider" parent="HUD/ControlPanel/VBox/WindDirRow" unique_id=1411353984]
@@ -449,34 +429,25 @@ offset_top = -38.0
 offset_right = 48.0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_hud")
 
-[node name="WeatherForecastDisplay" type="PanelContainer" parent="HUD/BottomRight" unique_id=1345518090 node_paths=PackedStringArray("weather_fx_node")]
+[node name="WeatherForecastDisplay" parent="HUD/BottomRight" unique_id=1345518090 node_paths=PackedStringArray("weather_fx") instance=ExtResource("5_wfdisplay")]
 unique_name_in_owner = true
-clip_contents = true
 layout_mode = 0
 offset_right = 110.0
 offset_bottom = 36.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_18hq3")
-script = ExtResource("5_wfdisplay")
-weather_fx_node = NodePath("../../../WeatherFX")
+weather_fx = NodePath("../../../WeatherFX")
 
-[node name="TemperatureGaugeDisplay" type="Button" parent="HUD/BottomRight" unique_id=768426422 node_paths=PackedStringArray("weather_fx_node")]
+
+[node name="TemperatureGaugeDisplay" parent="HUD/BottomRight" unique_id=768426422 node_paths=PackedStringArray("weather_fx") instance=ExtResource("6_tgdisplay")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(36, 36)
 layout_mode = 0
 offset_left = 100.0
 offset_top = -36.0
 offset_right = 136.0
-mouse_filter = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_mficu")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_mficu")
-theme_override_styles/hover = SubResource("StyleBoxFlat_mficu")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_mficu")
-theme_override_styles/focus = SubResource("StyleBoxFlat_mficu")
-flat = true
-script = ExtResource("6_tgdisplay")
-weather_fx_node = NodePath("../../../WeatherFX")
+offset_bottom = 0.0
+weather_fx = NodePath("../../../WeatherFX")
 
-[node name="HUDWindDial" type="Control" parent="HUD/BottomRight" unique_id=1875828888 node_paths=PackedStringArray("weather_fx_node")]
+
+[node name="HUDWindDial" type="Control" parent="HUD/BottomRight" unique_id=1875828888 node_paths=PackedStringArray("weather_fx")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(48, 48)
 anchors_preset = 0
@@ -484,7 +455,29 @@ offset_left = 145.0
 offset_top = -36.0
 offset_right = 181.0
 script = ExtResource("12_wddial")
-weather_fx_node = NodePath("../../../WeatherFX")
+weather_fx = NodePath("../../../WeatherFX")
 dial_radius = 16.0
 
 [node name="BackGroundSounds" parent="." unique_id=467843491 instance=ExtResource("17_bgs")]
+
+[node name="StatusTimer" type="Timer" parent="." unique_id=1870745781]
+wait_time = 0.25
+autostart = true
+
+[connection signal="timeout" from="StatusTimer" to="." method="_update_status_display"]
+[connection signal="biome_changed" from="WeatherFX" to="." method="_update_ui_state" unbinds=2]
+[connection signal="temperature_changed" from="WeatherFX" to="." method="_update_ui_state" unbinds=1]
+[connection signal="weather_changed" from="WeatherFX" to="." method="_update_ui_state" unbinds=2]
+[connection signal="wind_changed" from="WeatherFX" to="." method="_update_ui_state" unbinds=2]
+[connection signal="item_selected" from="HUD/ControlPanel/VBox/BiomeRow/BiomeOptionButton" to="." method="_on_biome_selected"]
+[connection signal="item_selected" from="HUD/ControlPanel/VBox/WeatherRow/WeatherOptionButton" to="." method="_on_weather_selected"]
+[connection signal="value_changed" from="HUD/ControlPanel/VBox/TimeRow/TimeSlider" to="." method="_on_time_slider_changed"]
+[connection signal="value_changed" from="HUD/ControlPanel/VBox/AltitudeRow/AltitudeSlider" to="." method="_on_altitude_slider_changed"]
+[connection signal="value_changed" from="HUD/ControlPanel/VBox/WindRow/WindSlider" to="." method="_on_wind_slider_changed"]
+[connection signal="direction_changed" from="HUD/ControlPanel/VBox/WindDirRow/WindDirectionDial" to="." method="_on_wind_dial_changed"]
+[connection signal="value_changed" from="HUD/ControlPanel/VBox/WindDirRow/WindDirSlider" to="." method="_on_wind_dir_slider_changed"]
+[connection signal="pressed" from="HUD/ControlPanel/VBox/ButtonRow/PlayPauseButton" to="." method="_on_play_pause_pressed"]
+[connection signal="pressed" from="HUD/ControlPanel/VBox/ButtonRow/AdvanceCycleButton" to="WeatherFX" method="advance_cycle"]
+[connection signal="pressed" from="HUD/ControlPanel/VBox/ButtonRow/UnitButton" to="." method="_on_unit_button_pressed"]
+
+[editable path="WeatherFX"]

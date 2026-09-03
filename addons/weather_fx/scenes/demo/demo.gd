@@ -1,25 +1,14 @@
 # Copyright (c) 2026 Antigravity Contributors
 # SPDX-License-Identifier: MIT
 
-@tool
 extends Node3D
 
 ## Demo controller for WeatherFX showcasing 20 biomes, weather overrides,
 ## altitude lapse rate, time-of-day progression, and particle impact effects.
-
-const WEATHER_NAMES: Dictionary = {
-	ClimateData.WeatherType.BLUE_SKY: "Blue Sky",
-	ClimateData.WeatherType.CLOUDY: "Cloudy",
-	ClimateData.WeatherType.RAIN: "Rain",
-	ClimateData.WeatherType.HEAVY_RAIN: "Heavy Rain",
-	ClimateData.WeatherType.STORM: "Storm",
-	ClimateData.WeatherType.SNOW: "Snow",
-	ClimateData.WeatherType.HEAVY_SNOW: "Heavy Snow",
-}
+## All UI and WeatherFX signals are wired in demo.tscn; StatusTimer refreshes the readout.
 
 @onready var weather_fx: WeatherFX = $WeatherFX
 @onready var date_and_time: Node = $DateAndTime
-@onready var sun_light: DirectionalLight3D = $DirectionalLight3D
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera: Camera3D = $CameraPivot/Camera3D
 @onready var target_marker: Node3D = $DemonstrationTarget
@@ -37,7 +26,6 @@ const WEATHER_NAMES: Dictionary = {
 @onready var wind_dir_slider: HSlider = %WindDirSlider
 @onready var wind_dir_value_label: Label = %WindDirValueLabel
 @onready var play_pause_button: Button = %PlayPauseButton
-@onready var advance_cycle_button: Button = %AdvanceCycleButton
 @onready var unit_button: Button = %UnitButton
 @onready var forecast_display: WeatherForecastDisplay = %WeatherForecastDisplay
 @onready var gauge_display: TemperatureGaugeDisplay = %TemperatureGaugeDisplay
@@ -52,36 +40,11 @@ var _last_mouse_pos: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
-	if Engine.is_editor_hint():
-		return
-	_setup_biome_options()
-	_setup_weather_options()
-	_setup_ui_signals()
-	_update_ui_state()
-
-
-func _process(delta: float) -> void:
-	_update_sun_lighting()
-	if Engine.is_editor_hint():
-		return
-	_update_status_display()
-	_handle_camera_input(delta)
-
-
-# ------------------------------------------------------------------------------
-# UI Setup
-# ------------------------------------------------------------------------------
-func _setup_biome_options() -> void:
 	biome_option_button.clear()
-	for i in range(20):
-		var zone: ClimateData.BiomeZone = i as ClimateData.BiomeZone
-		var data = ClimateData.get_biome_data(zone)
-		var b_name: String = data.get("display_name", data.get("name", "Unknown Biome"))
-		biome_option_button.add_item("%02d: %s" % [i, b_name], i)
+	for i: int in ClimateData.BIOME_DEFINITIONS.size():
+		biome_option_button.add_item("%02d: %s" % [i, ClimateData.get_biome_display_name(i as ClimateData.BiomeZone)], i)
 	biome_option_button.selected = int(weather_fx.current_biome)
 
-
-func _setup_weather_options() -> void:
 	weather_option_button.clear()
 	weather_option_button.add_item("Simulation (Forecast)", -1)
 	weather_option_button.add_item("Blue Sky", ClimateData.WeatherType.BLUE_SKY)
@@ -92,57 +55,36 @@ func _setup_weather_options() -> void:
 	weather_option_button.add_item("Snow", ClimateData.WeatherType.SNOW)
 	weather_option_button.add_item("Heavy Snow (Blizzard)", ClimateData.WeatherType.HEAVY_SNOW)
 	weather_option_button.selected = 0
+	_update_ui_state()
+	_update_status_display()
 
 
-func _setup_ui_signals() -> void:
-	biome_option_button.item_selected.connect(_on_biome_selected)
-	weather_option_button.item_selected.connect(_on_weather_selected)
-	time_slider.value_changed.connect(_on_time_slider_changed)
-	altitude_slider.value_changed.connect(_on_altitude_slider_changed)
-	wind_slider.value_changed.connect(_on_wind_slider_changed)
-	if is_instance_valid(wind_direction_dial):
-		wind_direction_dial.direction_changed.connect(_on_wind_dial_changed)
-	if is_instance_valid(wind_dir_slider):
-		wind_dir_slider.value_changed.connect(_on_wind_dir_slider_changed)
-	play_pause_button.pressed.connect(_on_play_pause_pressed)
-	advance_cycle_button.pressed.connect(_on_advance_cycle_pressed)
-	unit_button.pressed.connect(_on_unit_button_pressed)
-
-	weather_fx.weather_changed.connect(func(_new, _old): _update_ui_state())
-	weather_fx.biome_changed.connect(func(_new, _old): _update_ui_state())
-	weather_fx.temperature_changed.connect(func(_temp): _update_ui_state())
-	weather_fx.wind_changed.connect(func(_strength, _dir): _update_ui_state())
+func _process(delta: float) -> void:
+	_handle_camera_input(delta)
 
 
 # ------------------------------------------------------------------------------
-# UI Signal Handlers
+# UI Signal Handlers (connected in demo.tscn)
 # ------------------------------------------------------------------------------
 func _on_biome_selected(index: int) -> void:
 	weather_fx.current_biome = index as ClimateData.BiomeZone
-	_update_ui_state()
 
 
 func _on_weather_selected(index: int) -> void:
 	var weather_id: int = weather_option_button.get_item_id(index)
-	if weather_id == -1:
-		weather_fx.force_weather = false
-	else:
-		weather_fx.force_weather = true
+	weather_fx.force_weather = weather_id != -1
+	if weather_id != -1:
 		weather_fx.manual_weather = weather_id as ClimateData.WeatherType
-	_update_ui_state()
 
 
 func _on_time_slider_changed(value: float) -> void:
 	weather_fx.manual_time_of_day = value
-	if is_instance_valid(date_and_time) and "current_time" in date_and_time:
-		date_and_time.current_time = value
 	time_value_label.text = "%02d:%02d" % [int(value), int(fmod(value * 60.0, 60.0))]
 
 
 func _on_altitude_slider_changed(value: float) -> void:
 	weather_fx.current_altitude = value
-	if is_instance_valid(target_marker):
-		target_marker.position.y = value
+	target_marker.position.y = value
 	altitude_value_label.text = "%d m" % int(value)
 
 
@@ -152,68 +94,47 @@ func _on_wind_slider_changed(value: float) -> void:
 
 
 func _on_wind_dial_changed(_dir: Vector3, angle_deg: float) -> void:
-	if is_instance_valid(wind_dir_slider):
-		wind_dir_slider.set_value_no_signal(angle_deg)
-	if is_instance_valid(wind_dir_value_label) and is_instance_valid(wind_direction_dial):
-		wind_dir_value_label.text = "%d° %s" % [int(angle_deg), wind_direction_dial.get_cardinal_name()]
+	if wind_dir_slider == null: # the dial emits during its own _ready, before this node's @onready vars exist
+		return
+	wind_dir_slider.set_value_no_signal(angle_deg)
+	wind_dir_value_label.text = "%d° %s" % [int(angle_deg), wind_direction_dial.get_cardinal_name()]
 
 
 func _on_wind_dir_slider_changed(value: float) -> void:
-	if is_instance_valid(wind_direction_dial):
-		wind_direction_dial.set_angle_degrees(value, true)
-		if is_instance_valid(wind_dir_value_label):
-			wind_dir_value_label.text = "%d° %s" % [int(value), wind_direction_dial.get_cardinal_name()]
-	else:
-		var rad = deg_to_rad(value)
-		weather_fx.wind_direction = Vector3(cos(rad), 0.0, sin(rad))
+	wind_direction_dial.set_angle_degrees(value, true)
+	wind_dir_value_label.text = "%d° %s" % [int(value), wind_direction_dial.get_cardinal_name()]
 
 
 func _on_play_pause_pressed() -> void:
-	weather_fx.is_playing = !weather_fx.is_playing
-	play_pause_button.text = "Resume" if !weather_fx.is_playing else "Pause"
-
-
-func _on_advance_cycle_pressed() -> void:
-	weather_fx.advance_cycle()
-
-
-func _on_unit_button_pressed() -> void:
-	var is_celsius = (forecast_display.temperature_unit == WeatherForecastDisplay.TemperatureUnit.CELSIUS)
-	var new_unit = WeatherForecastDisplay.TemperatureUnit.FAHRENHEIT if is_celsius else WeatherForecastDisplay.TemperatureUnit.CELSIUS
-	forecast_display.temperature_unit = new_unit
-	gauge_display.temperature_unit = new_unit
-	unit_button.text = "°F" if new_unit == WeatherForecastDisplay.TemperatureUnit.FAHRENHEIT else "°C"
-
-
-# ------------------------------------------------------------------------------
-# State Updates & Environment
-# ------------------------------------------------------------------------------
-func _update_ui_state() -> void:
-	var t = weather_fx.get_current_time_hours()
-	time_slider.set_value_no_signal(t)
-	time_value_label.text = "%02d:%02d" % [int(t), int(fmod(t * 60.0, 60.0))]
-	
-	altitude_slider.set_value_no_signal(weather_fx.current_altitude)
-	altitude_value_label.text = "%d m" % int(weather_fx.current_altitude)
-	
-	wind_slider.set_value_no_signal(weather_fx.wind_strength_multiplier)
-	wind_value_label.text = "%.1fx" % weather_fx.wind_strength_multiplier
-	
-	if is_instance_valid(wind_direction_dial):
-		var angle_deg = wind_direction_dial.get_angle_degrees()
-		if is_instance_valid(wind_dir_slider):
-			wind_dir_slider.set_value_no_signal(angle_deg)
-		if is_instance_valid(wind_dir_value_label):
-			wind_dir_value_label.text = "%d° %s" % [int(angle_deg), wind_direction_dial.get_cardinal_name()]
-	
+	weather_fx.is_playing = not weather_fx.is_playing
 	play_pause_button.text = "Pause" if weather_fx.is_playing else "Resume"
 
 
-static func get_wind_cardinal(dir: Vector3) -> String:
-	var angle_deg = wrapf(rad_to_deg(atan2(dir.z, dir.x)), 0.0, 360.0)
-	var dirs = ["East", "SE", "South", "SW", "West", "NW", "North", "NE"]
-	var index = int(round(angle_deg / 45.0)) % 8
-	return dirs[index]
+func _on_unit_button_pressed() -> void:
+	var fahrenheit: bool = forecast_display.temperature_unit == WeatherForecastDisplay.TemperatureUnit.CELSIUS
+	var new_unit: WeatherForecastDisplay.TemperatureUnit = WeatherForecastDisplay.TemperatureUnit.FAHRENHEIT if fahrenheit else WeatherForecastDisplay.TemperatureUnit.CELSIUS
+	forecast_display.temperature_unit = new_unit
+	gauge_display.temperature_unit = new_unit
+	unit_button.text = "°F" if fahrenheit else "°C"
+
+
+# ------------------------------------------------------------------------------
+# State Updates
+# ------------------------------------------------------------------------------
+func _update_ui_state() -> void:
+	if time_slider == null: # WeatherFX emits during its own _ready, before this node's @onready vars exist
+		return
+	var t: float = weather_fx.get_current_time_hours()
+	time_slider.set_value_no_signal(t)
+	time_value_label.text = "%02d:%02d" % [int(t), int(fmod(t * 60.0, 60.0))]
+	altitude_slider.set_value_no_signal(weather_fx.current_altitude)
+	altitude_value_label.text = "%d m" % int(weather_fx.current_altitude)
+	wind_slider.set_value_no_signal(weather_fx.wind_strength_multiplier)
+	wind_value_label.text = "%.1fx" % weather_fx.wind_strength_multiplier
+	var angle_deg: float = wind_direction_dial.get_angle_degrees()
+	wind_dir_slider.set_value_no_signal(angle_deg)
+	wind_dir_value_label.text = "%d° %s" % [int(angle_deg), wind_direction_dial.get_cardinal_name()]
+	play_pause_button.text = "Pause" if weather_fx.is_playing else "Resume"
 
 
 static func get_wind_rating(strength: float) -> String:
@@ -225,91 +146,49 @@ static func get_wind_rating(strength: float) -> String:
 	else: return "Storm Force"
 
 
+## Refreshed by StatusTimer (FPS and cycle countdown are the only continuously changing fields).
 func _update_status_display() -> void:
-	var b_data = ClimateData.get_biome_data(weather_fx.current_biome)
-	var b_name: String = b_data.get("display_name", b_data.get("name", "Unknown"))
-	var w_name: String = WEATHER_NAMES.get(weather_fx.active_weather, "Unknown")
-	var temp_c = weather_fx.current_temperature
-	var temp_f = ClimateData.celsius_to_fahrenheit(temp_c)
-	var prog = weather_fx.get_cycle_progress() * 100.0
-	var timer_rem = maxf(0.0, weather_fx.cycle_duration_seconds - weather_fx.get_cycle_timer())
-	var wind_spd = weather_fx.current_wind_strength
-	var wind_dir = weather_fx.wind_direction
-	var wind_card = get_wind_cardinal(wind_dir)
-	var wind_desc = get_wind_rating(wind_spd)
-	var fps = Engine.get_frames_per_second()
-	
+	var temp_c: float = weather_fx.current_temperature
+	var wind_spd: float = weather_fx.current_wind_strength
+	var remaining: float = weather_fx.cycle_timer.time_left if is_instance_valid(weather_fx.cycle_timer) else 0.0
 	status_label.text = "Biome: %s\nWeather: %s%s\nTemp: %.1f°C / %.1f°F\nWind: %.1f m/s (%s - %s)\nAltitude: %d m\nCycle: %d%% (%02d:%02d left)\nFPS: %d" % [
-		b_name,
-		w_name,
+		ClimateData.get_biome_display_name(weather_fx.current_biome),
+		ClimateData.get_weather_name(weather_fx.active_weather),
 		" (Forced)" if weather_fx.force_weather else " (Simulated)",
 		temp_c,
-		temp_f,
+		ClimateData.celsius_to_fahrenheit(temp_c),
 		wind_spd,
-		wind_desc,
-		wind_card,
+		get_wind_rating(wind_spd),
+		wind_direction_dial.get_cardinal_name(),
 		int(weather_fx.current_altitude),
-		int(prog),
-		int(timer_rem / 60.0),
-		int(fmod(timer_rem, 60.0)),
-		fps
+		int(weather_fx.get_cycle_progress() * 100.0),
+		int(remaining / 60.0),
+		int(fmod(remaining, 60.0)),
+		Engine.get_frames_per_second(),
 	]
-
-
-func _update_sun_lighting() -> void:
-	if not is_instance_valid(sun_light):
-		return
-	var t = weather_fx.get_current_time_hours()
-	# Map 0h - 24h to sun angle (6h sunrise = 0°, 12h noon = 90°, 18h sunset = 180°, 0h midnight = 270°)
-	var sun_rot_x = ((t - 6.0) / 24.0) * TAU
-	sun_light.rotation = Vector3(-sun_rot_x, deg_to_rad(-30.0), 0.0)
-	
-	var is_day = weather_fx.is_daylight(t)
-	sun_light.light_energy = 1.0 if is_day else 0.15
-	sun_light.light_color = Color(1.0, 0.95, 0.85) if is_day else Color(0.35, 0.45, 0.7)
-
-
-func _apply_biome_ambient(biome: ClimateData.BiomeZone) -> void:
-	match biome:
-		ClimateData.BiomeZone.ARCTIC_TUNDRA, ClimateData.BiomeZone.ALPINE_PEAKS, ClimateData.BiomeZone.DESERT_GLACIER:
-			sun_light.light_color = Color(0.9, 0.95, 1.0)
-		ClimateData.BiomeZone.VOLCANIC_FOOTHILLS, ClimateData.BiomeZone.VOLCANIC_CRATER, ClimateData.BiomeZone.VOLCANIC_CALDERA:
-			sun_light.light_color = Color(1.0, 0.7, 0.5)
-		ClimateData.BiomeZone.DESERT_DUNES, ClimateData.BiomeZone.DESERT_PLATEAU, ClimateData.BiomeZone.DEEP_DESERT, ClimateData.BiomeZone.ARID_CANYON:
-			sun_light.light_color = Color(1.0, 0.9, 0.7)
-		ClimateData.BiomeZone.TROPICAL_RAINFOREST, ClimateData.BiomeZone.WETLANDS_VALLEY, ClimateData.BiomeZone.HUMID_COAST:
-			sun_light.light_color = Color(0.85, 1.0, 0.9)
-		_:
-			sun_light.light_color = Color(1.0, 0.95, 0.85)
 
 
 # ------------------------------------------------------------------------------
 # Interactive Camera Controls
 # ------------------------------------------------------------------------------
 func _input(event: InputEvent) -> void:
-	if Engine.is_editor_hint():
-		return
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_RIGHT:
-			_is_dragging = event.pressed
-			_last_mouse_pos = event.position
-		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
+	var mb: InputEventMouseButton = event as InputEventMouseButton
+	if mb:
+		if mb.button_index == MOUSE_BUTTON_RIGHT:
+			_is_dragging = mb.pressed
+			_last_mouse_pos = mb.position
+		elif mb.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_camera_distance = clampf(_camera_distance - 0.8, 2.0, 30.0)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_camera_distance = clampf(_camera_distance + 0.8, 2.0, 30.0)
-
 	elif event is InputEventMouseMotion and _is_dragging:
-		var delta_pos = event.position - _last_mouse_pos
-		_last_mouse_pos = event.position
+		var delta_pos: Vector2 = (event as InputEventMouseMotion).position - _last_mouse_pos
+		_last_mouse_pos = (event as InputEventMouseMotion).position
 		_camera_yaw -= delta_pos.x * 0.4
 		_camera_pitch = clampf(_camera_pitch - delta_pos.y * 0.4, -80.0, 80.0)
 
 
 func _handle_camera_input(delta: float) -> void:
-	if not is_instance_valid(camera_pivot) or not is_instance_valid(camera):
-		return
-
-	# Arrow / WASD key camera rotation
 	if Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_A):
 		_camera_yaw += 60.0 * delta
 	if Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D):
@@ -318,6 +197,5 @@ func _handle_camera_input(delta: float) -> void:
 		_camera_pitch = clampf(_camera_pitch + 40.0 * delta, -80.0, 80.0)
 	if Input.is_key_pressed(KEY_DOWN) or Input.is_key_pressed(KEY_S):
 		_camera_pitch = clampf(_camera_pitch - 40.0 * delta, -80.0, 80.0)
-
 	camera_pivot.rotation_degrees = Vector3(_camera_pitch, _camera_yaw, 0.0)
 	camera.position = Vector3(0.0, 0.0, _camera_distance)

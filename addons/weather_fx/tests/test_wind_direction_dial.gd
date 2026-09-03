@@ -13,7 +13,7 @@ func before_each() -> void:
 	_wfx.is_playing = true
 
 	_dial = WindDirectionDial.new()
-	_dial.weather_fx_node = _wfx
+	_dial.weather_fx = _wfx
 	add_child_autofree(_dial)
 
 

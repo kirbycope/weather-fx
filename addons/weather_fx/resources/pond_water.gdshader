@@ -3,6 +3,8 @@
 
 shader_type spatial;
 render_mode depth_draw_always, cull_disabled, specular_schlick_ggx;
+// Meshes that write stencil 1 (a boat hull's water mask) cut holes in the surface
+stencil_mode read, compare_not_equal, 1;
 
 // Global atmospheric shader parameters from WeatherFX
 global uniform float weather_wind_strength;
@@ -28,6 +30,12 @@ uniform float normal_scale : hint_range(0.0, 1.0) = 0.35;
 uniform vec2 uv_scale = vec2(2.5, 2.5);
 
 uniform sampler2D depth_texture : hint_depth_texture, repeat_disable, filter_linear;
+
+// Swimmer surface interaction (fed by the player controller while swimming)
+uniform float swimmer_active : hint_range(0.0, 1.0) = 0.0; // 1 at the surface, fades out with dive depth
+uniform vec3 swimmer_position = vec3(100000.0, 0.0, 100000.0);
+uniform vec2 swimmer_direction = vec2(0.0, 1.0); // horizontal facing, world XZ
+uniform float swimmer_speed : hint_range(0.0, 10.0) = 0.0; // horizontal m/s
 
 varying vec3 v_world_pos;
 varying vec2 v_uv;
@@ -89,6 +97,35 @@ void fragment() {
 		blended_normal.xy += rip_wave * 0.35 * weather_precipitation_strength;
 	}
 
+	// Swimmer interaction: concentric treading ripples at rest, Kelvin-style V wake when moving
+	float swimmer_foam = 0.0;
+	if (swimmer_active > 0.01) {
+		vec2 swim_offset = v_world_pos.xz - swimmer_position.xz;
+		float swim_dist = length(swim_offset);
+		if (swim_dist < 9.0) {
+			float speed_norm = clamp(swimmer_speed / 2.5, 0.0, 1.0);
+			// Treading water: expanding rings that fade with distance
+			float rings = sin(swim_dist * 9.0 - TIME * 6.5) * exp(-swim_dist * 1.2) * (1.0 - speed_norm);
+			// Swimming: V wake trailing behind the swimmer (~19.5 deg Kelvin arms)
+			vec2 swim_dir = normalize(swimmer_direction + vec2(0.0001));
+			float back = dot(swim_offset, -swim_dir);
+			float side = abs(dot(swim_offset, vec2(-swim_dir.y, swim_dir.x)));
+			float v_wake = 0.0;
+			if (back > 0.0) {
+				float arm_dist = abs(side - back * 0.36);
+				v_wake = exp(-arm_dist * 7.0) * exp(-back * 0.4) * speed_norm;
+				// Choppy transverse waves inside the V
+				float inner = (1.0 - step(back * 0.36, side)) * sin(back * 7.0 - TIME * 9.0) * exp(-back * 0.55) * 0.5 * speed_norm;
+				v_wake += max(0.0, inner);
+			}
+			blended_normal.xy += (rings * 0.5 + v_wake * 0.8) * swimmer_active;
+			// Foam: bright V arms plus a churn ring around the body
+			float body_churn = exp(-swim_dist * 2.4) * (0.55 + 0.45 * speed_norm);
+			float ring_foam = max(0.0, rings) * 0.5;
+			swimmer_foam = clamp((v_wake * 1.5 + body_churn + ring_foam) * swimmer_active, 0.0, 1.0);
+		}
+	}
+
 	NORMAL_MAP = blended_normal;
 	NORMAL_MAP_DEPTH = normal_scale * (0.8 + clamp(wind_spd * 0.06, 0.0, 1.2));
 
@@ -122,6 +159,7 @@ void fragment() {
 	float combined_foam_noise = (foam_wave * 0.6 + foam_wave2 * 0.4);
 
 	float raw_foam = max(depth_foam, radial_edge_foam) * (0.75 + combined_foam_noise * 0.45);
+	raw_foam = max(raw_foam, swimmer_foam * (0.7 + combined_foam_noise * 0.35));
 	float foam = smoothstep(1.0 - foam_softness, 1.0, raw_foam);
 
 	// Toon banded gradient: Deep -> Shallow -> White Shoreline

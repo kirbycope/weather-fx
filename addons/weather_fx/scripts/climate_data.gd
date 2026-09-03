@@ -6,7 +6,7 @@ class_name ClimateData
 extends RefCounted
 
 ## Climate and weather definition data for 20 universal biomes.
-## Contains probabilities, altitude-based temperature curves, wind power, and weather conversion logic.
+## Contains probabilities, altitude-based temperature curves, wind power, foliage/grass tints, and weather conversion logic.
 
 # ------------------------------------------------------------------------------
 # Enums
@@ -54,6 +54,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Temperate Plains",
 		"bluesky_rate": 60, "cloudy_rate": 20, "rain_rate": 10, "heavy_rain_rate": 5, "storm_rate": 5,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 1, "wind_power": 7.5,
+		"foliage_tint": Color(0.48, 0.78, 0.30), "grass_tint": Color(0.55, 0.85, 0.35),
 		"day_temps": [25.0, 20.0, 18.0, 15.0, 9.0, 3.0, -5.0, -10.0, -20.0, -28.0, -28.0],
 		"night_temps": [23.0, 18.0, 16.0, 13.0, 6.0, -2.0, -5.0, -14.0, -23.0, -28.0, -28.0]
 	},
@@ -63,6 +64,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Northern Plains",
 		"bluesky_rate": 40, "cloudy_rate": 30, "rain_rate": 15, "heavy_rain_rate": 5, "storm_rate": 10,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 1, "wind_power": 10.0,
+		"foliage_tint": Color(0.40, 0.72, 0.35), "grass_tint": Color(0.48, 0.80, 0.40),
 		"day_temps": [25.0, 23.0, 20.0, 12.0, 3.0, -7.0, -13.0, -28.0, -28.0, -28.0, -28.0],
 		"night_temps": [23.0, 20.0, 17.0, 7.0, -1.0, -9.0, -15.0, -28.0, -28.0, -28.4, -28.4]
 	},
@@ -72,6 +74,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Arctic Tundra",
 		"bluesky_rate": 20, "cloudy_rate": 10, "rain_rate": 35, "heavy_rain_rate": 35, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 10.0,
+		"foliage_tint": Color(0.45, 0.65, 0.58), "grass_tint": Color(0.55, 0.75, 0.68),
 		"day_temps": [-10.0, -10.0, -10.0, -14.0, -20.0, -23.0, -25.0, -28.0, -29.0, -29.0, -29.0],
 		"night_temps": [-10.0, -10.0, -10.0, -16.0, -22.0, -25.0, -26.0, -28.4, -29.2, -29.2, -29.2]
 	},
@@ -81,6 +84,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Arid Canyon",
 		"bluesky_rate": 94, "cloudy_rate": 4, "rain_rate": 2, "heavy_rain_rate": 0, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 10.0,
+		"foliage_tint": Color(0.72, 0.75, 0.38), "grass_tint": Color(0.80, 0.82, 0.42),
 		"day_temps": [20.0, 18.0, 14.0, 8.0, 2.0, -5.0, -10.0, -18.0, -28.0, -28.0, -28.0],
 		"night_temps": [15.0, 12.0, 8.0, 3.0, -4.0, -10.0, -16.0, -23.0, -28.0, -28.0, -28.0]
 	},
@@ -90,6 +94,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Alpine Peaks",
 		"bluesky_rate": 10, "cloudy_rate": 20, "rain_rate": 20, "heavy_rain_rate": 50, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 10.0,
+		"foliage_tint": Color(0.42, 0.62, 0.50), "grass_tint": Color(0.52, 0.72, 0.58),
 		"day_temps": [-10.0, -10.0, -10.0, -14.0, -20.0, -23.0, -25.0, -28.0, -29.0, -29.0, -29.0],
 		"night_temps": [-10.0, -10.0, -10.0, -16.0, -22.0, -25.0, -26.0, -28.4, -29.2, -29.2, -29.2]
 	},
@@ -99,6 +104,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Desert Dunes",
 		"bluesky_rate": 100, "cloudy_rate": 0, "rain_rate": 0, "heavy_rain_rate": 0, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 10.0,
+		"foliage_tint": Color(0.85, 0.78, 0.40), "grass_tint": Color(0.90, 0.82, 0.45),
 		"day_temps": [47.5, 45.0, 43.0, 38.0, 30.0, 0.0, -7.0, -15.0, -28.0, -28.0, -28.0],
 		"night_temps": [-5.0, -6.0, -7.0, -9.0, -11.0, -14.0, -17.0, -20.0, -28.0, -28.0, -28.0]
 	},
@@ -108,6 +114,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Desert Plateau",
 		"bluesky_rate": 95, "cloudy_rate": 5, "rain_rate": 0, "heavy_rain_rate": 0, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 10.0,
+		"foliage_tint": Color(0.78, 0.72, 0.35), "grass_tint": Color(0.82, 0.78, 0.40),
 		"day_temps": [23.0, 20.0, 18.0, 12.0, 5.0, -2.0, -7.0, -15.0, -28.0, -28.0, -28.0],
 		"night_temps": [18.0, 15.0, 12.0, 5.0, -2.0, -8.0, -13.0, -20.0, -28.0, -28.0, -28.0]
 	},
@@ -117,6 +124,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Volcanic Foothills",
 		"bluesky_rate": 100, "cloudy_rate": 0, "rain_rate": 0, "heavy_rain_rate": 0, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 5.0,
+		"foliage_tint": Color(0.60, 0.48, 0.32), "grass_tint": Color(0.55, 0.46, 0.30),
 		"day_temps": [40.0, 40.0, 40.0, 30.0, 20.0, 10.0, 0.0, -10.0, -28.0, -28.0, -28.0],
 		"night_temps": [35.0, 35.0, 35.0, 25.0, 15.0, 5.0, -5.0, -15.0, -28.0, -28.0, -28.0]
 	},
@@ -126,6 +134,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Autumn Highlands",
 		"bluesky_rate": 35, "cloudy_rate": 40, "rain_rate": 10, "heavy_rain_rate": 5, "storm_rate": 10,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 1, "wind_power": 10.0,
+		"foliage_tint": Color(0.95, 0.48, 0.15), "grass_tint": Color(0.88, 0.75, 0.30),
 		"day_temps": [23.0, 20.0, 15.0, 10.0, 4.0, -2.0, -8.0, -16.0, -28.0, -28.0, -28.0],
 		"night_temps": [19.0, 16.0, 11.0, 5.0, -1.0, -7.0, -12.0, -19.0, -28.0, -28.0, -28.0]
 	},
@@ -135,6 +144,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Wetlands Valley",
 		"bluesky_rate": 50, "cloudy_rate": 20, "rain_rate": 20, "heavy_rain_rate": 10, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 1, "wind_power": 10.0,
+		"foliage_tint": Color(0.32, 0.52, 0.28), "grass_tint": Color(0.38, 0.58, 0.32),
 		"day_temps": [24.0, 20.0, 16.0, 12.0, 8.0, 0.0, -5.0, -15.0, -28.0, -28.0, -28.0],
 		"night_temps": [20.0, 16.0, 12.0, 8.0, 4.0, -5.0, -9.0, -18.0, -28.0, -28.0, -28.0]
 	},
@@ -144,6 +154,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Coastal Plains",
 		"bluesky_rate": 50, "cloudy_rate": 35, "rain_rate": 10, "heavy_rain_rate": 5, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 1, "wind_power": 10.0,
+		"foliage_tint": Color(0.38, 0.82, 0.38), "grass_tint": Color(0.45, 0.88, 0.45),
 		"day_temps": [24.0, 20.0, 16.0, 12.0, 8.0, 0.0, -5.0, -15.0, -28.0, -28.0, -28.0],
 		"night_temps": [20.0, 16.0, 12.0, 8.0, 4.0, -5.0, -9.0, -18.0, -28.0, -28.0, -28.0]
 	},
@@ -153,6 +164,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Tropical Rainforest",
 		"bluesky_rate": 35, "cloudy_rate": 35, "rain_rate": 10, "heavy_rain_rate": 10, "storm_rate": 10,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 2, "wind_power": 7.5,
+		"foliage_tint": Color(0.20, 0.85, 0.28), "grass_tint": Color(0.25, 0.90, 0.35),
 		"day_temps": [28.0, 25.0, 21.0, 16.0, 10.0, 0.0, -8.0, -18.0, -28.0, -28.0, -28.0],
 		"night_temps": [24.0, 21.0, 17.0, 12.0, 7.0, -4.0, -11.0, -20.0, -28.0, -28.0, -28.0]
 	},
@@ -162,6 +174,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Humid Coast",
 		"bluesky_rate": 65, "cloudy_rate": 5, "rain_rate": 15, "heavy_rain_rate": 15, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 2, "wind_power": 7.5,
+		"foliage_tint": Color(0.30, 0.80, 0.48), "grass_tint": Color(0.38, 0.85, 0.55),
 		"day_temps": [25.0, 22.0, 19.0, 15.0, 9.0, 2.0, -6.0, -15.0, -28.0, -28.0, -28.0],
 		"night_temps": [21.0, 18.0, 15.0, 11.0, 5.0, -2.0, -10.0, -18.0, -28.0, -28.0, -28.0]
 	},
@@ -171,6 +184,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Volcanic Crater",
 		"bluesky_rate": 100, "cloudy_rate": 0, "rain_rate": 0, "heavy_rain_rate": 0, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 5.0,
+		"foliage_tint": Color(0.42, 0.35, 0.28), "grass_tint": Color(0.40, 0.35, 0.28),
 		"day_temps": [80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0],
 		"night_temps": [70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0]
 	},
@@ -180,6 +194,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Volcanic Caldera",
 		"bluesky_rate": 100, "cloudy_rate": 0, "rain_rate": 0, "heavy_rain_rate": 0, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 5.0,
+		"foliage_tint": Color(0.40, 0.30, 0.22), "grass_tint": Color(0.38, 0.30, 0.22),
 		"day_temps": [150.0, 150.0, 150.0, 150.0, 150.0, 150.0, 150.0, 150.0, 150.0, 150.0, 150.0],
 		"night_temps": [140.0, 140.0, 140.0, 140.0, 140.0, 140.0, 140.0, 140.0, 140.0, 140.0, 140.0]
 	},
@@ -189,6 +204,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Shadow Woods",
 		"bluesky_rate": 40, "cloudy_rate": 30, "rain_rate": 15, "heavy_rain_rate": 5, "storm_rate": 10,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 1, "wind_power": 10.0,
+		"foliage_tint": Color(0.20, 0.40, 0.30), "grass_tint": Color(0.25, 0.48, 0.36),
 		"day_temps": [20.0, 17.0, 14.0, 9.0, 2.0, -6.0, -12.0, -20.0, -28.0, -28.0, -28.0],
 		"night_temps": [17.0, 14.0, 11.0, 6.0, -1.0, -8.0, -14.0, -22.0, -28.0, -28.0, -28.0]
 	},
@@ -198,6 +214,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Misty Woods",
 		"bluesky_rate": 100, "cloudy_rate": 0, "rain_rate": 0, "heavy_rain_rate": 0, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 3.0,
+		"foliage_tint": Color(0.35, 0.58, 0.48), "grass_tint": Color(0.42, 0.65, 0.55),
 		"day_temps": [18.0, 15.0, 12.0, 8.0, 2.0, -5.0, -10.0, -18.0, -28.0, -28.0, -28.0],
 		"night_temps": [14.0, 11.0, 8.0, 3.0, -2.0, -8.0, -13.0, -20.0, -28.0, -28.0, -28.0]
 	},
@@ -207,6 +224,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Desert Glacier",
 		"bluesky_rate": 5, "cloudy_rate": 20, "rain_rate": 40, "heavy_rain_rate": 35, "storm_rate": 0,
 		"day_lock_bluesky": true, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 10.0,
+		"foliage_tint": Color(0.45, 0.70, 0.68), "grass_tint": Color(0.52, 0.78, 0.75),
 		"day_temps": [-5.0, -5.0, -5.0, -9.0, -15.0, -20.0, -24.0, -28.0, -29.0, -29.0, -29.0],
 		"night_temps": [-8.0, -8.0, -8.0, -12.0, -18.0, -23.0, -26.0, -29.0, -29.5, -29.5, -29.5]
 	},
@@ -216,6 +234,7 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Ancient Forest",
 		"bluesky_rate": 100, "cloudy_rate": 0, "rain_rate": 0, "heavy_rain_rate": 0, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 5.0,
+		"foliage_tint": Color(0.18, 0.60, 0.28), "grass_tint": Color(0.25, 0.70, 0.35),
 		"day_temps": [20.0, 18.0, 15.0, 10.0, 4.0, -2.0, -8.0, -16.0, -28.0, -28.0, -28.0],
 		"night_temps": [17.0, 14.0, 11.0, 6.0, 0.0, -5.0, -11.0, -18.0, -28.0, -28.0, -28.0]
 	},
@@ -225,22 +244,32 @@ const BIOME_DEFINITIONS: Dictionary = {
 		"display_name": "Deep Desert",
 		"bluesky_rate": 100, "cloudy_rate": 0, "rain_rate": 0, "heavy_rain_rate": 0, "storm_rate": 0,
 		"day_lock_bluesky": false, "night_lock_bluesky": false, "bluesky_rain_pat": 0, "wind_power": 10.0,
+		"foliage_tint": Color(0.82, 0.74, 0.45), "grass_tint": Color(0.88, 0.80, 0.50),
 		"day_temps": [55.0, 52.0, 48.0, 42.0, 32.0, 0.0, -8.0, -18.0, -28.0, -28.0, -28.0],
 		"night_temps": [-8.0, -9.0, -11.0, -13.0, -16.0, -20.0, -23.0, -26.0, -28.0, -28.0, -28.0]
 	}
 }
 
 # ------------------------------------------------------------------------------
-# Icon Paths
+# Weather Tables
 # ------------------------------------------------------------------------------
-const WEATHER_ICON_PATHS: Dictionary = {
-	WeatherType.BLUE_SKY: "res://addons/weather_fx/assets/icons/bluesky.svg",
-	WeatherType.CLOUDY: "res://addons/weather_fx/assets/icons/cloudy.svg",
-	WeatherType.RAIN: "res://addons/weather_fx/assets/icons/rain.svg",
-	WeatherType.HEAVY_RAIN: "res://addons/weather_fx/assets/icons/heavy_rain.svg",
-	WeatherType.STORM: "res://addons/weather_fx/assets/icons/storm.svg",
-	WeatherType.SNOW: "res://addons/weather_fx/assets/icons/snow.svg",
-	WeatherType.HEAVY_SNOW: "res://addons/weather_fx/assets/icons/heavy_snow.svg",
+const WEATHER_ICONS: Dictionary = {
+	WeatherType.BLUE_SKY: preload("res://addons/weather_fx/assets/icons/bluesky.svg"),
+	WeatherType.CLOUDY: preload("res://addons/weather_fx/assets/icons/cloudy.svg"),
+	WeatherType.RAIN: preload("res://addons/weather_fx/assets/icons/rain.svg"),
+	WeatherType.HEAVY_RAIN: preload("res://addons/weather_fx/assets/icons/heavy_rain.svg"),
+	WeatherType.STORM: preload("res://addons/weather_fx/assets/icons/storm.svg"),
+	WeatherType.SNOW: preload("res://addons/weather_fx/assets/icons/snow.svg"),
+	WeatherType.HEAVY_SNOW: preload("res://addons/weather_fx/assets/icons/heavy_snow.svg"),
+}
+
+## Wetness / precipitation intensity per weather type (0.0 = dry).
+const PRECIPITATION_STRENGTH: Dictionary = {
+	WeatherType.RAIN: 0.5,
+	WeatherType.SNOW: 0.5,
+	WeatherType.HEAVY_RAIN: 1.0,
+	WeatherType.HEAVY_SNOW: 1.0,
+	WeatherType.STORM: 1.2,
 }
 
 # ------------------------------------------------------------------------------
@@ -253,14 +282,27 @@ static func get_biome_data(zone: BiomeZone) -> Dictionary:
 
 ## Returns the enum string name of the biome zone.
 static func get_biome_name(zone: BiomeZone) -> String:
-	var data = get_biome_data(zone)
-	return data.get("name", "UNKNOWN_BIOME")
+	return get_biome_data(zone).get("name", "UNKNOWN_BIOME")
 
 
 ## Returns a human-friendly display name of the biome zone.
 static func get_biome_display_name(zone: BiomeZone) -> String:
-	var data = get_biome_data(zone)
-	return data.get("display_name", "Unknown Biome")
+	return get_biome_data(zone).get("display_name", "Unknown Biome")
+
+
+## Returns the characteristic foliage/tree canopy color tint for a biome.
+static func get_biome_foliage_tint(zone: BiomeZone) -> Color:
+	return get_biome_data(zone).get("foliage_tint", Color(0.48, 0.78, 0.30))
+
+
+## Returns the characteristic grass color tint for a biome.
+static func get_biome_grass_tint(zone: BiomeZone) -> Color:
+	return get_biome_data(zone).get("grass_tint", Color(0.55, 0.85, 0.35))
+
+
+## Returns true if the specified biome naturally features trees and foliage.
+static func biome_has_trees(zone: BiomeZone) -> bool:
+	return zone in [BiomeZone.TEMPERATE_PLAINS, BiomeZone.NORTHERN_PLAINS, BiomeZone.AUTUMN_HIGHLANDS, BiomeZone.WETLANDS_VALLEY, BiomeZone.COASTAL_PLAINS, BiomeZone.TROPICAL_RAINFOREST, BiomeZone.HUMID_COAST, BiomeZone.SHADOW_WOODS, BiomeZone.MISTY_WOODS, BiomeZone.ANCIENT_FOREST]
 
 
 ## Returns string name of a WeatherType enum.
@@ -276,9 +318,14 @@ static func get_weather_name(type: WeatherType) -> String:
 		_: return "Unknown Weather"
 
 
-## Returns icon resource path for a WeatherType.
-static func get_weather_icon_path(type: WeatherType) -> String:
-	return WEATHER_ICON_PATHS.get(type, "res://addons/weather_fx/assets/icons/bluesky.svg")
+## Returns the preloaded icon texture for a WeatherType.
+static func get_weather_icon(type: WeatherType) -> Texture2D:
+	return WEATHER_ICONS.get(type, WEATHER_ICONS[WeatherType.BLUE_SKY])
+
+
+## Returns the precipitation strength (0.0 dry .. 1.2 storm) for a WeatherType.
+static func get_precipitation_strength(type: WeatherType) -> float:
+	return PRECIPITATION_STRENGTH.get(type, 0.0)
 
 
 ## Returns true if temperature is at or below freezing (0°C).
@@ -289,43 +336,31 @@ static func is_freezing(temperature: float) -> bool:
 ## Calculates interpolated temperature for a given biome, altitude, and is_day flag.
 ## Altitudes are in meters (0 to 1000m curve). Values below 0 clamp to 0; above 1000 clamp to 1000.
 static func get_temperature(zone: BiomeZone, altitude: float, is_day: bool) -> float:
-	var data = get_biome_data(zone)
+	var data: Dictionary = get_biome_data(zone)
 	var temps: Array = data["day_temps"] if is_day else data["night_temps"]
-	
-	var clamped_alt = clampf(altitude, 0.0, 1000.0)
-	var index_float = clamped_alt / 100.0
-	var low_idx = int(floor(index_float))
-	var high_idx = int(ceil(index_float))
-	
+	var index_float: float = clampf(altitude, 0.0, 1000.0) / 100.0
+	var low_idx: int = int(floor(index_float))
+	var high_idx: int = int(ceil(index_float))
 	if low_idx >= temps.size() - 1:
 		return float(temps[-1])
 	if low_idx == high_idx:
 		return float(temps[low_idx])
-		
-	var frac = index_float - float(low_idx)
-	var temp_low = float(temps[low_idx])
-	var temp_high = float(temps[high_idx])
-	return lerpf(temp_low, temp_high, frac)
+	return lerpf(float(temps[low_idx]), float(temps[high_idx]), index_float - float(low_idx))
 
 
-## Calculates temperature with a smooth day/night curve according to time_of_day (0.0 to 24.0 hours).
-## Peaks around 14:00 (2 PM), coldest around 04:00 (4 AM).
-static func get_smooth_temperature(zone: BiomeZone, altitude: float, time_of_day: float) -> float:
-	var day_temp = get_temperature(zone, altitude, true)
-	var night_temp = get_temperature(zone, altitude, false)
-	
-	# Diurnal factor: 1.0 = full daytime peak (~14:00), 0.0 = full night trough (~02:00-05:00)
-	var normalized_time = fmod(time_of_day - 4.0 + 24.0, 24.0) / 24.0 # 0 at 4 AM, 0.5 at 4 PM
-	var diurnal_factor = 0.5 - 0.5 * cos(normalized_time * TAU)
-	
-	return lerpf(night_temp, day_temp, diurnal_factor)
+## Calculates diurnal temperature smoothly cycling between coldest night trough (04:00) and peak afternoon (16:00).
+static func get_smooth_temperature(zone: BiomeZone, altitude: float, time_hours: float) -> float:
+	var day_temp: float = get_temperature(zone, altitude, true)
+	var night_temp: float = get_temperature(zone, altitude, false)
+	var day_factor: float = (1.0 - cos((time_hours - 4.0) / 24.0 * TAU)) * 0.5
+	return lerpf(night_temp, day_temp, day_factor)
 
 
-## Converts temperature in Celsius to Fahrenheit.
+## Converts Celsius temperature to Fahrenheit.
 static func celsius_to_fahrenheit(celsius: float) -> float:
-	return (celsius * 1.8) + 32.0
+	return (celsius * 9.0 / 5.0) + 32.0
 
 
-## Converts temperature in Fahrenheit to Celsius.
+## Converts Fahrenheit temperature to Celsius.
 static func fahrenheit_to_celsius(fahrenheit: float) -> float:
-	return (fahrenheit - 32.0) / 1.8
+	return (fahrenheit - 32.0) * 5.0 / 9.0

@@ -244,7 +244,7 @@ _data = {
 
 [node name="windup" type="MeshInstance3D" parent="."]
 transform = Transform3D(2.835, 0, 0, 0, 8.234, 0, 0, 0, 2.835, 0, 0, 0)
-layers = 4
+layers = 1
 material_override = SubResource("ShaderMaterial_68afb")
 cast_shadow = 0
 mesh = ExtResource("3_ttpfd")
@@ -252,7 +252,7 @@ skeleton = NodePath("../..")
 
 [node name="distortion" type="MeshInstance3D" parent="."]
 transform = Transform3D(2.59, 0, 0, 0, 7.522, 0, 0, 0, 2.59, 0, 0, 0)
-layers = 4
+layers = 1
 material_override = SubResource("ShaderMaterial_efuuv")
 cast_shadow = 0
 mesh = ExtResource("3_ttpfd")
@@ -260,7 +260,7 @@ skeleton = NodePath("../..")
 
 [node name="windflowz" type="GPUParticles3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0148295, 0.197563)
-layers = 4
+layers = 1
 material_override = ExtResource("6_0art0")
 cast_shadow = 0
 amount = 10
@@ -274,7 +274,7 @@ draw_pass_1 = ExtResource("7_b7mt0")
 
 [node name="leafflowz" type="GPUParticles3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0575471, 0, 0)
-layers = 4
+layers = 1
 material_override = SubResource("StandardMaterial3D_qh7k8")
 amount = 20
 fixed_fps = 60
@@ -286,7 +286,7 @@ draw_pass_1 = SubResource("QuadMesh_0ckkr")
 
 [node name="leafflowz2" type="GPUParticles3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00577545, 0, 0)
-layers = 4
+layers = 1
 material_override = SubResource("StandardMaterial3D_qh7k8")
 amount = 15
 randomness = 1.0

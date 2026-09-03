@@ -221,8 +221,10 @@ _data = {
 &"Init": SubResource("Animation_iupjj")
 }
 
-[node name="WindVFX" type="Node3D" unique_id=195294376]
+[node name="WindVFX" type="Node3D" unique_id=195294376 node_paths=PackedStringArray("airflow_particles", "leaf_particles")]
 script = ExtResource("1_6vlp6")
+airflow_particles = [NodePath("windflowz3"), NodePath("windflowz4")]
+leaf_particles = [NodePath("leafflowz3")]
 
 [node name="windflowz3" type="GPUParticles3D" parent="." unique_id=145533290]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.54858, 3.5475, 0.153246)
@@ -260,3 +262,11 @@ visibility_aabb = AABB(-4, -4, -4, 35.175, 8, 8)
 transform_align = 3
 process_material = SubResource("ParticleProcessMaterial_mcmcw")
 draw_pass_1 = SubResource("QuadMesh_0ckkr")
+
+[node name="GustTimer" type="Timer" parent="." unique_id=195294377]
+one_shot = true
+
+[node name="TreeCheckTimer" type="Timer" parent="." unique_id=195294378]
+
+[connection signal="timeout" from="GustTimer" to="." method="_on_gust_timer_timeout"]
+[connection signal="timeout" from="TreeCheckTimer" to="." method="_on_tree_check_timer_timeout"]

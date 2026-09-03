@@ -290,8 +290,11 @@ metadata/extras = {
 "arm_cached": 0.0
 }
 
-[node name="Fire" type="Node3D"]
+[node name="Fire" type="Node3D" node_paths=PackedStringArray("smoke_particles", "spark_particles", "fire_light")]
 script = ExtResource("3_firefx")
+smoke_particles = NodePath("Smoke")
+spark_particles = NodePath("Sparks")
+fire_light = NodePath("Light")
 
 [node name="Sparks" type="GPUParticles3D" parent="."]
 cast_shadow = 0
