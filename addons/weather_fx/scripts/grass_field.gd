@@ -6,8 +6,12 @@ class_name GrassField
 extends MultiMeshInstance3D
 
 ## High-performance, wind-reactive grass field populated using MultiMesh.
-## Instances sway via the WeatherFX global shader uniforms; wildfire creeper heads advance
-## downwind using the wind cached from WeatherFX.wind_changed and douse on weather_changed.
+## Instances sway via the WeatherFX global shader uniforms. A wildfire is a cellular front on the
+## origin grid: every burning cell catches its neighbours after a delay set by the creep speed and
+## the wind (fast downwind, slow upwind), so the fire grows as a ragged ring that leans downwind
+## instead of a line. Blades char through the grass shader's per-instance custom data (when each
+## caught, read against the material's fire_clock). Wind comes from WeatherFX.wind_changed and rain
+## douses everything on weather_changed.
 
 enum GrassMeshType {
 	COMMON_SHORT,
@@ -16,28 +20,6 @@ enum GrassMeshType {
 	WISPY_TALL,
 	CUSTOM
 }
-
-## Wildfire creeper head advancing a fire front across the field.
-class CreeperHead extends RefCounted:
-	var pos: Vector2
-	var heading: Vector2
-	var speed: float
-	var max_life: float
-	var angle_offset: float
-	var branches_left: int
-	var dist_since_drop: float
-	var age: float = 0.0
-	var noise_seed: float = randf() * 100.0
-
-	func _init(p_pos: Vector2, p_heading: Vector2, p_speed: float, p_max_life: float, p_angle_offset: float, p_branches_left: int, p_dist_since_drop: float = 0.0) -> void:
-		pos = p_pos
-		heading = p_heading
-		speed = p_speed
-		max_life = p_max_life
-		angle_offset = p_angle_offset
-		branches_left = p_branches_left
-		dist_since_drop = p_dist_since_drop
-
 
 const GRASS_MESHES: Dictionary = {
 	GrassMeshType.COMMON_SHORT: preload("res://addons/weather_fx/resources/mesh_grass_common_short.tres"),
@@ -50,10 +32,17 @@ const FIRE_TRAIL_SCENE: PackedScene = preload("res://addons/weather_fx/scenes/fi
 ## BotW decomp fire front creep speed band (m/s).
 const CREEP_SPEED_MIN: float = 1.2
 const CREEP_SPEED_MAX: float = 1.8
-## Cell size of the spatial grid used to consume grass around trail nodes.
+## Cell size of the origin grid; grass lookups and the fire front both work on it.
 const BUCKET_SIZE: float = 2.0
 const MAX_TRAIL_NODES: int = 48
-const MAX_CREEPER_HEADS: int = 8
+const CELL_BURN_SECONDS: float = 6.0 ## A cell flames for this long, then it is ash.
+const UPWIND_SPEED_FACTOR: float = 0.25 ## Creep speed dead upwind in a full-strength wind, as a fraction of the downwind speed.
+const FULL_WIND_STRENGTH: float = 8.0 ## Wind strength at which the front leans as far downwind as it gets.
+const BLADE_CATCH_JITTER: float = 1.0 ## Each blade in a cell catches up to this many seconds after its cell.
+const NEIGHBOURS: Array[Vector2i] = [
+	Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
+	Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1),
+]
 
 @export var mesh_type: GrassMeshType = GrassMeshType.COMMON_SHORT:
 	set(val):
@@ -133,15 +122,20 @@ const MAX_CREEPER_HEADS: int = 8
 
 @export_group("Wildfire Physics")
 @export var enable_wildfire: bool = true ## Enables wind-reactive grass fires and thermal updrafts across the field.
-@export var fire_spread_speed: float = 1.5 ## Fire front creep speed in m/s, clamped to the BotW 1.2-1.8 band. Wind biases direction, not speed.
+@export var fire_spread_speed: float = 1.5 ## Fire front creep speed in m/s downwind, clamped to the BotW 1.2-1.8 band. Wind shapes the front; it never makes it faster.
 @export var weather_fx: WeatherFX
 
 var _instance_origins: Array[Vector3] = []
 var _origin_buckets: Dictionary[Vector2i, Array] = {}
-var _active_fires: Array[Dictionary] = []
-var _creeper_heads: Array[CreeperHead] = []
 var _trail_nodes: Array[FireTrailNode] = []
+var _burning_cells: Dictionary[Vector2i, float] = {} ## Cell -> seconds since it caught.
+var _burnt_cells: Dictionary[Vector2i, bool] = {} ## Ash; never catches again.
+var _catch_jitter: Dictionary[Vector2i, float] = {} ## How reluctant each cell is to catch (0.7 quick, 1.4 slow), for ragged edges.
+var _spread_time_left: float = 0.0 ## Seconds the front may still grow (an ignition's duration); lit cells finish regardless.
+var _fire_clock: float = 0.0 ## Seconds since the field's first ignition, mirrored into the shader's fire_clock.
+var _clock_until: float = 0.0 ## The clock keeps running until the last lit blade has turned to ash.
 var _h_wind: Vector2 = Vector2(WeatherFX.active_wind_direction.x, WeatherFX.active_wind_direction.z).normalized()
+var _wind_strength: float = WeatherFX.active_wind_strength
 
 
 func _enter_tree() -> void:
@@ -163,9 +157,10 @@ func _ready() -> void:
 		_on_wind_changed(weather_fx.current_wind_strength, weather_fx.wind_direction)
 
 
-func _on_wind_changed(_strength: float, direction: Vector3) -> void:
+func _on_wind_changed(strength: float, direction: Vector3) -> void:
 	var h_wind: Vector2 = Vector2(direction.x, direction.z)
 	_h_wind = h_wind.normalized() if h_wind.length_squared() > 0.001 else Vector2.ZERO
+	_wind_strength = strength
 
 
 func _on_weather_changed(new_weather: ClimateData.WeatherType, _old_weather: ClimateData.WeatherType) -> void:
@@ -173,103 +168,98 @@ func _on_weather_changed(new_weather: ClimateData.WeatherType, _old_weather: Cli
 		extinguish_all_fires()
 
 
-## Advances creeper heads (continuous fire front animation).
+## Advances the fire front: lit cells age, pass the fire to neighbours and turn to ash.
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint() or not enable_wildfire:
 		return
-	if _creeper_heads.is_empty():
+	if _burning_cells.is_empty() and _fire_clock >= _clock_until:
 		return
-	var has_wind: bool = not _h_wind.is_zero_approx()
-	for h_idx: int in range(_creeper_heads.size() - 1, -1, -1):
-		var head: CreeperHead = _creeper_heads[h_idx]
-		head.age += delta
-		if head.age >= head.max_life or _trail_nodes.size() >= MAX_TRAIL_NODES:
-			_creeper_heads.remove_at(h_idx)
+	_fire_clock += delta
+	_spread_time_left -= delta
+	var shader_material: ShaderMaterial = material_override as ShaderMaterial
+	if shader_material:
+		shader_material.set_shader_parameter(&"fire_clock", _fire_clock)
+	var speed: float = clampf(fire_spread_speed, CREEP_SPEED_MIN, CREEP_SPEED_MAX)
+	for cell: Vector2i in _burning_cells.keys():
+		var age: float = _burning_cells[cell] + delta
+		if age >= CELL_BURN_SECONDS:
+			_burning_cells.erase(cell)
+			_burnt_cells[cell] = true
 			continue
-		# Wind bias with organic meandering
-		if has_wind:
-			var target_heading: Vector2 = _h_wind.rotated(head.angle_offset + sin(head.age * 3.5 + head.noise_seed) * 0.35)
-			head.heading = head.heading.slerp(target_heading, delta * 3.0).normalized()
-		else:
-			head.heading = head.heading.rotated(sin(head.age * 2.0 + head.noise_seed) * delta * 0.8).normalized()
-		var move_dist: float = head.speed * delta
-		head.pos += head.heading * move_dist
-		head.dist_since_drop += move_dist
-		var local_p: Vector3 = to_local(Vector3(head.pos.x, 0.0, head.pos.y))
-		if absf(local_p.x) > field_size.x * 0.5 or absf(local_p.z) > field_size.y * 0.5:
-			_creeper_heads.remove_at(h_idx)
+		_burning_cells[cell] = age
+		if _spread_time_left <= 0.0:
 			continue
-		# Drop connected FireTrailNodes along the path (0.35m spacing for seamless overlap)
-		if head.dist_since_drop >= 0.35:
-			head.dist_since_drop = 0.0
-			_drop_trail_node(local_p, Vector3(head.pos.x, 0.0, head.pos.y))
-			# Occasional lateral branch (trail split / combining)
-			if head.branches_left > 0 and head.age > 0.8 and randf() < delta * 1.2:
-				head.branches_left -= 1
-				_spawn_branch_head(head.pos, head.heading, -head.angle_offset)
+		for offset: Vector2i in NEIGHBOURS:
+			var next: Vector2i = cell + offset
+			if _burning_cells.has(next) or _burnt_cells.has(next) or not _origin_buckets.has(next):
+				continue # Already alight, ash, or nothing there to burn
+			# The fire arrives when this cell has burned for the creep time of the step, give or take the
+			# neighbour's own reluctance, so the front keeps the creep speed and gets ragged edges
+			if age >= _seconds_to_catch(offset, speed) * _catch_jitter.get_or_add(next, randf_range(0.7, 1.4)):
+				_ignite_cell(next)
 
 
-func _drop_trail_node(local_pos: Vector3, world_pos: Vector3) -> FireTrailNode:
+## Seconds the front takes to cross [param offset] on the grid: the creep time for the distance,
+## stretched upwind and across the wind in proportion to the wind's strength.
+func _seconds_to_catch(offset: Vector2i, speed: float) -> float:
+	var step: Vector2 = Vector2(offset) * BUCKET_SIZE
+	var factor: float = 1.0
+	if not _h_wind.is_zero_approx():
+		var alignment: float = step.normalized().dot(_h_wind)
+		var lean: float = clampf(_wind_strength / FULL_WIND_STRENGTH, 0.0, 1.0)
+		factor = lerpf(1.0, remap(alignment, -1.0, 1.0, UPWIND_SPEED_FACTOR, 1.0), lean)
+	return step.length() / (speed * factor)
+
+
+## Lights one grid cell: its blades catch (each with its own jitter) and a flame node lands on it
+## while the node budget allows.
+func _ignite_cell(cell: Vector2i) -> void:
+	_burning_cells[cell] = 0.0
+	_clock_until = _fire_clock + CELL_BURN_SECONDS + BLADE_CATCH_JITTER + 0.5
+	if multimesh:
+		for idx: int in _origin_buckets.get(cell, []):
+			multimesh.set_instance_custom_data(idx, Color(_fire_clock, randf() * BLADE_CATCH_JITTER, 0.0, 1.0))
+	if _trail_nodes.size() < MAX_TRAIL_NODES:
+		var centre: Vector3 = Vector3((cell.x + 0.5) * BUCKET_SIZE, 0.0, (cell.y + 0.5) * BUCKET_SIZE)
+		_drop_trail_node(centre + Vector3(randf_range(-0.4, 0.4), 0.0, randf_range(-0.4, 0.4)))
+
+
+func _drop_trail_node(local_pos: Vector3) -> FireTrailNode:
 	var node: FireTrailNode = FIRE_TRAIL_SCENE.instantiate() as FireTrailNode
 	node.weather_fx = weather_fx
 	node.position = local_pos
 	add_child(node)
 	_trail_nodes.append(node)
 	node.tree_exiting.connect(_trail_nodes.erase.bind(node)) # Drop the reference before the node is freed
-	_consume_grass_in_radius(world_pos, 1.2)
 	return node
 
 
-func _spawn_branch_head(pos_2d: Vector2, parent_heading: Vector2, angle_offset: float) -> void:
-	if _creeper_heads.size() >= MAX_CREEPER_HEADS:
-		return
-	var speed: float = clampf(fire_spread_speed * randf_range(0.75, 0.95), CREEP_SPEED_MIN, CREEP_SPEED_MAX)
-	_creeper_heads.append(CreeperHead.new(pos_2d, parent_heading.rotated(angle_offset).normalized(), speed, randf_range(3.5, 5.5), angle_offset, 0))
-
-
-## Ignites a trailing, spreading wildfire on this grass field. Returns false when the point is off-field.
+## Starts a wildfire: every grass cell within [param initial_radius] of [param world_pos] catches and the
+## front keeps growing for [param duration] seconds (lit cells burn out on their own after that).
+## Returns false when the point is off-field.
 func ignite_at(world_pos: Vector3, initial_radius: float = 2.0, duration: float = 6.0) -> bool:
 	if not enable_wildfire:
 		return false
 	var local_p: Vector3 = to_local(world_pos)
 	if absf(local_p.x) > field_size.x * 0.5 + 2.0 or absf(local_p.z) > field_size.y * 0.5 + 2.0:
 		return false
-	var initial_node: FireTrailNode = _drop_trail_node(local_p, world_pos)
-
-	# Spawn trailing creeper heads biased downwind (or a symmetric fan without wind)
-	var has_wind: bool = not _h_wind.is_zero_approx()
-	var base_dir: Vector2 = _h_wind if has_wind else Vector2.RIGHT
-	var pos_2d: Vector2 = Vector2(world_pos.x, world_pos.z)
-	var angle_spreads: Array[float] = [-0.4, 0.0, 0.4]
-	if not has_wind:
-		angle_spreads = [0.0, 2.1, 4.2]
-	for offset_angle: float in angle_spreads:
-		var head_dir: Vector2 = base_dir.rotated(offset_angle).normalized()
-		var speed: float = clampf(fire_spread_speed * randf_range(0.9, 1.1), CREEP_SPEED_MIN, CREEP_SPEED_MAX)
-		_creeper_heads.append(CreeperHead.new(pos_2d + head_dir * 0.3, head_dir, speed, duration, offset_angle, 2, 0.3))
-
-	# Compatibility record for tests
-	_active_fires.append({
-		"origin": world_pos,
-		"current_pos": world_pos,
-		"radius": initial_radius,
-		"age": 0.0,
-		"duration": duration,
-		"patch_node": initial_node,
-		"updraft_area": initial_node.get_node_or_null(^"ThermalUpdraftArea"),
-		"vfx_node": initial_node,
-	})
+	_spread_time_left = maxf(_spread_time_left, duration)
+	var origin_cell: Vector2i = _cell_of(local_p)
+	var reach: int = ceili(initial_radius / BUCKET_SIZE)
+	for cx: int in range(origin_cell.x - reach, origin_cell.x + reach + 1):
+		for cz: int in range(origin_cell.y - reach, origin_cell.y + reach + 1):
+			var cell: Vector2i = Vector2i(cx, cz)
+			if _burning_cells.has(cell) or _burnt_cells.has(cell) or not _origin_buckets.has(cell):
+				continue
+			var centre: Vector2 = (Vector2(cell) + Vector2(0.5, 0.5)) * BUCKET_SIZE
+			if cell == origin_cell or centre.distance_to(Vector2(local_p.x, local_p.z)) <= initial_radius:
+				_ignite_cell(cell)
 	return true
 
 
-## Flattens grass instances within radius of world_pos.
-func _consume_grass_in_radius(world_pos: Vector3, radius: float) -> void:
-	if multimesh == null:
-		return
-	for idx: int in get_grass_indices_in_radius(to_local(world_pos), radius):
-		var t: Transform3D = multimesh.get_instance_transform(idx)
-		t.basis = t.basis.scaled(Vector3(1.0, 0.25, 1.0))
-		multimesh.set_instance_transform(idx, t)
+## The origin-grid cell holding a local-space point.
+func _cell_of(local_pos: Vector3) -> Vector2i:
+	return Vector2i(floori(local_pos.x / BUCKET_SIZE), floori(local_pos.z / BUCKET_SIZE))
 
 
 ## Returns the instance indices within radius of a local-space point, looked up through the coarse origin grid.
@@ -287,10 +277,16 @@ func get_grass_indices_in_radius(center: Vector3, radius: float) -> Array[int]:
 	return result
 
 
-## Extinguishes all active wildfire fronts on this field.
+## Douses the fire: the front stops, every lit cell is ash and its blades char out at once.
 func extinguish_all_fires() -> void:
-	_creeper_heads.clear()
-	_active_fires.clear()
+	_spread_time_left = 0.0
+	for cell: Vector2i in _burning_cells:
+		_burnt_cells[cell] = true
+		if multimesh:
+			for idx: int in _origin_buckets.get(cell, []):
+				multimesh.set_instance_custom_data(idx, Color(_fire_clock - CELL_BURN_SECONDS, 0.0, 0.0, 1.0))
+	_burning_cells.clear()
+	_clock_until = _fire_clock
 	for node: FireTrailNode in _trail_nodes.duplicate(): # extinguish() may free nodes, which erase themselves
 		if is_instance_valid(node):
 			node.extinguish()
@@ -328,18 +324,22 @@ func is_point_excluded(px: float, pz: float) -> bool:
 	return false
 
 
-## Rebuilds the MultiMesh instances within field boundaries.
+## Rebuilds the MultiMesh instances within field boundaries. Every blade gets custom data for the
+## fire (zero until it catches), and at runtime the field gets its own copy of the material so its
+## fire clock is its own.
 func regenerate() -> void:
 	_instance_origins.clear()
 	_origin_buckets.clear()
+	_burning_cells.clear()
+	_burnt_cells.clear()
+	_catch_jitter.clear()
 	if instance_count <= 0:
 		if multimesh:
 			multimesh.instance_count = 0
 		return
-	material_override = custom_grass_material if custom_grass_material else GRASS_MATERIAL
-
 	var mm: MultiMesh = MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_custom_data = true
 	mm.mesh = get_active_mesh()
 	mm.instance_count = instance_count
 
@@ -379,3 +379,10 @@ func regenerate() -> void:
 		_origin_buckets[cell] = bucket
 
 	multimesh = mm
+	# After the multimesh: swapping the base drops the override the renderer holds, so set it last
+	var base_material: Material = custom_grass_material if custom_grass_material else GRASS_MATERIAL
+	material_override = base_material if Engine.is_editor_hint() else base_material.duplicate()
+	var shader_material: ShaderMaterial = material_override as ShaderMaterial
+	if shader_material and not Engine.is_editor_hint():
+		shader_material.set_shader_parameter(&"burn_seconds", CELL_BURN_SECONDS)
+		shader_material.set_shader_parameter(&"fire_clock", _fire_clock)

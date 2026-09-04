@@ -30,6 +30,9 @@ uniform float alpha_scissor_threshold : hint_range(0.0, 1.0) = 0.5;
 group_uniforms Combustion;
 uniform float burn_progress : hint_range(0.0, 1.0, 0.01) = 0.0;
 instance uniform float instance_burn_progress : hint_range(0.0, 1.0, 0.01) = 0.0;
+// GrassField blades: INSTANCE_CUSTOM = (seconds on fire_clock when the blade caught, extra delay, 0, 1 when lit)
+uniform float fire_clock = 0.0;
+uniform float burn_seconds = 6.0;
 uniform vec4 ember_inner_color : source_color = vec4(4.0, 1.8, 0.3, 1.0);
 uniform vec4 ember_outer_color : source_color = vec4(2.5, 0.4, 0.05, 1.0);
 uniform vec4 ash_color : source_color = vec4(0.06, 0.05, 0.04, 1.0);
@@ -62,8 +65,12 @@ void vertex() {
 	vec3 world_origin = MODEL_MATRIX[3].xyz;
 	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	
-	// Determine effective burn factor from material uniform or instance uniform
-	float effective_burn = max(burn_progress, instance_burn_progress);
+	// Burn factor: the material uniform, the instance uniform, or this blade's own fire (MultiMesh custom data)
+	float blade_burn = 0.0;
+	if (INSTANCE_CUSTOM.a > 0.5) {
+		blade_burn = (fire_clock - INSTANCE_CUSTOM.r - INSTANCE_CUSTOM.g) / burn_seconds;
+	}
+	float effective_burn = max(max(burn_progress, instance_burn_progress), blade_burn);
 	v_burn = clamp(effective_burn, 0.0, 1.0);
 	
 	// Height factor along the blade (local mesh space): roots at VERTEX.y <= 0.0 remain firmly planted

@@ -1,9 +1,9 @@
 extends GutTest
 
 ## Purpose: Unit tests for BotW gold-standard wildfire physics that live with the WeatherFX addon —
-## fire front creep speed band, shared wind spread math, burnout group cleanup, scene-wired
-## BurnableGrass ignition, BurnableGrass -> GrassField propagation delegation, bucketed grass
-## consumption, and Player-class duck typing.
+## the cell front's creep speed band and wind lean, shared wind spread math, burnout group cleanup,
+## scene-wired BurnableGrass ignition, BurnableGrass -> GrassField propagation delegation, bucketed
+## grass lookup, and Player-class duck typing.
 
 const GRASS_FIELD_SCENE: PackedScene = preload("res://addons/weather_fx/scenes/grass_field.tscn")
 const BURNABLE_GRASS_SCENE: PackedScene = preload("res://addons/weather_fx/scenes/burnable_grass.tscn")
@@ -40,14 +40,63 @@ func _field(count: int = 20, size: float = 40.0) -> GrassField:
 func test_creep_speed_stays_in_botw_band_even_in_storm_wind() -> void:
 	WeatherFX.active_wind_strength = 16.0
 	var field := _field()
-	field.ignite_at(Vector3.ZERO, 2.0, 8.0)
-	assert_gt(field._creeper_heads.size(), 0, "Ignition should spawn creeper heads")
-	for head in field._creeper_heads:
-		assert_between(head.speed, GrassField.CREEP_SPEED_MIN, GrassField.CREEP_SPEED_MAX,
-				"Fire front creep speed must stay within the BotW 1.2-1.8 m/s band regardless of wind strength")
-	field._spawn_branch_head(Vector2.ZERO, Vector2.RIGHT, 0.4)
-	var branch: GrassField.CreeperHead = field._creeper_heads[field._creeper_heads.size() - 1]
-	assert_between(branch.speed, GrassField.CREEP_SPEED_MIN, GrassField.CREEP_SPEED_MAX, "Branch head creep speed must stay within the BotW band")
+	field.fire_spread_speed = 9.0
+	var speed: float = clampf(field.fire_spread_speed, GrassField.CREEP_SPEED_MIN, GrassField.CREEP_SPEED_MAX)
+	assert_eq(speed, GrassField.CREEP_SPEED_MAX, "The front never creeps faster than the BotW 1.2-1.8 m/s band")
+	var downwind: float = field._seconds_to_catch(Vector2i(1, 0), speed)
+	var crosswind: float = field._seconds_to_catch(Vector2i(0, 1), speed)
+	var upwind: float = field._seconds_to_catch(Vector2i(-1, 0), speed)
+	assert_almost_eq(downwind, GrassField.BUCKET_SIZE / GrassField.CREEP_SPEED_MAX, 0.001, "Downwind the front crosses a cell at the creep speed; a storm does not hurry it")
+	assert_gt(crosswind, downwind, "Across the wind is slower")
+	assert_gt(upwind, crosswind, "Upwind is slowest, so the front leans downwind")
+	assert_almost_eq(upwind, downwind / GrassField.UPWIND_SPEED_FACTOR, 0.001)
+	assert_gt(field._seconds_to_catch(Vector2i(1, 1), speed), downwind, "A diagonal step is longer")
+	field._on_wind_changed(0.0, Vector3.ZERO)
+	assert_almost_eq(field._seconds_to_catch(Vector2i(-1, 0), speed), downwind, 0.001, "Without wind the front is a ring")
+
+
+func test_the_front_grows_as_a_ring_leaning_downwind_then_burns_out() -> void:
+	WeatherFX.active_wind_strength = 8.0
+	var field := _field(1600, 40.0)
+	assert_true(field.ignite_at(Vector3.ZERO, 2.0, 5.0))
+	assert_gt(field._burning_cells.size(), 0, "The cells around the ignition point catch")
+	var origin: Vector2i = field._cell_of(Vector3.ZERO)
+	for _i: int in 120: # 6 s of spreading (wind blows +X)
+		field._process(0.05)
+	var lit: Array = field._burning_cells.keys() + field._burnt_cells.keys()
+	var downwind: int = 0
+	var upwind: int = 0
+	var north: int = 0
+	var south: int = 0
+	for cell: Vector2i in lit:
+		downwind += 1 if cell.x > origin.x else 0
+		upwind += 1 if cell.x < origin.x else 0
+		north += 1 if cell.y > origin.y else 0
+		south += 1 if cell.y < origin.y else 0
+	assert_gt(lit.size(), 12, "The fire covers ground")
+	assert_gt(downwind, upwind, "It leans downwind")
+	assert_gt(north, 0, "It spreads across the wind too, not as a line")
+	assert_gt(south, 0, "It spreads across the wind too, not as a line")
+	assert_gt(field._trail_nodes.size(), 0, "Flame nodes sit on the lit cells")
+	assert_lte(field._trail_nodes.size(), GrassField.MAX_TRAIL_NODES)
+	for _i: int in 200: # The duration is over: nothing new catches, lit cells burn out
+		field._process(0.05)
+	assert_lte(field._spread_time_left, 0.0)
+	assert_true(field._burning_cells.is_empty(), "Every lit cell has turned to ash")
+	assert_eq(field._burnt_cells.size(), lit.size(), "Ash never catches again and the front stopped growing")
+	assert_false(field.ignite_at(Vector3(500.0, 0.0, 500.0)), "Off the field there is nothing to light")
+
+
+func test_rain_douses_the_front_and_chars_what_was_lit() -> void:
+	var field := _field(400, 20.0)
+	field.ignite_at(Vector3.ZERO, 3.0, 10.0)
+	var lit: int = field._burning_cells.size()
+	assert_gt(lit, 0)
+	field._on_weather_changed(ClimateData.WeatherType.HEAVY_RAIN, ClimateData.WeatherType.BLUE_SKY)
+	assert_true(field._burning_cells.is_empty(), "Rain puts the front out")
+	assert_eq(field._burnt_cells.size(), lit, "What was lit is ash")
+	assert_lte(field._spread_time_left, 0.0)
+	assert_true(field._trail_nodes.is_empty())
 
 
 func test_wind_spread_factor_math() -> void:
@@ -113,12 +162,12 @@ func test_burnable_grass_ignites_via_scene_wired_hitbox() -> void:
 
 
 func test_burnable_grass_delegates_creeping_to_grass_field() -> void:
-	var field := _field()
+	var field := _field(400, 20.0)
 	var grass: BurnableGrass = BURNABLE_GRASS_SCENE.instantiate() as BurnableGrass
 	root.add_child(grass)
-	assert_eq(field._active_fires.size(), 0)
+	assert_eq(field._burning_cells.size(), 0)
 	grass.ignite()
-	assert_gt(field._active_fires.size(), 0, "Igniting BurnableGrass should hand creeping propagation to the overlapping GrassField")
+	assert_gt(field._burning_cells.size(), 0, "Igniting BurnableGrass should hand the creeping front to the overlapping GrassField")
 
 
 func test_grass_field_bucketed_lookup_matches_brute_force() -> void:
@@ -167,7 +216,7 @@ func test_updraft_vfx_falls_back_to_camera_proximity_without_player() -> void:
 
 func test_freed_trail_node_leaves_the_field_list_before_process() -> void:
 	var field: GrassField = _field()
-	var node: FireTrailNode = field._drop_trail_node(Vector3.ZERO, Vector3.ZERO)
+	var node: FireTrailNode = field._drop_trail_node(Vector3.ZERO)
 	assert_eq(field._trail_nodes.size(), 1)
 	node.free()
 	assert_true(field._trail_nodes.is_empty(), "A freed trail node must erase itself so _process never sees a dead reference")
