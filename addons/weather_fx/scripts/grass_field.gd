@@ -136,6 +136,7 @@ var _fire_clock: float = 0.0 ## Seconds since the field's first ignition, mirror
 var _clock_until: float = 0.0 ## The clock keeps running until the last lit blade has turned to ash.
 var _h_wind: Vector2 = Vector2(WeatherFX.active_wind_direction.x, WeatherFX.active_wind_direction.z).normalized()
 var _wind_strength: float = WeatherFX.active_wind_strength
+var _is_raining: bool = WeatherFX.active_precipitation_strength > 0.4 ## Nothing catches in the rain.
 
 
 func _enter_tree() -> void:
@@ -155,6 +156,7 @@ func _ready() -> void:
 		weather_fx.wind_changed.connect(_on_wind_changed)
 		weather_fx.weather_changed.connect(_on_weather_changed)
 		_on_wind_changed(weather_fx.current_wind_strength, weather_fx.wind_direction)
+		_is_raining = weather_fx.is_simulating() and ClimateData.get_precipitation_strength(weather_fx.active_weather) > 0.4
 
 
 func _on_wind_changed(strength: float, direction: Vector3) -> void:
@@ -164,7 +166,8 @@ func _on_wind_changed(strength: float, direction: Vector3) -> void:
 
 
 func _on_weather_changed(new_weather: ClimateData.WeatherType, _old_weather: ClimateData.WeatherType) -> void:
-	if ClimateData.get_precipitation_strength(new_weather) > 0.4:
+	_is_raining = ClimateData.get_precipitation_strength(new_weather) > 0.4
+	if _is_raining:
 		extinguish_all_fires()
 
 
@@ -236,9 +239,9 @@ func _drop_trail_node(local_pos: Vector3) -> FireTrailNode:
 
 ## Starts a wildfire: every grass cell within [param initial_radius] of [param world_pos] catches and the
 ## front keeps growing for [param duration] seconds (lit cells burn out on their own after that).
-## Returns false when the point is off-field.
+## Returns false when the point is off-field or it is raining.
 func ignite_at(world_pos: Vector3, initial_radius: float = 2.0, duration: float = 6.0) -> bool:
-	if not enable_wildfire:
+	if not enable_wildfire or _is_raining:
 		return false
 	var local_p: Vector3 = to_local(world_pos)
 	if absf(local_p.x) > field_size.x * 0.5 + 2.0 or absf(local_p.z) > field_size.y * 0.5 + 2.0:
@@ -255,6 +258,12 @@ func ignite_at(world_pos: Vector3, initial_radius: float = 2.0, duration: float 
 			if cell == origin_cell or centre.distance_to(Vector2(local_p.x, local_p.z)) <= initial_radius:
 				_ignite_cell(cell)
 	return true
+
+
+## Custom data for a blade doused mid-burn: well past a full burn, so it reads as ash on the clock the
+## shader last saw (a frame behind the field's) rather than glowing as an ember for good.
+func doused_blade_data() -> Color:
+	return Color(_fire_clock - 2.0 * CELL_BURN_SECONDS, 0.0, 0.0, 1.0)
 
 
 ## The origin-grid cell holding a local-space point.
@@ -284,7 +293,7 @@ func extinguish_all_fires() -> void:
 		_burnt_cells[cell] = true
 		if multimesh:
 			for idx: int in _origin_buckets.get(cell, []):
-				multimesh.set_instance_custom_data(idx, Color(_fire_clock - CELL_BURN_SECONDS, 0.0, 0.0, 1.0))
+				multimesh.set_instance_custom_data(idx, doused_blade_data())
 	_burning_cells.clear()
 	_clock_until = _fire_clock
 	for node: FireTrailNode in _trail_nodes.duplicate(): # extinguish() may free nodes, which erase themselves

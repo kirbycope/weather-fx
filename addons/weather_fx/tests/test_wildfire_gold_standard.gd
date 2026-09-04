@@ -97,6 +97,23 @@ func test_rain_douses_the_front_and_chars_what_was_lit() -> void:
 	assert_eq(field._burnt_cells.size(), lit, "What was lit is ash")
 	assert_lte(field._spread_time_left, 0.0)
 	assert_true(field._trail_nodes.is_empty())
+	assert_false(field.ignite_at(Vector3.ZERO, 3.0, 10.0), "Nothing catches while it rains")
+	field._on_weather_changed(ClimateData.WeatherType.BLUE_SKY, ClimateData.WeatherType.HEAVY_RAIN)
+	assert_true(field.ignite_at(Vector3(6.0, 0.0, 6.0), 3.0, 10.0), "Dry again, the unburnt grass catches")
+
+
+func test_doused_blades_read_as_ash_on_the_clock_the_shader_last_saw() -> void:
+	# The clock the shader holds is a frame behind the field's when rain douses the fire, and the field stops
+	# ticking; the doused blades must still read as fully burnt (no embers glowing forever)
+	var field := _field(200, 10.0)
+	field.ignite_at(Vector3.ZERO, 3.0, 10.0)
+	for _i: int in 40:
+		field._process(0.05)
+	var clock_seen_by_shader: float = field._fire_clock - 0.05
+	field.extinguish_all_fires()
+	var data: Color = field.doused_blade_data() # The headless renderer keeps no custom data to read back
+	assert_gt(data.a, 0.5, "Lit")
+	assert_gte((clock_seen_by_shader - data.r - data.g) / GrassField.CELL_BURN_SECONDS, 1.0, "Past a full burn on the shader's clock, so no ember glow remains")
 
 
 func test_wind_spread_factor_math() -> void:
