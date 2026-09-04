@@ -152,7 +152,6 @@ visibility_aabb = AABB(-28, -5, -28, 56, 540, 56)
 process_material = SubResource("ParticleProcessMaterial_splash")
 draw_passes = 1
 draw_pass_1 = SubResource("QuadMesh_splash_droplet")
-draw_pass_2 = SubResource("QuadMesh_ripple")
 
 [node name="SnowParticles" type="GPUParticles3D" parent="PrecipitationFX" unique_id=888760288]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
