@@ -121,3 +121,25 @@ func test_plugin_registers_each_class_once() -> void:
 		assert_eq(matches.size(), 1, "%s must be registered exactly once via class_name" % class_name_str)
 	var plugin_script: Script = load("res://addons/weather_fx/plugin.gd") as Script
 	assert_false(plugin_script.source_code.contains("add_custom_type"), "plugin.gd must not duplicate class_name nodes in the Create Node dialog")
+
+
+func test_rain_splashes_land_where_drops_hit_the_scenery() -> void:
+	var fx: WeatherFX = load("res://addons/weather_fx/scenes/weather_fx.tscn").instantiate()
+	add_child_autofree(fx)
+	var target := Node3D.new()
+	add_child_autofree(target)
+	fx.target_node = target
+	var precipitation: PrecipitationFX = fx.get_node("PrecipitationFX")
+	assert_true(precipitation.rain_ground is GPUParticlesCollisionHeightField3D, "A heightfield of the scenery follows the target")
+	precipitation._setup_renderer_compatibility(false)
+	var rain_mat: ParticleProcessMaterial = precipitation.rain_particles.process_material
+	assert_eq(rain_mat.collision_mode, ParticleProcessMaterial.COLLISION_RIGID, "Drops stop on the surface they hit (a hidden drop would not sub-emit)")
+	assert_eq(rain_mat.sub_emitter_mode, ParticleProcessMaterial.SUB_EMITTER_AT_COLLISION, "And spawn their splash right there")
+	target.global_position = Vector3(9.0, 3.0, -6.0)
+	precipitation.set_process(true)
+	precipitation._process(0.0)
+	assert_eq(precipitation.rain_ground.global_position, target.global_position, "The heightfield follows the target")
+	assert_eq(precipitation.rain_splash_particles.global_position, target.global_position + Vector3(0.0, -500.0, 0.0), "The splash emitter keeps emitting 500 m down, out of sight, so its sub-emissions can land on the scenery")
+	precipitation._setup_renderer_compatibility(true)
+	assert_eq(rain_mat.collision_mode, ParticleProcessMaterial.COLLISION_DISABLED, "Compatibility has no particle collision")
+	assert_eq(rain_mat.sub_emitter_mode, ParticleProcessMaterial.SUB_EMITTER_DISABLED)

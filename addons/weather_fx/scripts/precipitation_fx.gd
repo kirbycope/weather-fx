@@ -6,7 +6,12 @@ class_name PrecipitationFX
 extends Node3D
 
 ## Rain, splash and snow particle systems driven by WeatherFX signals.
-## Follows weather_fx.target_node and slants trajectories with the last received wind.
+## Follows weather_fx.target_node and slants trajectories with the last received wind. On Forward+ and Mobile the
+## rain collides with [member rain_ground], a heightfield of the scenery around the target, and every splash and
+## ripple is sub-emitted where its drop actually lands (ramps, roofs, grass). A sub-emitter only spawns while it is
+## emitting itself, so the splash emitter is parked 500 m below the target where its own particles are never seen.
+## The Compatibility renderer has no particle collision, so there the splash emitter is a plane on the ground
+## found under the target instead.
 
 const RAIN_AMOUNT: Dictionary = {
 	ClimateData.WeatherType.RAIN: 1000,
@@ -22,11 +27,13 @@ const SNOW_AMOUNT: Dictionary = {
 @export var rain_particles: GPUParticles3D
 @export var rain_splash_particles: GPUParticles3D
 @export var snow_particles: GPUParticles3D
+@export var rain_ground: GPUParticlesCollisionHeightField3D ## Follows the target; its resolution and size are the cost knobs.
 
 var _weather: ClimateData.WeatherType = ClimateData.WeatherType.BLUE_SKY
 var _active: bool = false
 var _wind_strength: float = 0.0
 var _wind_direction: Vector3 = Vector3.RIGHT
+var _compatibility: bool = false ## No particle collision or sub-emitters: splashes fall back to a ground plane.
 
 
 func _ready() -> void:
@@ -52,8 +59,14 @@ func _process(_delta: float) -> void:
 	var pos: Vector3 = weather_fx.target_node.global_position
 	var wind_offset: Vector3 = -_wind_direction * _wind_strength * 0.22
 	rain_particles.global_position = Vector3(pos.x + wind_offset.x, pos.y + 12.0, pos.z + wind_offset.z)
-	# Splash ripples always sit on the actual ground elevation, never floating in mid-air
-	rain_splash_particles.global_position = Vector3(pos.x, _find_ground_y(pos) + 0.02, pos.z)
+	if _compatibility:
+		# No collision here: the splash plane sits on the ground found under the target
+		rain_splash_particles.global_position = Vector3(pos.x, _find_ground_y(pos) + 0.02, pos.z)
+	else:
+		# Splashes are sub-emitted where each drop hits the heightfield; the emitter's own particles stay 500 m down
+		rain_splash_particles.global_position = pos + Vector3(0.0, -500.0, 0.0)
+		if is_instance_valid(rain_ground):
+			rain_ground.global_position = pos
 	snow_particles.global_position = Vector3(pos.x + wind_offset.x * 1.5, pos.y + 12.0, pos.z + wind_offset.z * 1.5)
 
 
@@ -118,14 +131,19 @@ func _apply() -> void:
 func _setup_renderer_compatibility(is_compatibility_mode: bool) -> void:
 	if not (is_instance_valid(rain_particles) and is_instance_valid(rain_splash_particles) and is_instance_valid(snow_particles)):
 		return
+	_compatibility = is_compatibility_mode
 	if is_compatibility_mode:
 		for particles: GPUParticles3D in [rain_particles, rain_splash_particles, snow_particles]:
 			particles.trail_enabled = false
 	rain_particles.sub_emitter = NodePath("") if is_compatibility_mode else rain_particles.get_path_to(rain_splash_particles)
+	if is_instance_valid(rain_ground):
+		rain_ground.visible = not is_compatibility_mode
 	var rain_mat: ParticleProcessMaterial = rain_particles.process_material as ParticleProcessMaterial
 	if rain_mat:
-		rain_mat.sub_emitter_mode = ParticleProcessMaterial.SUB_EMITTER_DISABLED if is_compatibility_mode else ParticleProcessMaterial.SUB_EMITTER_AT_END
-		rain_mat.sub_emitter_amount_at_end = 1
+		# Rigid, not hide-on-contact: a hidden drop never sub-emits, a stopped one does
+		rain_mat.collision_mode = ParticleProcessMaterial.COLLISION_DISABLED if is_compatibility_mode else ParticleProcessMaterial.COLLISION_RIGID
+		rain_mat.sub_emitter_mode = ParticleProcessMaterial.SUB_EMITTER_DISABLED if is_compatibility_mode else ParticleProcessMaterial.SUB_EMITTER_AT_COLLISION
+		rain_mat.sub_emitter_amount_at_collision = 1
 
 
 ## Queries the physics world below the given position to find the ground elevation.

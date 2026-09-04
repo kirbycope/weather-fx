@@ -315,7 +315,7 @@ func test_weather_fx_renderer_compatibility_setup() -> void:
 	# Forward+ mode: sub-emitter is dynamically connected
 	precip._setup_renderer_compatibility(false)
 	assert_ne(precip.rain_particles.sub_emitter, NodePath(""))
-	assert_eq(mat_compat.sub_emitter_mode, ParticleProcessMaterial.SUB_EMITTER_AT_END)
+	assert_eq(mat_compat.sub_emitter_mode, ParticleProcessMaterial.SUB_EMITTER_AT_COLLISION)
 
 
 func test_global_shader_parameters_initialization_and_updates() -> void:

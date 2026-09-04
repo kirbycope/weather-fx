@@ -43,7 +43,7 @@ Provides statistical weather distribution tables, diurnal temperature ranges, al
 
 - **The `"WeatherFX"` group**: every `WeatherFX` node adds itself to the `WeatherFX` group when it enters the tree. Consumers expose `@export var weather_fx: WeatherFX`; when it is left unassigned they fall back to `get_tree().get_first_node_in_group("WeatherFX")` in `_ready()`, so a single `WeatherFX` in the scene needs no manual wiring.
 - **Child nodes of `weather_fx.tscn`** (each has `weather_fx` pointing at the parent):
-  - `PrecipitationFX` (Node3D): rain, splash and snow `GPUParticles3D`; reacts to `weather_changed`, `wind_changed`, `playback_changed`; follows `weather_fx.target_node` and keeps the splash emitter on the ground via a raycast.
+  - `PrecipitationFX` (Node3D): rain, splash and snow `GPUParticles3D`; reacts to `weather_changed`, `wind_changed`, `playback_changed`; follows `weather_fx.target_node`; on Forward+/Mobile the rain collides with the `RainGround` heightfield (`GPUParticlesCollisionHeightField3D` following the target, 56 m wide, 512 resolution, always updated) and every splash/ripple is sub-emitted where its drop lands, so they sit on ramps, roofs and grass; the Compatibility renderer has no particle collision, so there the splash emitter is a plane on the ground found under the target.
   - `WeatherAudio` (Node): weather SFX players (`audio_rain_light`, `audio_rain_heavy`, `audio_storm`, `audio_wind`) and six optional background-ambience (`bgs_*`) slots. BGS is re-evaluated only on `weather_changed`, `daylight_changed` and `playback_changed`; a player that stays the target is never restarted.
   - `WindVFX` (Node3D): wind ribbons, leaf streams (`airflow_particles` / `leaf_particles` arrays) and gust sweeps driven by `GustTimer` / `TreeCheckTimer` Timer nodes. Leaves only appear in tree biomes and, with `require_nearby_trees`, when a node in the `Tree`, `Trees`, `Foliage` or `Choppable` group is within `tree_detection_radius` (the addon's `tree_*.tscn` scenes are in `Tree`).
   - `CycleTimer` (Timer): drives `advance_cycle()`; `get_cycle_progress()` reads it.
@@ -59,6 +59,7 @@ Provides statistical weather distribution tables, diurnal temperature ranges, al
 ### 4. Rain Ground Impact Effects (Splashes & Ripples)
 - Falling raindrops spawn a sub-emitter at ground impact (disabled automatically on Web / Compatibility renderers).
 - Draw pass 1: droplet splashes; draw pass 2: expanding puddle ripples.
+- Placement: each drop stops on the `RainGround` heightfield (rigid collision, no bounce; a hidden drop would not sub-emit) and sub-emits its splash there (`SUB_EMITTER_AT_COLLISION`), so ripples follow the real surface under every drop instead of one plane at the target's feet. The splash emitter has to keep emitting for sub-emission to work, so it is parked 500 m below the target with a tall visibility box; its own particles are never seen. The heightfield is 56 m wide and 40 m tall around the target; lower its `resolution` if the extra depth pass costs too much.
 
 ### 5. Interactive Zelda-Inspired HUD Widgets
 Instance the widget scenes (they carry their layout, `StyleBox` and shader material) and assign `weather_fx`, or rely on the group fallback:
@@ -86,7 +87,7 @@ Fully self-contained within the addon:
 - **Shared wind spread math**: `WeatherFX.get_wind_spread_factor()` (downwind boost, capped; upwind suppression).
 
 ### 9. Interactive Pond Water (`resources/pond_water.gdshader`)
-Toon-banded pond surface with wind-driven waves, contact/edge foam, and rain impact ripples. Exposes swimmer interaction uniforms (`swimmer_active`, `swimmer_position`, `swimmer_direction`, `swimmer_speed`) — feed them from any character controller for a V wake while moving and treading ripples at rest.
+Toon-banded pond surface with wind-driven waves, contact/edge foam, and scattered rain impact ripples (hashed per cell and staggered in time, so they never form a grid). Exposes swimmer interaction uniforms (`swimmer_active`, `swimmer_position`, `swimmer_direction`, `swimmer_speed`) — feed them from any character controller for a V wake while moving and treading ripples at rest. Procedural caustics (`caustic_strength`, `caustic_scale`, `caustic_speed`) drift a light web across the surface; `edge_foam_width` (0 disables the radial rim band, leaving the contact foam to find the walls of a rectangular pool), `depth_foam_distance` and `foam_softness` size the rim and contact foam. The surface reads the stencil buffer (`stencil_mode read, compare_not_equal, 1`), so any mesh drawn with a stencil-writing mask (a boat hull) cuts a hole in the water; the vertex waves are a plain function of position, TIME, the wave uniforms and the wind globals, so gameplay code can mirror them for buoyancy.
 
 ---
 
