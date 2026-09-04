@@ -150,7 +150,7 @@ amount = 2000
 lifetime = 0.35
 visibility_aabb = AABB(-28, -5, -28, 56, 540, 56)
 process_material = SubResource("ParticleProcessMaterial_splash")
-draw_passes = 2
+draw_passes = 1
 draw_pass_1 = SubResource("QuadMesh_splash_droplet")
 draw_pass_2 = SubResource("QuadMesh_ripple")
 

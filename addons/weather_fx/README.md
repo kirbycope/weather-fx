@@ -58,7 +58,7 @@ Provides statistical weather distribution tables, diurnal temperature ranges, al
 
 ### 4. Rain Ground Impact Effects (Splashes & Ripples)
 - Falling raindrops spawn a sub-emitter at ground impact (disabled automatically on Web / Compatibility renderers).
-- Draw pass 1: droplet splashes; draw pass 2: expanding puddle ripples.
+- Draw pass 1: droplet splashes; draw pass 2: expanding puddle ripples, kept on the node but switched off (`draw_passes = 1`) because rings on every surface were too much; set `draw_passes` back to 2 on `RainSplashParticles` to bring them back. Ripples on water come from the pond shader's `rain_ripples`, driven by `weather_precipitation_strength`, and are unaffected.
 - Placement: each drop stops on the `RainGround` heightfield (rigid collision, no bounce; a hidden drop would not sub-emit) and sub-emits its splash there (`SUB_EMITTER_AT_COLLISION`), so ripples follow the real surface under every drop instead of one plane at the target's feet. The splash emitter has to keep emitting for sub-emission to work, so it is parked 500 m below the target with a tall visibility box; its own particles are never seen. The heightfield is 56 m wide and 40 m tall around the target; lower its `resolution` if the extra depth pass costs too much.
 
 ### 5. Interactive Zelda-Inspired HUD Widgets

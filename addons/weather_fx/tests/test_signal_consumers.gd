@@ -135,6 +135,7 @@ func test_rain_splashes_land_where_drops_hit_the_scenery() -> void:
 	var rain_mat: ParticleProcessMaterial = precipitation.rain_particles.process_material
 	assert_eq(rain_mat.collision_mode, ParticleProcessMaterial.COLLISION_RIGID, "Drops stop on the surface they hit (a hidden drop would not sub-emit)")
 	assert_eq(rain_mat.sub_emitter_mode, ParticleProcessMaterial.SUB_EMITTER_AT_COLLISION, "And spawn their splash right there")
+	assert_eq(precipitation.rain_splash_particles.draw_passes, 1, "Only the droplet splash draws; the ground ripple decal is switched off (the water shader keeps its own ripples)")
 	target.global_position = Vector3(9.0, 3.0, -6.0)
 	precipitation.set_process(true)
 	precipitation._process(0.0)
