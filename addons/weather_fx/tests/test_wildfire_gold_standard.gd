@@ -269,3 +269,12 @@ func test_dousing_a_spot_leaves_the_rest_of_the_front_burning() -> void:
 		else:
 			assert_false(node._is_extinguished, "Flames outside it burn on")
 	assert_gt(flames_out, 0)
+
+
+func test_a_flame_above_the_field_lights_nothing() -> void:
+	var field := _field(400, 20.0)
+	assert_false(field.ignite_at(Vector3(0.0, 3.0, 0.0), 3.5, 18.0), "A torch on a platform over the grass lights nothing")
+	assert_true(field._burning_cells.is_empty())
+	assert_false(field.ignite_at(Vector3(0.0, -3.0, 0.0), 3.5, 18.0), "Nor one far below it")
+	assert_true(field.ignite_at(Vector3(0.0, 0.5, 0.0), 3.5, 18.0), "A flame among the blades does")
+	assert_gt(field._burning_cells.size(), 0)

@@ -39,6 +39,7 @@ const CELL_BURN_SECONDS: float = 6.0 ## A cell flames for this long, then it is 
 const UPWIND_SPEED_FACTOR: float = 0.25 ## Creep speed dead upwind in a full-strength wind, as a fraction of the downwind speed.
 const FULL_WIND_STRENGTH: float = 8.0 ## Wind strength at which the front leans as far downwind as it gets.
 const BLADE_CATCH_JITTER: float = 1.0 ## Each blade in a cell catches up to this many seconds after its cell.
+const IGNITE_HEIGHT: float = 1.0 ## A flame more than this far above or below the blades (a torch on a platform, a bolt overhead) lights nothing.
 const NEIGHBOURS: Array[Vector2i] = [
 	Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
 	Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1),
@@ -239,12 +240,12 @@ func _drop_trail_node(local_pos: Vector3) -> FireTrailNode:
 
 ## Starts a wildfire: every grass cell within [param initial_radius] of [param world_pos] catches and the
 ## front keeps growing for [param duration] seconds (lit cells burn out on their own after that).
-## Returns false when the point is off-field or it is raining.
+## Returns false when the point is off-field, too far above or below the blades, or it is raining.
 func ignite_at(world_pos: Vector3, initial_radius: float = 2.0, duration: float = 6.0) -> bool:
 	if not enable_wildfire or _is_raining:
 		return false
 	var local_p: Vector3 = to_local(world_pos)
-	if absf(local_p.x) > field_size.x * 0.5 + 2.0 or absf(local_p.z) > field_size.y * 0.5 + 2.0:
+	if absf(local_p.x) > field_size.x * 0.5 + 2.0 or absf(local_p.z) > field_size.y * 0.5 + 2.0 or absf(local_p.y) > IGNITE_HEIGHT:
 		return false
 	_spread_time_left = maxf(_spread_time_left, duration)
 	var origin_cell: Vector2i = _cell_of(local_p)
