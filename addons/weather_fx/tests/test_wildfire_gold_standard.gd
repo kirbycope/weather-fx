@@ -239,3 +239,33 @@ func test_freed_trail_node_leaves_the_field_list_before_process() -> void:
 	assert_true(field._trail_nodes.is_empty(), "A freed trail node must erase itself so _process never sees a dead reference")
 	field._process(0.1)
 	assert_true(field._trail_nodes.is_empty())
+
+
+func test_dousing_a_spot_leaves_the_rest_of_the_front_burning() -> void:
+	WeatherFX.active_wind_strength = 0.0
+	var field := _field(1600, 40.0)
+	field.ignite_at(Vector3.ZERO, 2.0, 10.0)
+	for _i: int in 80: # 4 s: a ring some 6 m across
+		field._process(0.05)
+	var lit_before: int = field._burning_cells.size()
+	assert_gt(lit_before, 8)
+	field.douse_at(Vector3(4.0, 0.0, 0.0), 2.5)
+	var doused: int = 0
+	var still_burning: int = 0
+	for cell: Vector2i in field._burnt_cells.keys() + field._burning_cells.keys():
+		var centre: Vector2 = (Vector2(cell) + Vector2(0.5, 0.5)) * GrassField.BUCKET_SIZE
+		if centre.distance_to(Vector2(4.0, 0.0)) <= 2.5:
+			assert_false(field._burning_cells.has(cell), "Cells under the water are out: " + str(cell))
+			doused += 1
+		elif field._burning_cells.has(cell):
+			still_burning += 1
+	assert_gt(doused, 0, "Something under the water was burning")
+	assert_gt(still_burning, 0, "The rest of the front burns on")
+	var flames_out: int = 0
+	for node: FireTrailNode in field._trail_nodes: # An extinguished flame frees itself a second later
+		if node.global_position.distance_to(Vector3(4.0, 0.0, 0.0)) <= 2.5:
+			assert_true(node._is_extinguished, "Flames under the water went out")
+			flames_out += 1
+		else:
+			assert_false(node._is_extinguished, "Flames outside it burn on")
+	assert_gt(flames_out, 0)

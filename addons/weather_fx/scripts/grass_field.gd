@@ -289,17 +289,35 @@ func get_grass_indices_in_radius(center: Vector3, radius: float) -> Array[int]:
 ## Douses the fire: the front stops, every lit cell is ash and its blades char out at once.
 func extinguish_all_fires() -> void:
 	_spread_time_left = 0.0
-	for cell: Vector2i in _burning_cells:
-		_burnt_cells[cell] = true
-		if multimesh:
-			for idx: int in _origin_buckets.get(cell, []):
-				multimesh.set_instance_custom_data(idx, doused_blade_data())
-	_burning_cells.clear()
+	for cell: Vector2i in _burning_cells.keys():
+		_douse_cell(cell)
 	_clock_until = _fire_clock
 	for node: FireTrailNode in _trail_nodes.duplicate(): # extinguish() may free nodes, which erase themselves
 		if is_instance_valid(node):
 			node.extinguish()
 	_trail_nodes.clear()
+
+
+## Douses the fire within [param radius] of [param world_pos] (a water spell, a bucket): those cells are ash, their
+## blades char out, their flames go out, and the front keeps burning everywhere else.
+func douse_at(world_pos: Vector3, radius: float) -> void:
+	var local_p: Vector3 = to_local(world_pos)
+	var centre: Vector2 = Vector2(local_p.x, local_p.z)
+	for cell: Vector2i in _burning_cells.keys():
+		if ((Vector2(cell) + Vector2(0.5, 0.5)) * BUCKET_SIZE).distance_to(centre) <= radius:
+			_douse_cell(cell)
+	for node: FireTrailNode in _trail_nodes.duplicate():
+		if is_instance_valid(node) and node.global_position.distance_to(world_pos) <= radius:
+			node.extinguish()
+
+
+## A lit cell put out: ash for good, its blades charred at once.
+func _douse_cell(cell: Vector2i) -> void:
+	_burning_cells.erase(cell)
+	_burnt_cells[cell] = true
+	if multimesh:
+		for idx: int in _origin_buckets.get(cell, []):
+			multimesh.set_instance_custom_data(idx, doused_blade_data())
 
 
 func _notification(what: int) -> void:
