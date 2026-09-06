@@ -55,3 +55,11 @@ weather_precipitation_strength={
 "type": "float",
 "value": 0.0
 }
+weather_foliage_tint={
+"type": "color",
+"value": Color(1, 1, 1, 1)
+}
+weather_grass_tint={
+"type": "color",
+"value": Color(1, 1, 1, 1)
+}

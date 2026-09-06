@@ -4,7 +4,7 @@ A high-performance, modular climate, weather, and atmospheric wind simulation sy
 
 > [!NOTE]
 > **Plugin Activation vs Direct Scene Usage**:
-> All core scripts register standalone global class names (`WeatherFX`, `WeatherZone`, `WeatherForecastDisplay`, `TemperatureGaugeDisplay`, `WindDirectionDial`, `WindVFX`, `FallingLeaves`, `GrassField`, `ClimateData`).
+> All core scripts register standalone global class names (`WeatherFX`, `WeatherZone`, `WeatherForecastDisplay`, `TemperatureGaugeDisplay`, `WindDirectionDial`, `WindVFX`, `FallingLeaves`, `GrassField`, `ClimateData`, `WaterRipples`).
 > - **Direct Usage**: You can add these nodes to your scenes, attach scripts, or control them via GDScript immediately. Ensure global shader parameters are added under **Project Settings > Shader Globals**.
 > - **Enabling the Plugin**: Enabling `Weather FX` in **Project Settings > Plugins** registers custom editor icons, adds node types directly to Godot's *Create New Node* dialog, and automatically registers all required **Shader Globals** in `ProjectSettings`.
 
@@ -73,41 +73,93 @@ WeatherFX synchronizes real-time atmospheric wind parameters across GPU shaders 
 ---
 
 ### 7. Interactive Pond Water (`resources/pond_water.gdshader`)
-Toon-banded pond surface with wind-driven vertex waves, contact/edge foam and rain impact ripples. Exposes swimmer interaction uniforms (`swimmer_active`, `swimmer_position`, `swimmer_direction`, `swimmer_speed`) for a V wake while moving and treading ripples at rest. The surface reads the stencil buffer (`stencil_mode read, compare_not_equal, 1`), so any mesh drawn with a stencil-writing mask (a boat hull) cuts a hole in the water; the vertex waves are a plain function of position, TIME, the wave uniforms and the wind globals, so gameplay code can mirror them for buoyancy.
+Toon-banded pond surface with real wind waves, contact/edge foam and scattered rain impact ripples (hashed per cell and staggered in time, so they never form a grid). The wind waves are a sum of six Gerstner (trochoidal) waves fanned around the wind direction, a fixed table in the shader (`WAVES`: angle from the wind, wave number as a multiple of `wave_frequency`, share of `wave_amplitude`; the shares sum to 1 so the tallest crest never exceeds the active amplitude): each wave moves the water sideways toward its crest as well as up, which pinches the crests sharp and leaves the troughs broad, the vertex normal is the cross product of the displaced surface's tangents, and the Jacobian of the displacement is passed to the fragment stage so the most pinched crests foam (`crest_foam`) and brighten toward the shallow colour (`crest_light`), the way [GodotOceanWaves](https://github.com/2Retr0/GodotOceanWaves) (MIT) foams the peaks of its FFT surface; a pond only needs a handful of waves instead of an FFT. `wave_steepness` (0-1) sets how far the crests pinch before they would loop over, `wave_speed` is a tempo on the deep-water dispersion (1 is physical: longer waves travel faster), and the wind strength scales amplitude and tempo. Gameplay code that needs the surface height mirrors the table and undoes the sideways travel with a few fixed-point steps.  Bodies in the water ripple it for real through the `WaterRipples` node (`scenes/water_ripples.tscn`): wire the water `Area3D`'s `body_entered` / `body_exited` to its `_on_body_entered` / `_on_body_exited` and point `water_mesh` at the surface. Every body in the water has its meshes put on visual layer 10; an orthographic `MaskCamera` sits `depth_below` under the surface looking straight up, rendering only that layer up to `depth_above` over the water line, so its `MaskViewport` holds the underside outline of everything in the water (from above, the near plane would slice the tops off the bodies and leave only culled back faces). The `SimulationViewport` runs a height-field wave simulation at `texels_per_metre` (default 32, 3 cm texels; `resources/water_ripples_sim.gdshader`, a never-cleared viewport that reads its own last frame through a `BackBufferCopy`; R = height, G = previous height, B = last footprint, alpha unused because the render target does not return it reliably): the footprint is softened by `mask_blur` texels so it never reads as pixels, the surface under a body settles into a hollow of the footprint's shape (`sink`, `sink_rate`), wherever the footprint changed since the last frame the water is pushed (`push`, up where a body arrives, down where it leaves), and the wave equation (`wave_speed`, `damping`) carries it out, so a moving body throws a bow wave ahead and a wake behind on its own. A hull leaves a hull-shaped wake and bow wave, a bobbing float leaves rings, a swimmer's strokes leave the shape of the strokes, and a body sitting still leaves nothing. The node fills the surface material's `ripple_texture`, `ripple_area` (world X, Z, width, depth) and `ripple_height` (m per simulated unit, default 4 cm) uniforms on ready; the shader displaces the vertices by that height in `vertex()` and lights the fragments by its slope, tilts the surface normal by the slope (`ripple_shading` exaggerates it for the toon look), brightens crests toward the shallow colour (`ripple_crest_light`) and foams only the tallest crests; nothing is drawn around a body's outline. Subdivide the water mesh to roughly 10-15 cm cells so the geometry can carry the waves. A surface without a `WaterRipples` node (zero `ripple_area`) is unaffected. `edge_foam_width` (0 disables the radial rim band, leaving the contact foam to find the walls of a rectangular pool), `depth_foam_distance` and `foam_softness` size the rim and contact foam. The surface reads the stencil buffer (`stencil_mode read, compare_not_equal, 1`), so any mesh drawn with a stencil-writing mask (a boat hull) cuts a hole in the water; the vertex waves are a plain function of position, TIME, the wave uniforms and the wind globals, so gameplay code can mirror them for buoyancy. The drawn caustic web of earlier versions is gone: the crests carry the light themselves.
+
+## How to Use
+
+### Nodes to add and where
+
+| Node | Where it goes | Set in the Inspector |
+|---|---|---|
+| `WeatherFX` (instance `scenes/weather_fx.tscn`) | Once per level, as a child of the level root | `sun_light` -> your `DirectionalLight3D`; `world_environment` -> your `WorldEnvironment`; `target_node` -> the node the rain and snow follow (usually the player); `date_and_time_node` -> a clock node with a `time_changed(hours)` signal (the Date and Time addon's `DateAndTime`), or leave it empty and drive `manual_time_of_day`; `current_biome`, `force_weather` / `manual_weather`, `wind_direction`, `wind_strength_multiplier` |
+| `WeatherAudio` (inside `weather_fx.tscn`) | Nothing to add | Optional `bgs_day_*` / `bgs_night_*` exports -> your ambience `AudioStreamPlayer`s (`scenes/bgs.tscn` ships a set) |
+| `GrassField` (instance `scenes/grass_field.tscn`) | Under your scenery, at the centre of the field | `instance_count`, `field_size`, `min_scale` / `max_scale`, `exclusion_radius`; `weather_fx` and `enable_wildfire` for fire |
+| `tree_1.tscn` .. `tree_5.tscn` | Anywhere; each carries its wind-shader mesh and a `FallingLeaves` emitter | Nothing required; the `Tree` group is set in the scene |
+| `FireFX` (`assets/models/loop_box/Scenes/Fire.tscn`, or the script on your own fire) | On a campfire or torch | `smoke_particles`, `spark_particles`, `fire_light` -> its own children; `weather_fx` optional |
+| `WeatherForecastDisplay`, `TemperatureGaugeDisplay` (instance their scenes), `WindDirectionDial` (script on a `Control`) | Under your HUD `CanvasLayer` | `weather_fx` -> the WeatherFX node |
+| Pond water: a `MeshInstance3D` with `resources/pond_water_material.tres` | Sunk into a hole in the ground | Subdivide the mesh to 10-15 cm cells. For wakes and rings, add `scenes/water_ripples.tscn` next to it, set `water_mesh`, and wire the water `Area3D`'s `body_entered` / `body_exited` to its `_on_body_entered` / `_on_body_exited` |
+| `WeatherZone` (script on an `Area3D`) | Around a region that should switch biome when entered | `biome`, `weather_fx` |
+| `BurnableGrass`, `FireTrailNode` | Individual burnable props | See section 8 |
+
+Minimum scene:
+
+```text
+Level (Node3D)
+├── WorldEnvironment
+├── DirectionalLight3D
+├── DateAndTime                         (optional clock)
+├── WeatherFX (weather_fx.tscn)         sun_light, world_environment, target_node, date_and_time_node
+└── HUD (CanvasLayer)
+    ├── WeatherForecastDisplay          weather_fx
+    └── TemperatureGaugeDisplay         weather_fx
+```
+
+Everything talks through exports and signals, so weather, wind, precipitation and the HUD run without a line of script. Enable the plugin once so the shader globals are registered (or add them by hand; see Global Shader Parameters).
+
+### How `demo.tscn` does it
+
+| Demo node | What it demonstrates |
+|---|---|
+| `WeatherFX` | `weather_fx.tscn` instanced with `sun_light`, `world_environment`, `target_node` (`DemonstrationTarget`) and `date_and_time_node` (`DateAndTime`) all set in the Inspector; `manual_time_of_day` matches the clock's 7:00 start. |
+| `WeatherFX/WeatherAudio` | Its six `bgs_*` exports point at the players inside `BackGroundSounds` (`bgs.tscn`). |
+| `DateAndTime` | A small `@tool` stand-in clock (`demo_date_and_time.gd`) with only `current_time` and `time_changed`, so the demo runs without the Date and Time addon. The real addon's `DateAndTime` node drops into the same slot. |
+| `Ground/Water` | A `PlaneMesh` with `pond_water_material.tres` sitting in the `Ground/Hole` cut-out: wind waves, rain rings and edge foam with no extra nodes. No `WaterRipples` here because nothing enters the water. |
+| `Scenery/GrassField` | 10 000 blades over 50 x 50 m with a 3 m exclusion around the campfire. |
+| `Scenery/Fire` | A `FireFX` campfire; its smoke and sparks lean with the wind. |
+| `Scenery/Tree1` .. `Tree5` | The five tree scenes; canopies sway and drop leaves with the wind and tint by biome. |
+| `HUD/BottomRight/WeatherForecastDisplay`, `TemperatureGaugeDisplay`, `HUDWindDial` | The HUD widgets with `weather_fx` set in the Inspector. |
+| `HUD/ControlPanel/...` | Sliders, dropdowns and buttons whose signals are connected in the scene to `demo.gd` handlers that set `current_biome`, `force_weather` / `manual_weather`, `manual_time_of_day`, `current_altitude`, `wind_strength_multiplier` and `wind_direction`; `AdvanceCycleButton.pressed` goes straight to `WeatherFX.advance_cycle`. |
+| `WeatherFX` signals -> root | `biome_changed`, `weather_changed`, `temperature_changed` and `wind_changed` are connected in the scene to `_update_ui_state`, so the panel follows the simulation. |
+| `StatusTimer` | Refreshes the readout once a second instead of every frame. |
+
+---
 
 ## Scene Tree Architecture
 
 ```text
 WeatherFXDemo (Node3D)
-├── WorldEnvironment (WorldEnvironment)
-├── DirectionalLight3D (Sun/Moon Light)
-├── DemonstrationTarget (Node3D - Target Marker)
-├── Ground (StaticBody3D)
+├── WorldEnvironment
+├── DirectionalLight3D (Sun/Moon Light, oriented by WeatherFX)
+├── DemonstrationTarget (Node3D - target_node)
+├── Ground (CSGBox3D)
+│   ├── Hole (CSGCylinder3D, subtracted)
+│   └── Water (MeshInstance3D - pond_water_material.tres)
 ├── Scenery (Node3D)
-│   ├── GrassField (MultiMeshInstance3D - Stylized Grass Generator)
-│   ├── Tree1..5 (Node3D)
-│   │   ├── Mesh (MeshInstance3D - Bark & Foliage Wind Shaders)
-│   │   └── FallingLeaves (GPUParticles3D - Wind-Reactive Leaf Particle System)
-├── CameraPivot (Node3D)
-│   └── Camera3D (Orbit Camera)
-├── DateAndTime (Node - Day/Night Time Clock)
-├── WeatherFX (Node3D - Core Climate Controller)
-│   ├── WindVFX (Node3D - Environmental Wind Ribbons & Gust Sweeps)
-│   ├── RainParticles (GPUParticles3D)
-│   │   └── Sub-Emitter -> RainSplashParticles
-│   ├── RainSplashParticles (GPUParticles3D - Droplet Splashes & Concentric Ripples)
-│   ├── SnowParticles (GPUParticles3D - Billboarding Snowflakes)
-│   ├── RainLightSFX (AudioStreamPlayer)
-│   ├── RainHeavySFX (AudioStreamPlayer)
-│   ├── StormSFX (AudioStreamPlayer)
-│   └── WindSFX (AudioStreamPlayer)
+│   ├── GrassField (grass_field.tscn)
+│   ├── Fire (FireFX campfire)
+│   └── Tree1..5 (tree_*.tscn, group "Tree")
+│       ├── Mesh (Bark & Foliage Wind Shaders)
+│       └── FallingLeaves (falling_leaves.tscn)
+├── CameraPivot / Camera3D
+├── DateAndTime (demo clock; emits time_changed)
+├── WeatherFX (weather_fx.tscn - group "WeatherFX")
+│   ├── CycleTimer (Timer -> advance_cycle)
+│   ├── PrecipitationFX
+│   │   ├── RainParticles (sub-emitter -> RainSplashParticles)
+│   │   ├── RainSplashParticles
+│   │   └── SnowParticles
+│   ├── WindVFX (wind_vfx.tscn: ribbons, leaves, GustTimer, TreeCheckTimer)
+│   └── WeatherAudio
+│       ├── RainLightSFX / RainHeavySFX / StormSFX / WindSFX
+│       └── (bgs_* exports -> BackGroundSounds players in the demo)
+├── BackGroundSounds (bgs.tscn - day/night ambience players)
+├── StatusTimer (Timer -> status readout)
 └── HUD (CanvasLayer)
-    ├── ControlPanel (PanelContainer - Biome, Weather, Altitude & Wind Controls)
-    └── BottomRight (Control)
-        ├── DateAndTimeDisplay (PanelContainer)
-        ├── WeatherForecastDisplay (PanelContainer - Zelda-style Timeline)
-        ├── TemperatureGaugeDisplay (Button - Circular Segmented Gauge)
-        └── HUDWindDial (Control - Glance Compass Dial)
+    ├── ControlPanel (biome, weather, time, altitude, wind controls)
+    └── BottomRight
+        ├── WeatherForecastDisplay (weather_forecast_display.tscn)
+        ├── TemperatureGaugeDisplay (temperature_gauge_display.tscn)
+        └── HUDWindDial (WindDirectionDial)
 ```
 
 ---

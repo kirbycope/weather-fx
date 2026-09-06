@@ -464,3 +464,23 @@ func test_pond_water_shader_resource() -> void:
 	assert_not_null(mat.get_shader_parameter("wave_amplitude"))
 	assert_not_null(mat.get_shader_parameter("wave_frequency"))
 	assert_not_null(mat.get_shader_parameter("normal_map"))
+	# Body ripples come from a WaterRipples simulation the shader samples in both stages
+	var code: String = mat.shader.code
+	var vertex_start: int = code.find("void vertex()")
+	var fragment_start: int = code.find("void fragment()")
+	var ripple_in_vertex: int = code.find("ripple_texture", vertex_start)
+	assert_true(ripple_in_vertex > vertex_start and ripple_in_vertex < fragment_start, "vertex() should displace the surface by the simulated ripple height")
+	assert_true(code.find("ripple_texture", fragment_start) > fragment_start, "fragment() should light the ripples by their slope")
+	var uniform_names: Array = mat.shader.get_shader_uniform_list().map(func(uniform: Dictionary) -> String: return uniform.name)
+	for uniform_name: String in ["ripple_texture", "ripple_area", "ripple_height"]:
+		assert_has(uniform_names, uniform_name, "WaterRipples fills in the %s uniform" % uniform_name)
+	# Wind waves are Gerstner waves: sideways travel pinches the crests, the normal comes from the surface tangents,
+	# and the crests foam where the Jacobian collapses
+	for uniform_name: String in ["wave_steepness", "crest_foam", "crest_light"]:
+		assert_has(uniform_names, uniform_name, "The %s uniform shapes the crests" % uniform_name)
+	assert_true(uniform_names.filter(func(uniform_name: String) -> bool: return uniform_name.begins_with("caustic")).is_empty(), "The drawn caustic web is gone; the waves themselves carry the light")
+	var vertex_code: String = code.substr(vertex_start, fragment_start - vertex_start)
+	assert_true(vertex_code.contains("WAVES[i]") and vertex_code.contains("VERTEX += offset"), "vertex() sums the wave table into a 3D offset")
+	assert_true(vertex_code.contains("NORMAL = normalize(cross("), "vertex() takes the normal from the displaced surface's tangents")
+	assert_true(vertex_code.contains("v_jacobian ="), "vertex() measures how pinched the surface is for the crest foam")
+	assert_true(code.find("rain_ripples(", fragment_start) > fragment_start, "Raindrop rings still perturb the surface in fragment()")
