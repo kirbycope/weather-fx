@@ -112,13 +112,14 @@ func _on_weather_changed(new_weather: ClimateData.WeatherType, _old_weather: Cli
 
 ## Ignites this grass patch, activates the thermal updraft and hands field-wide creeping
 ## propagation to the first overlapping GrassField so there is a single creeper engine.
-func ignite() -> void:
-	if is_burning or is_charred or (rain_extinguish_enabled and _is_raining):
+## [param force] lights it in the rain too, as a lightning strike does.
+func ignite(force: bool = false) -> void:
+	if is_burning or is_charred or (rain_extinguish_enabled and _is_raining and not force):
 		return
 	current_burn_progress = 0.1
 	is_burning = true
 	for field: Node in get_tree().get_nodes_in_group(&"GrassField"):
-		if field is GrassField and (field as GrassField).ignite_at(global_position, spread_radius, burn_duration if burn_duration > 0.0 else 6.0):
+		if field is GrassField and (field as GrassField).ignite_at(global_position, spread_radius, burn_duration if burn_duration > 0.0 else 6.0, force):
 			break
 	ignited.emit()
 

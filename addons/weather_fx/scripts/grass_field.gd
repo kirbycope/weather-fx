@@ -241,8 +241,10 @@ func _drop_trail_node(local_pos: Vector3) -> FireTrailNode:
 ## Starts a wildfire: every grass cell within [param initial_radius] of [param world_pos] catches and the
 ## front keeps growing for [param duration] seconds (lit cells burn out on their own after that).
 ## Returns false when the point is off-field, too far above or below the blades, or it is raining.
-func ignite_at(world_pos: Vector3, initial_radius: float = 2.0, duration: float = 6.0) -> bool:
-	if not enable_wildfire or _is_raining:
+## Lights the grass around [param world_pos]. Nothing catches in the rain unless [param force] is on: a lightning
+## strike is hot enough to light wet grass, and the fire then burns as long as the rain does not douse it.
+func ignite_at(world_pos: Vector3, initial_radius: float = 2.0, duration: float = 6.0, force: bool = false) -> bool:
+	if not enable_wildfire or (_is_raining and not force):
 		return false
 	var local_p: Vector3 = to_local(world_pos)
 	if absf(local_p.x) > field_size.x * 0.5 + 2.0 or absf(local_p.z) > field_size.y * 0.5 + 2.0 or absf(local_p.y) > IGNITE_HEIGHT:
