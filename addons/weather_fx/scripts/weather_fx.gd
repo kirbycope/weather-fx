@@ -385,6 +385,17 @@ func _update_wind_globals() -> void:
 	wind_changed.emit(current_wind_strength, wind_direction)
 
 
+## A WeatherFX leaving the tree takes its weather with it: the class-wide readings (what a fresh GrassField or
+## precipitation shader consults before any node tells it otherwise) go back to calm, so a stormy world does not
+## leave the next scene, or the next test, believing it is still raining.
+func _exit_tree() -> void:
+	active_precipitation_strength = 0.0
+	active_wind_strength = 0.0
+	if update_global_shader_variables:
+		RenderingServer.global_shader_parameter_set(&"weather_precipitation_strength", 0.0)
+		RenderingServer.global_shader_parameter_set(&"weather_wind_strength", 0.0)
+
+
 func _update_fog() -> void:
 	if not is_instance_valid(world_environment) or world_environment.environment == null:
 		return

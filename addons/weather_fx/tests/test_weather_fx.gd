@@ -484,3 +484,19 @@ func test_pond_water_shader_resource() -> void:
 	assert_true(vertex_code.contains("NORMAL = normalize(cross("), "vertex() takes the normal from the displaced surface's tangents")
 	assert_true(vertex_code.contains("v_jacobian ="), "vertex() measures how pinched the surface is for the crest foam")
 	assert_true(code.find("rain_ripples(", fragment_start) > fragment_start, "Raindrop rings still perturb the surface in fragment()")
+
+
+func test_a_freed_weather_takes_its_rain_with_it() -> void:
+	# GrassField seeds its rain flag from the class-wide reading, so a stormy WeatherFX that has been freed must not
+	# leave the next scene believing it is raining.
+	var stormy := WeatherFX.new()
+	add_child(stormy)
+	stormy.set_weather(ClimateData.WeatherType.STORM)
+	assert_gt(WeatherFX.active_precipitation_strength, 0.4, "A storm reads as rain")
+	stormy.free()
+	assert_eq(WeatherFX.active_precipitation_strength, 0.0, "Gone with the node")
+	assert_eq(WeatherFX.active_wind_strength, 0.0)
+	var field := GrassField.new()
+	assert_false(field._is_raining, "A fresh field after the storm has gone starts dry")
+	field.free()
+
