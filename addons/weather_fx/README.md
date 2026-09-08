@@ -303,7 +303,7 @@ void fragment() {
 - **ambientCG** – *Grass 004* ([ambientcg.com/view?id=Grass004](https://ambientcg.com/view?id=Grass004), CC0) — `assets/textures/Grass004_1K-JPG_Color.jpg` ground texture.
 - **Godot Shaders** – *Stylized BOTW Fire* ([godotshaders.com/shader/stylized-botw-fire](https://godotshaders.com/shader/stylized-botw-fire/)) and *Stylized Smoke Shader* ([godotshaders.com/shader/stylized-smoke-shader](https://godotshaders.com/shader/stylized-smoke-shader/)) — shaders, meshes, and textures in `assets/models/loop_box/`. License not recorded — fill in.
 - **`assets/vfx/wind/`** (wind ribbon/streak VFX scenes, meshes, shaders, and textures) — source/license not recorded — fill in.
-- **`assets/audio/tommusic/bgs/`** (Forest Day / Forest Night ambient loops) — source/license not recorded — fill in.
+- **`assets/audio/tommusic/bgs/`** (Forest Day / Forest Night ambient loops) — source/license not recorded — fill in. Re-encoded to 96 kbps Vorbis (from about 500 kbps) so a web export stays small, and imported with `loop` on, as `WeatherAudio` never restarts them; the heavier gravitysound rain and wind loops were re-encoded the same way.
 
 ---
 

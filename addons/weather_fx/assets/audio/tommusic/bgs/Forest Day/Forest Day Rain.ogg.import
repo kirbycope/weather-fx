@@ -12,7 +12,7 @@ dest_files=["res://.godot/imported/Forest Day Rain.ogg-9ab8f7f81adbe215f678953c1
 
 [params]
 
-loop=false
+loop=true
 loop_offset=0
 bpm=0
 beat_count=0
