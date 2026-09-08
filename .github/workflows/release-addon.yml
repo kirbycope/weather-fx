@@ -1,7 +1,10 @@
 name: Release Addon
 
 on:
-  push:
+  # Releases are cut only when a pull request is merged into main, never on a direct push.
+  pull_request:
+    types:
+      - closed
     branches:
       - main
   workflow_dispatch:
@@ -10,17 +13,22 @@ permissions:
   contents: write
 
 concurrency:
-  group: release-addon-${{ github.ref }}
+  group: release-addon-main
   cancel-in-progress: false
 
 jobs:
   release:
+    # "closed" also fires on a pull request that was closed without merging.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
+      # A pull_request checkout defaults to the simulated merge ref; the release reads tags from
+      # main and pushes back to it, so main itself is what has to be checked out.
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Compute next version
