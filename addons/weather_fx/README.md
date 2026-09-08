@@ -92,6 +92,11 @@ Fully self-contained within the addon:
 ### 9. Interactive Pond Water (`resources/pond_water.gdshader`)
 Toon-banded pond surface with real wind waves, contact/edge foam, and scattered rain impact ripples (hashed per cell and staggered in time, so they never form a grid). The wind waves are a sum of six Gerstner (trochoidal) waves fanned around the wind direction, a fixed table in the shader (`WAVES`: angle from the wind, wave number as a multiple of `wave_frequency`, share of `wave_amplitude`; the shares sum to 1 so the tallest crest never exceeds the active amplitude): each wave moves the water sideways toward its crest as well as up, which pinches the crests sharp and leaves the troughs broad, the vertex normal is the cross product of the displaced surface's tangents, and the Jacobian of the displacement is passed to the fragment stage so the most pinched crests foam (`crest_foam`) and brighten toward the shallow colour (`crest_light`), the way [GodotOceanWaves](https://github.com/2Retr0/GodotOceanWaves) (MIT) foams the peaks of its FFT surface; a pond only needs a handful of waves instead of an FFT. `wave_steepness` (0-1) sets how far the crests pinch before they would loop over, `wave_speed` is a tempo on the deep-water dispersion (1 is physical: longer waves travel faster), and the wind strength scales amplitude and tempo. Gameplay code that needs the surface height mirrors the table and undoes the sideways travel with a few fixed-point steps (see `Buoyancy.get_wave_displacement` in the player controller demo).  Bodies in the water ripple it for real through the `WaterRipples` node (`scenes/water_ripples.tscn`): wire the water `Area3D`'s `body_entered` / `body_exited` to its `_on_body_entered` / `_on_body_exited` and point `water_mesh` at the surface. Every body in the water has its meshes put on visual layer 10; an orthographic `MaskCamera` sits `depth_below` under the surface looking straight up, rendering only that layer up to `depth_above` over the water line, so its `MaskViewport` holds the underside outline of everything in the water (from above, the near plane would slice the tops off the bodies and leave only culled back faces). The `SimulationViewport` runs a height-field wave simulation at `texels_per_metre` (default 32, 3 cm texels; `resources/water_ripples_sim.gdshader`, a never-cleared viewport that reads its own last frame through a `BackBufferCopy`; R = height, G = previous height, B = last footprint, alpha unused because the render target does not return it reliably): the footprint is softened by `mask_blur` texels so it never reads as pixels, the surface under a body settles into a hollow of the footprint's shape (`sink`, `sink_rate`), wherever the footprint changed since the last frame the water is pushed (`push`, up where a body arrives, down where it leaves), and the wave equation (`wave_speed`, `damping`) carries it out, so a moving body throws a bow wave ahead and a wake behind on its own. A hull leaves a hull-shaped wake and bow wave, a bobbing float leaves rings, a swimmer's strokes leave the shape of the strokes, and a body sitting still leaves nothing. The node fills the surface material's `ripple_texture`, `ripple_area` (world X, Z, width, depth) and `ripple_height` (m per simulated unit, default 4 cm) uniforms on ready; the shader displaces the vertices by that height in `vertex()` and lights the fragments by its slope, tilts the surface normal by the slope (`ripple_shading` exaggerates it for the toon look), brightens crests toward the shallow colour (`ripple_crest_light`) and foams only the tallest crests; nothing is drawn around a body's outline. Subdivide the water mesh to roughly 10-15 cm cells so the geometry can carry the waves. A surface without a `WaterRipples` node (zero `ripple_area`) is unaffected. `edge_foam_width` (0 disables the radial rim band, leaving the contact foam to find the walls of a rectangular pool), `depth_foam_distance` and `foam_softness` size the rim and contact foam. The surface reads the stencil buffer (`stencil_mode read, compare_not_equal, 1`), so any mesh drawn with a stencil-writing mask (a boat hull) cuts a hole in the water; the vertex waves are a plain function of position, TIME, the wave uniforms and the wind globals, so gameplay code can mirror them for buoyancy. The drawn caustic web of earlier versions is gone: the crests carry the light themselves.
 
+### 11. Sky Clouds (`scripts/weather_clouds.gd`) and the Binbun sky
+`WeatherClouds` drives a Binbun sky shader from the weather. The skies in `assets/BinbunSky/skies/` (basic, stylized and experimental variants of Godot Skies by Binbun) are `Sky` resources whose `ShaderMaterial` reads the scene's directional light for its own day, sunset and night colours and scrolls two layers of noise cloud, so they run the same on every renderer, the web export included, where compositor effects and volumetric fog do not. `WeatherClouds` sets that material's `cloud_density`, `cloud_color` and `wind_speed`: a thin bright scatter in blue sky (`clear_density`, `clear_color`), a grey sheet when cloudy (`cloudy_density`, `cloudy_color`) and a dark one in rain, snow and storms (`rain_density`, `rain_color`), eased over `transition_seconds` so a change rolls in rather than snaps; it only processes while the sky is on its way somewhere and stops once every value has settled. The clouds scroll down the wind at `wind_scroll_scale` per unit of the weather's wind strength and never slower than `wind_min_scroll`. With `night_sun` set the clouds dim as the sun sets: the colour is scaled down to `night_dim` with the sun below the horizon, kept at full brightness above `night_dusk_height` (the sun's height, 1 = overhead) and eased between, retargeting on every `time_changed` tick of the weather's clock. It works on a copy of the sky and its material, so the asset on disk is never edited, and a `WorldEnvironment` whose sky is not a Binbun one is left alone.
+
+Wiring: a `WorldEnvironment` with one of the Binbun skies as its `Environment.sky`, the `WeatherFX` node, and a `Node` carrying `weather_clouds.gd` with `world_environment` -> that `WorldEnvironment`, `weather` -> the `WeatherFX` node and `night_sun` -> your `DirectionalLight3D` (leave it empty for no dimming). `demo.tscn` does exactly this.
+
 ---
 
 ## How to Use
@@ -107,6 +112,7 @@ Toon-banded pond surface with real wind waves, contact/edge foam, and scattered 
 | `FireFX` (`assets/models/loop_box/Scenes/Fire.tscn`, or the script on your own fire) | On a campfire or torch | `smoke_particles`, `spark_particles`, `fire_light` -> its own children; `weather_fx` optional |
 | `WeatherForecastDisplay`, `TemperatureGaugeDisplay` (instance their scenes), `WindDirectionDial` (script on a `Control`) | Under your HUD `CanvasLayer` | `weather_fx` -> the WeatherFX node |
 | Pond water: a `MeshInstance3D` with `resources/pond_water_material.tres` | Sunk into a hole in the ground | Subdivide the mesh to 10-15 cm cells. For wakes and rings, add `scenes/water_ripples.tscn` next to it, set `water_mesh`, and wire the water `Area3D`'s `body_entered` / `body_exited` to its `_on_body_entered` / `_on_body_exited` |
+| `WeatherClouds` (`scripts/weather_clouds.gd` on a `Node`) | Once per level, next to WeatherFX | `weather` -> the WeatherFX node; `world_environment` -> a `WorldEnvironment` whose `Environment.sky` is one of `assets/BinbunSky/skies/*/*.tres`; `night_sun` -> your `DirectionalLight3D`; `clear_` / `cloudy_` / `rain_` density and colour, `transition_seconds`, `wind_scroll_scale`, `wind_min_scroll`, `night_dim`, `night_dusk_height` |
 | `WeatherZone` (script on an `Area3D`) | Around a region that should switch biome when entered | `biome`, `weather_fx` |
 | `BurnableGrass`, `FireTrailNode` | Individual burnable props | See section 8 |
 
@@ -118,6 +124,7 @@ Level (Node3D)
 ├── DirectionalLight3D
 ├── DateAndTime                         (optional clock)
 ├── WeatherFX (weather_fx.tscn)         sun_light, world_environment, target_node, date_and_time_node
+├── WeatherClouds (weather_clouds.gd)   weather, world_environment (Binbun sky), night_sun
 └── HUD (CanvasLayer)
     ├── WeatherForecastDisplay          weather_fx
     └── TemperatureGaugeDisplay         weather_fx
@@ -131,6 +138,7 @@ Everything talks through exports and signals, so weather, wind, precipitation an
 |---|---|
 | `WeatherFX` | `weather_fx.tscn` instanced with `sun_light`, `world_environment`, `target_node` (`DemonstrationTarget`) and `date_and_time_node` (`DateAndTime`) all set in the Inspector; `manual_time_of_day` matches the clock's 7:00 start. |
 | `WeatherFX/WeatherAudio` | Its six `bgs_*` exports point at the players inside `BackGroundSounds` (`bgs.tscn`). |
+| `WorldEnvironment`, `WeatherClouds` | The environment's sky is `assets/BinbunSky/skies/stylized/stylized_sky_01.tres`; `WeatherClouds` has `weather`, `world_environment` and `night_sun` (the `DirectionalLight3D`) set in the Inspector, so the sky's clouds thicken and darken with the weather, scroll with the wind and dim at night. |
 | `DateAndTime` | A small `@tool` stand-in clock (`demo_date_and_time.gd`) with only `current_time` and `time_changed`, so the demo runs without the Date and Time addon. The real addon's `DateAndTime` node drops into the same slot. |
 | `Ground/Water` | A `PlaneMesh` with `pond_water_material.tres` sitting in the `Ground/Hole` cut-out: wind waves, rain rings and edge foam with no extra nodes. No `WaterRipples` here because nothing enters the water. |
 | `Scenery/GrassField` | 10 000 blades over 50 x 50 m with a 3 m exclusion around the campfire. |
@@ -147,7 +155,7 @@ Everything talks through exports and signals, so weather, wind, precipitation an
 
 ```text
 WeatherFXDemo (Node3D)
-├── WorldEnvironment
+├── WorldEnvironment (Binbun sky: assets/BinbunSky/skies/stylized/stylized_sky_01.tres)
 ├── DirectionalLight3D (Sun/Moon Light, oriented by WeatherFX)
 ├── DemonstrationTarget (Node3D - target_node)
 ├── Ground (CSGBox3D)
@@ -171,6 +179,7 @@ WeatherFXDemo (Node3D)
 │   └── WeatherAudio
 │       ├── RainLightSFX / RainHeavySFX / StormSFX / WindSFX
 │       └── (bgs_* exports -> BackGroundSounds players in the demo)
+├── WeatherClouds (weather_clouds.gd - drives the Binbun sky's clouds from WeatherFX)
 ├── BackGroundSounds (bgs.tscn - day/night ambience players)
 ├── StatusTimer (Timer -> status readout)
 └── HUD (CanvasLayer)
@@ -290,6 +299,7 @@ void fragment() {
 - **BinbunVFX** – *Fire Effects Pack* ([binbunvfx.itch.io](https://binbunvfx.itch.io/)) — the billboard flame shader in `assets/vfx/fire/flame_01.gdshader` is adapted from this pack.
 - **TomMusic** – *Fantasy SFX* ([tommusic.itch.io](https://tommusic.itch.io/)) — torch/fire crackle loop in `assets/audio/tommusic/sfx/Torch/`.
 - **Gravity Sound** – *Weather Sound Pack* ([gravity-sound.itch.io](https://gravity-sound.itch.io/)) — rain, thunder and wind ambience (`assets/audio/gravitysound/`).
+- **Binbun (Binbun3D)** - *Godot Skies* ([binbun3d.itch.io/godot-skies](https://binbun3d.itch.io/godot-skies)) - the sky shader, sky materials and cloud noise textures in `assets/BinbunSky/` (the folder has a `.url` to its page). License not recorded - fill in.
 - **ambientCG** – *Grass 004* ([ambientcg.com/view?id=Grass004](https://ambientcg.com/view?id=Grass004), CC0) — `assets/textures/Grass004_1K-JPG_Color.jpg` ground texture.
 - **Godot Shaders** – *Stylized BOTW Fire* ([godotshaders.com/shader/stylized-botw-fire](https://godotshaders.com/shader/stylized-botw-fire/)) and *Stylized Smoke Shader* ([godotshaders.com/shader/stylized-smoke-shader](https://godotshaders.com/shader/stylized-smoke-shader/)) — shaders, meshes, and textures in `assets/models/loop_box/`. License not recorded — fill in.
 - **`assets/vfx/wind/`** (wind ribbon/streak VFX scenes, meshes, shaders, and textures) — source/license not recorded — fill in.
