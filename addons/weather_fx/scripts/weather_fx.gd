@@ -101,6 +101,12 @@ const PLAYER_SEARCH_COOLDOWN_FRAMES: int = 120
 			_update_sun_lighting()
 			biome_changed.emit(current_biome, old)
 
+## With a [member target_node], the biome follows the [WeatherZone]s around it by weight instead of by entry: the
+## zone the target stands deepest inside is [member current_biome], and where zones overlap the climate (grass and
+## foliage tints, temperature, wind, sun colour) blends toward the runner-up by [member blend_weight], so a border
+## crossed on foot is a gradient rather than a cut. Weather odds and the forecast stay the current biome's.
+@export var blend_zones: bool = true
+
 ## Force manual weather instead of procedural simulation.
 @export var force_weather: bool = false :
 	set(value):
@@ -203,6 +209,8 @@ var current_wind_strength: float = 0.0
 
 var current_foliage_tint: Color = Color.WHITE
 var current_grass_tint: Color = Color.WHITE
+var blend_biome: ClimateData.BiomeZone = ClimateData.BiomeZone.TEMPERATE_PLAINS ## The neighbouring biome the climate is blended toward (see [member blend_zones]).
+var blend_weight: float = 0.0 ## 0 is [member current_biome] alone, 0.5 halfway to [member blend_biome]; never above 0.5, since the heavier zone is the current one.
 
 # Static state shared with CPU scripts that have no node reference (see get_wind_strength()).
 static var active_wind_strength: float = 0.0
@@ -238,7 +246,64 @@ func _process(delta: float) -> void:
 		return
 	if is_instance_valid(target_node) and target_node.is_inside_tree():
 		current_altitude = maxf(0.0, target_node.global_position.y)
+	if is_blending_zones():
+		_update_biome_blend()
 	_update_biome_tinting(delta)
+
+
+## True while the biome is read off the zones around [member target_node] (see [member blend_zones]).
+func is_blending_zones() -> bool:
+	return blend_zones and is_instance_valid(target_node) and target_node.is_inside_tree()
+
+
+## Weighs every [WeatherZone] at the target: the heaviest becomes the biome, the runner-up the blend. Zones of one
+## biome count as their strongest. Outside every zone the last biome stays, unblended. A tie keeps the current biome.
+func _update_biome_blend() -> void:
+	var at: Vector3 = target_node.global_position
+	var weights: Dictionary[ClimateData.BiomeZone, float] = {}
+	for node: Node in get_tree().get_nodes_in_group(&"WeatherZone"):
+		var zone: WeatherZone = node as WeatherZone
+		if zone == null or not zone.is_inside_tree():
+			continue
+		var weight: float = zone.get_weight(at)
+		if weight > 0.0:
+			weights[zone.biome] = maxf(weight, weights.get(zone.biome, 0.0))
+	if weights.is_empty():
+		set_biome_blend(current_biome, 0.0)
+		return
+	var first: ClimateData.BiomeZone = current_biome
+	var first_weight: float = weights.get(current_biome, 0.0)
+	var second: ClimateData.BiomeZone = current_biome
+	var second_weight: float = 0.0
+	for biome: ClimateData.BiomeZone in weights:
+		if biome == current_biome:
+			continue
+		if weights[biome] > first_weight:
+			second = first
+			second_weight = first_weight
+			first = biome
+			first_weight = weights[biome]
+		elif weights[biome] > second_weight:
+			second = biome
+			second_weight = weights[biome]
+	current_biome = first
+	if second_weight > 0.0 and second != first:
+		set_biome_blend(second, second_weight / (first_weight + second_weight))
+	else:
+		set_biome_blend(first, 0.0)
+
+
+## Blends the climate [param weight] of the way toward [param biome] (in steps of a hundredth, so a walk through an
+## overlap re-reads the temperature, wind and sun a hundred times at most, not every frame).
+func set_biome_blend(biome: ClimateData.BiomeZone, weight: float) -> void:
+	var snapped_weight: float = snappedf(clampf(weight, 0.0, 1.0), 0.01)
+	if biome == blend_biome and is_equal_approx(snapped_weight, blend_weight):
+		return
+	blend_biome = biome
+	blend_weight = snapped_weight
+	_update_temperature()
+	_update_wind_globals()
+	_update_sun_lighting()
 
 
 ## True while the weather cycle ticks (playing, and in the editor only with editor_weather_enabled).
@@ -276,9 +341,12 @@ func is_daylight(time_hours: float = -1.0) -> bool:
 	return t >= 6.0 and t < 18.0
 
 
-## Calculates temperature for the active biome at the given time and altitude.
+## Calculates temperature for the active biome at the given time and altitude, blended toward [member blend_biome].
 func calculate_temperature(time_hours: float, alt: float) -> float:
-	return ClimateData.get_smooth_temperature(current_biome, alt, time_hours)
+	var here: float = ClimateData.get_smooth_temperature(current_biome, alt, time_hours)
+	if blend_weight <= 0.0:
+		return here
+	return lerpf(here, ClimateData.get_smooth_temperature(blend_biome, alt, time_hours), blend_weight)
 
 
 func _on_external_time_changed(time: float) -> void:
@@ -381,6 +449,8 @@ func _update_active_weather(force_apply: bool = false) -> void:
 func _update_wind_globals() -> void:
 	var active: bool = is_simulating()
 	var base_power: float = ClimateData.get_biome_data(current_biome).get("wind_power", 7.5)
+	if blend_weight > 0.0:
+		base_power = lerpf(base_power, ClimateData.get_biome_data(blend_biome).get("wind_power", 7.5), blend_weight)
 	current_wind_strength = base_power * WIND_WEATHER_MULTIPLIER[active_weather] * wind_strength_multiplier if active else 0.0
 	active_wind_strength = current_wind_strength
 	active_wind_direction = wind_direction
@@ -424,17 +494,26 @@ func _update_sun_lighting() -> void:
 	sun_light.rotation = Vector3(-((t - 6.0) / 24.0) * TAU, deg_to_rad(-30.0), 0.0)
 	var is_day: bool = is_daylight(t)
 	sun_light.light_energy = 1.0 if is_day else 0.15
-	match current_biome:
+	var color: Color = get_sun_color(current_biome, is_day)
+	if blend_weight > 0.0:
+		color = color.lerp(get_sun_color(blend_biome, is_day), blend_weight)
+	sun_light.light_color = color
+
+
+## The sun's colour over [param biome] by day or by night: cold and blue over ice, warm over lava, golden over sand,
+## green-tinged in the wet, plain elsewhere.
+static func get_sun_color(biome: ClimateData.BiomeZone, is_day: bool) -> Color:
+	match biome:
 		ClimateData.BiomeZone.ARCTIC_TUNDRA, ClimateData.BiomeZone.ALPINE_PEAKS, ClimateData.BiomeZone.DESERT_GLACIER:
-			sun_light.light_color = Color(0.9, 0.95, 1.0) if is_day else Color(0.3, 0.4, 0.65)
+			return Color(0.9, 0.95, 1.0) if is_day else Color(0.3, 0.4, 0.65)
 		ClimateData.BiomeZone.VOLCANIC_FOOTHILLS, ClimateData.BiomeZone.VOLCANIC_CRATER, ClimateData.BiomeZone.VOLCANIC_CALDERA:
-			sun_light.light_color = Color(1.0, 0.7, 0.5) if is_day else Color(0.5, 0.25, 0.2)
+			return Color(1.0, 0.7, 0.5) if is_day else Color(0.5, 0.25, 0.2)
 		ClimateData.BiomeZone.DESERT_DUNES, ClimateData.BiomeZone.DESERT_PLATEAU, ClimateData.BiomeZone.DEEP_DESERT, ClimateData.BiomeZone.ARID_CANYON:
-			sun_light.light_color = Color(1.0, 0.9, 0.7) if is_day else Color(0.3, 0.35, 0.55)
+			return Color(1.0, 0.9, 0.7) if is_day else Color(0.3, 0.35, 0.55)
 		ClimateData.BiomeZone.TROPICAL_RAINFOREST, ClimateData.BiomeZone.WETLANDS_VALLEY, ClimateData.BiomeZone.HUMID_COAST:
-			sun_light.light_color = Color(0.85, 1.0, 0.9) if is_day else Color(0.25, 0.4, 0.5)
+			return Color(0.85, 1.0, 0.9) if is_day else Color(0.25, 0.4, 0.5)
 		_:
-			sun_light.light_color = Color(1.0, 0.95, 0.85) if is_day else Color(0.35, 0.45, 0.7)
+			return Color(1.0, 0.95, 0.85) if is_day else Color(0.35, 0.45, 0.7)
 
 
 ## Smoothly blends global foliage and grass color tints toward the active biome targets.
@@ -451,20 +530,28 @@ func _update_biome_tinting(delta: float) -> void:
 		RenderingServer.global_shader_parameter_set(&"weather_grass_tint", current_grass_tint)
 
 
-## Target foliage tint for the active biome, normalized so TEMPERATE_PLAINS renders untinted.
+## Target foliage tint for the active biome, normalized so TEMPERATE_PLAINS renders untinted, blended toward
+## [member blend_biome]'s.
 func get_target_foliage_tint() -> Color:
 	if not enable_biome_tinting:
 		return Color.WHITE
 	var reference: Color = ClimateData.get_biome_foliage_tint(ClimateData.BiomeZone.TEMPERATE_PLAINS)
-	return normalize_biome_tint(ClimateData.get_biome_foliage_tint(current_biome), reference)
+	var tint: Color = normalize_biome_tint(ClimateData.get_biome_foliage_tint(current_biome), reference)
+	if blend_weight > 0.0:
+		tint = tint.lerp(normalize_biome_tint(ClimateData.get_biome_foliage_tint(blend_biome), reference), blend_weight)
+	return tint
 
 
-## Target grass tint for the active biome, normalized so TEMPERATE_PLAINS renders untinted.
+## Target grass tint for the active biome, normalized so TEMPERATE_PLAINS renders untinted, blended toward
+## [member blend_biome]'s.
 func get_target_grass_tint() -> Color:
 	if not enable_biome_tinting:
 		return Color.WHITE
 	var reference: Color = ClimateData.get_biome_grass_tint(ClimateData.BiomeZone.TEMPERATE_PLAINS)
-	return normalize_biome_tint(ClimateData.get_biome_grass_tint(current_biome), reference)
+	var tint: Color = normalize_biome_tint(ClimateData.get_biome_grass_tint(current_biome), reference)
+	if blend_weight > 0.0:
+		tint = tint.lerp(normalize_biome_tint(ClimateData.get_biome_grass_tint(blend_biome), reference), blend_weight)
+	return tint
 
 
 ## Normalizes a biome tint per-channel against a reference so the reference biome is identity (white).
