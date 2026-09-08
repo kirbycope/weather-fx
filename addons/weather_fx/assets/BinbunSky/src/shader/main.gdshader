@@ -1,4 +1,7 @@
 shader_type sky;
+// Two clamp() calls in Binbun's original had their arguments in the wrong order (the two limits first, the value last), which is
+// undefined in GLSL: Vulkan happened to give the intended answer, the Compatibility renderer and WebGL give 1.0, so the
+// sun glow washed the whole sky white there. They read clamp(x, 0.0, 1.0) here.
 
 group_uniforms Sky;
 uniform vec4 sky_day : source_color = vec4(0.0,0.3,0.7,1.0);
@@ -75,12 +78,12 @@ void sky() {
 
 	float sun_distance = clamp(1.0 - distance(EYEDIR, LIGHT0_DIRECTION) - pow(cloud_value,cloud_occlude_exponent),0.0,1.0);
 	float sun_disc = clamp(smoothstep(1.0 - sun_scale, 1.0, sun_distance), 0.0, 1.0);
-	float sun_glow = clamp(0.0, 1.0, (pow(sun_distance, 4.0)*0.07));
+	float sun_glow = clamp(pow(sun_distance, 4.0) * 0.07, 0.0, 1.0);
 	vec3 sun = mix(vec3(0.0), sun_color.rgb * sun_strength, max(sun_disc, sun_glow));
 
 	float night_noise = texture(night_noise_02, (EYEDIR / ((1.0 - abs(t) * 0.05))).xz).r;
 	float stars = smoothstep(0.9, .95, texture(night_noise_01, (EYEDIR / ((1.0 - abs(t) * 0.05))).xz).r);
-	float night_blend = clamp(0.0,1.0,0.0 - blend);
+	float night_blend = clamp(0.0 - blend, 0.0, 1.0);
 	stars = clamp(clamp((stars - cloud_value * 2.0), 0.0, 1.0) * night_blend, 0.0, 1.0) + (night_noise*0.01);
 
 	horizon_color = mix(horizon_sunset, horizon_day, clamp(blend,0.0,1.0)).rgb;

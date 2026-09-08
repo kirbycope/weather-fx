@@ -155,6 +155,13 @@ var active_weather: ClimateData.WeatherType = ClimateData.WeatherType.BLUE_SKY
 
 ## Optional WorldEnvironment whose fog follows the active weather.
 @export var world_environment: WorldEnvironment
+## How far the weather's fog tints the sky, 0 to 1 (Environment.fog_sky_affect). At Godot's default of 1 the sky is
+## the fog colour outright whenever the weather has any fog (cloudy, rain, snow, storm), which hides the sky shader's
+## clouds; a low value keeps a haze at the horizon and the clouds in view.
+@export_range(0.0, 1.0, 0.05) var fog_sky_affect: float = 0.3 :
+	set(value):
+		fog_sky_affect = value
+		_update_fog()
 
 ## Current altitude in meters. If target_node is assigned, this is updated automatically.
 @export_range(0.0, 1500.0, 1.0) var current_altitude: float = 0.0 :
@@ -403,6 +410,7 @@ func _update_fog() -> void:
 	var density: float = FOG_DENSITY.get(active_weather, 0.0) if is_simulating() else 0.0
 	env.fog_enabled = density > 0.0
 	env.fog_density = density
+	env.fog_sky_affect = fog_sky_affect
 	env.volumetric_fog_enabled = _is_forward_plus and density > 0.0 and active_weather != ClimateData.WeatherType.CLOUDY
 	env.volumetric_fog_density = density * 0.5
 

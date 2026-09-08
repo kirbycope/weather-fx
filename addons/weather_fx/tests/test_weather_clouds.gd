@@ -136,3 +136,24 @@ func test_the_clouds_dim_with_the_sun_down() -> void:
 	clouds._on_time_changed(3.0)
 	assert_almost_eq(clouds.night_factor(), 1.0, 0.001, "No sun given: no dimming")
 
+
+
+func test_the_sky_shader_never_reverses_clamp_which_whites_out_gl_and_webgl() -> void:
+	var shader: Shader = load("res://addons/weather_fx/assets/BinbunSky/src/shader/main.gdshader")
+	var regex := RegEx.new()
+	regex.compile("clamp[(][ ]*0[.]0[ ]*,[ ]*1[.]0[ ]*,") # no backslashes: GDScript and GLSL escaping both stay out of it
+	assert_null(regex.search(shader.code), "clamp(0.0, 1.0, x) is undefined in GLSL and renders white on the Compatibility renderer; write clamp(x, 0.0, 1.0)")
+
+
+func test_the_weathers_fog_leaves_the_sky_in_view() -> void:
+	var environment := WorldEnvironment.new()
+	environment.environment = Environment.new()
+	add_child_autofree(environment)
+	var wfx := WeatherFX.new()
+	wfx.world_environment = environment
+	add_child_autofree(wfx)
+	wfx.set_weather(ClimateData.WeatherType.RAIN)
+	assert_true(environment.environment.fog_enabled, "Rain brings fog")
+	assert_almost_eq(environment.environment.fog_sky_affect, 0.3, 0.001, "that tints the sky a little instead of replacing it (Godot's default of 1 hides the clouds)")
+	wfx.fog_sky_affect = 0.0
+	assert_almost_eq(environment.environment.fog_sky_affect, 0.0, 0.001, "and the export drives it")
