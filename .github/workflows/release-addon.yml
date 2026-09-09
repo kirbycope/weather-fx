@@ -103,7 +103,7 @@ jobs:
           generate_release_notes: true
           files: weather_fx-v${{ steps.version.outputs.version }}.zip
 
-      - name: Bump project.godot version and create next branch
+      - name: Bump the demo project version and create the next branch
         if: steps.version.outputs.skip == 'false'
         shell: bash
         run: |
@@ -114,13 +114,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          if grep -q '^config/version=' project.godot; then
-            sed -i "s|^config/version=.*|config/version=\"$next_dev_version\"|" project.godot
+          if grep -q '^config/version=' demo/project.godot; then
+            sed -i "s|^config/version=.*|config/version=\"$next_dev_version\"|" demo/project.godot
           else
-            sed -i "/^\[application\]/a config/version=\"$next_dev_version\"" project.godot
+            sed -i "/^\[application\]/a config/version=\"$next_dev_version\"" demo/project.godot
           fi
 
-          git add project.godot
+          git add demo/project.godot
           if ! git diff --cached --quiet; then
             git commit -m "chore: bump version to $next_dev_version [skip ci]"
             git push origin main

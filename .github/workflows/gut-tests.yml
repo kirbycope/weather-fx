@@ -22,7 +22,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
 
       - name: Install Godot runtime deps
         shell: bash
