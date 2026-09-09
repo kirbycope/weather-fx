@@ -1,6 +1,0 @@
-[gd_resource type="Sky" load_steps=2 format=3 uid="uid://cg5kw1f1vkmlb"]
-
-[ext_resource type="Material" uid="uid://d4toafwlmd7i" path="res://addons/weather_fx/assets/BinbunSky/src/material/experimental/dark_material.tres" id="1_klfs7"]
-
-[resource]
-sky_material = ExtResource("1_klfs7")
