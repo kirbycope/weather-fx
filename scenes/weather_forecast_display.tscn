@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/weather_forecast_display.gd" id="1_script"]
+[ext_resource type="StyleBox" path="res://addons/weather_fx/resources/hud_panel_style.tres" id="2_style"]
+
+[node name="WeatherForecastDisplay" type="PanelContainer"]
+clip_contents = true
+offset_right = 110.0
+offset_bottom = 36.0
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("2_style")
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="InfoLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.565, 0.843, 0.929, 1)
+theme_override_font_sizes/font_size = 11
+text = "Weather FX"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="Control" parent="VBox"]
+clip_contents = true
+custom_minimum_size = Vector2(104, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ForecastIcons" type="HBoxContainer" parent="VBox/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 12.0
+offset_top = 2.0
+theme_override_constants/separation = 6

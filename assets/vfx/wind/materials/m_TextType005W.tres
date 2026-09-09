@@ -1,0 +1,20 @@
+[gd_resource type="ShaderMaterial" load_steps=5 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_animated_ds_unlit_bw_aT_instancedx.gdshader" id="1_3nbxj"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/Misc/textures/T_W1ND_ATLAS.png" id="2_1nje5"]
+
+[sub_resource type="Gradient" id="Gradient_5gfs7"]
+offsets = PackedFloat32Array(0, 0.673228, 0.84252)
+colors = PackedColorArray(0.0728426, 0.0728427, 0.0728425, 0, 0.0295066, 0.0295066, 0.0295066, 1, 0.472, 0.59, 0.552633, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1u30f"]
+gradient = SubResource("Gradient_5gfs7")
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_3nbxj")
+shader_parameter/frame_count = Vector2(1, 38)
+shader_parameter/alpha_scissor_treshold = 0.296875
+shader_parameter/sprite_sheet = ExtResource("2_1nje5")
+shader_parameter/gradient_1d_texture = SubResource("GradientTexture1D_1u30f")
+

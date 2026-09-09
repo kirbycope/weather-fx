@@ -1,0 +1,96 @@
+name: Demo on Pages
+
+# The addon is what this repository ships, so consuming projects take it as a submodule and clone
+# everything on this branch. A web export is tens of megabytes and git cannot delta a .wasm, so the
+# export is built here and handed straight to Pages rather than committed.
+#
+# This one builds on Windows. The Linux runner imports this addon's textures into .ctex files the web
+# build then rejects with a bad header, which leaves the demo black and every biome resource null,
+# while the identical project exported from Windows is correct. The other addons here are fine on
+# Linux; this is the one with enough VRAM-compressed texture work to trip it.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: 4.8-dev4
+  ADDON: weather_fx
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Godot and its export templates
+        run: |
+          set -euo pipefail
+          base="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}"
+          curl -fsSL -o godot.zip "${base}/Godot_v${GODOT_VERSION}_win64.exe.zip"
+          curl -fsSL -o templates.tpz "${base}/Godot_v${GODOT_VERSION}_export_templates.tpz"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}_win64.exe" godot.exe
+          unzip -q templates.tpz
+          # The .tpz unpacks to templates/; Godot looks for them under the version's own directory.
+          dest="$APPDATA/Godot/export_templates/${GODOT_VERSION/-/.}"
+          mkdir -p "$dest"
+          mv templates/* "$dest/"
+
+      - name: Put the addon where the demo project expects it
+        run: |
+          set -euo pipefail
+          mkdir -p "demo/addons/${ADDON}"
+          # Everything the addon ships, which is the repository minus its own scaffolding.
+          # Anchored with a leading slash: unanchored, 'demo' also matches scenes/demo/,
+          # which is where this addon keeps the demo scene itself.
+          tar --exclude='./.git' --exclude='./.github' --exclude='./demo' \
+              --exclude='./.gitignore' --exclude='./.gitattributes' -cf - . \
+            | tar -xf - -C "demo/addons/${ADDON}"
+
+      - name: Export the demo
+        run: |
+          set -euo pipefail
+          mkdir -p demo/build
+          # Import repeatedly before exporting. One pass only registers the files; each further pass
+          # writes the resources whose dependencies the previous pass produced, and an asset-heavy
+          # addon needs several. Exporting early ships scenes whose textures were never written to
+          # .godot/imported, which the browser reports as a corrupt texture.
+          for _ in 1 2 3 4; do
+            ./godot.exe --headless --path demo --import
+          done
+          ./godot.exe --headless --path demo --export-release "Web" build/index.html
+
+      - name: Upload the export
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: demo/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

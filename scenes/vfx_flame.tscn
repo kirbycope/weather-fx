@@ -1,0 +1,105 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/fire/flame_01.gdshader" id="1_flame_shader"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/fire/flame_noise.tres" id="2_flame_tex"]
+
+[sub_resource type="Gradient" id="Gradient_flame"]
+colors = PackedColorArray(1, 1, 0.8, 1, 1, 0.2, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_flame"]
+gradient = SubResource("Gradient_flame")
+
+[sub_resource type="Curve" id="Curve_scale"]
+_data = [Vector2(0, 0.3), 0.0, 2.0, 0, 0, Vector2(0.45, 1.0), 0.0, 0.0, 0, 0, Vector2(1, 0.1), -1.8, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_scale"]
+curve = SubResource("Curve_scale")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_flame"]
+emission_shape = 3
+emission_box_extents = Vector3(0.4, 0.1, 0.4)
+direction = Vector3(0, 1, 0)
+spread = 15.0
+initial_velocity_min = 0.6
+initial_velocity_max = 1.4
+gravity = Vector3(0, 0.6, 0)
+scale_curve = SubResource("CurveTexture_scale")
+color_initial_ramp = SubResource("GradientTexture1D_flame")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_noise2"]
+noise_type = 3
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_noise2"]
+width = 128
+height = 128
+seamless = true
+noise = SubResource("FastNoiseLite_noise2")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_flame"]
+render_priority = 0
+shader = ExtResource("1_flame_shader")
+shader_parameter/noise_texture_1 = ExtResource("2_flame_tex")
+shader_parameter/noise_texture_2 = SubResource("NoiseTexture2D_noise2")
+shader_parameter/edge_softness = 0.5
+shader_parameter/texture_scale = Vector2(1, 1)
+shader_parameter/smoke_color = Color(0.1, 0.08, 0.08, 1)
+shader_parameter/lightness = 0.0
+shader_parameter/mask_from = Vector2(0.5, 0.5)
+shader_parameter/mask_scale = 0.35
+
+[sub_resource type="QuadMesh" id="QuadMesh_flame"]
+material = SubResource("ShaderMaterial_flame")
+size = Vector2(1.0, 1.2)
+
+[sub_resource type="Gradient" id="Gradient_ember"]
+colors = PackedColorArray(1, 0.75, 0.3, 1, 1, 0.25, 0.02, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ember"]
+gradient = SubResource("Gradient_ember")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ember"]
+emission_shape = 3
+emission_box_extents = Vector3(0.35, 0.05, 0.35)
+direction = Vector3(0, 1, 0)
+spread = 20.0
+initial_velocity_min = 1.2
+initial_velocity_max = 2.6
+gravity = Vector3(0, 1.4, 0)
+color_ramp = SubResource("GradientTexture1D_ember")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ember"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+emission_enabled = true
+emission = Color(1, 0.45, 0.1, 1)
+emission_energy_multiplier = 2.0
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_ember"]
+material = SubResource("StandardMaterial3D_ember")
+size = Vector2(0.06, 0.06)
+
+[node name="VFXFlame" type="Node3D"]
+
+[node name="FlameParticles" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+layers = 1
+amount = 32
+lifetime = 0.55
+draw_order = 3
+process_material = SubResource("ParticleProcessMaterial_flame")
+draw_pass_1 = SubResource("QuadMesh_flame")
+
+[node name="EmberParticles" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+layers = 1
+amount = 12
+lifetime = 1.2
+process_material = SubResource("ParticleProcessMaterial_ember")
+draw_pass_1 = SubResource("QuadMesh_ember")

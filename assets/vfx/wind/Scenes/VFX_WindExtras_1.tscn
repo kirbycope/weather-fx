@@ -1,0 +1,60 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_Disolver_advanced_D_p.tres" id="1_ncbe6"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_simple_1.png" id="2_bercl"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_VFX_WindNoise1.png" id="3_crqgv"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_ring7.obj" id="4_evc7s"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_o1mm3"]
+render_priority = 1
+shader = ExtResource("1_ncbe6")
+shader_parameter/Intensity = 7.84
+shader_parameter/Use_Fresnel = true
+shader_parameter/Scale = Vector2(1, 1)
+shader_parameter/Velocity = Vector2(0.5, 0.5)
+shader_parameter/Fresnel_Invert = true
+shader_parameter/fresnel = 3.0
+shader_parameter/Texture = ExtResource("3_crqgv")
+shader_parameter/Multiply_Texture = ExtResource("2_bercl")
+
+[sub_resource type="Curve" id="Curve_rfkdi"]
+_data = [Vector2(0, 0.011043), 0.0, 0.0, 0, 0, Vector2(0.236749, 1), -0.0756212, -0.0756212, 0, 0, Vector2(0.692579, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_1icah"]
+texture_mode = 1
+curve = SubResource("Curve_rfkdi")
+
+[sub_resource type="Curve" id="Curve_akv0v"]
+_data = [Vector2(0, 0.0907975), 0.0, 2.51167, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_v070o"]
+curve = SubResource("Curve_akv0v")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_512fy"]
+particle_flag_rotate_y = true
+angle_min = -180.0
+angle_max = 180.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.8
+scale_max = 1.2
+scale_curve = SubResource("CurveTexture_v070o")
+alpha_curve = SubResource("CurveTexture_1icah")
+
+[node name="VFX_WindExtras_1" type="Node3D"]
+
+[node name="torus2" type="GPUParticles3D" parent="."]
+transform = Transform3D(0.901591, -0.339191, -0.268483, -8.88178e-16, -0.620642, 0.784094, -0.432589, -0.706932, -0.559565, 0, 0, 0)
+layers = 4
+material_override = SubResource("ShaderMaterial_o1mm3")
+cast_shadow = 0
+amount = 5
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-2, -2, -2, 4, 4, 4)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_512fy")
+draw_pass_1 = ExtResource("4_evc7s")
+
+

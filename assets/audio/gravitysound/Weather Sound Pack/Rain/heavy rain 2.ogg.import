@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://snnwhccqhrat"
+path="res://.godot/imported/heavy rain 2.ogg-6ed1de621ca3ec849a3bcde10ce072a6.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Rain/heavy rain 2.ogg"
+dest_files=["res://.godot/imported/heavy rain 2.ogg-6ed1de621ca3ec849a3bcde10ce072a6.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

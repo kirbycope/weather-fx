@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/temperature_gauge_display.gd" id="1_script"]
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/gauge_needle.gd" id="2_needle"]
+[ext_resource type="Shader" path="res://addons/weather_fx/resources/temperature_gauge.gdshader" id="3_shader"]
+[ext_resource type="StyleBox" path="res://addons/weather_fx/resources/hud_panel_style.tres" id="4_style"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gauge"]
+shader = ExtResource("3_shader")
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_gauge"]
+size = Vector2(36, 36)
+
+[node name="TemperatureGaugeDisplay" type="Control"]
+custom_minimum_size = Vector2(36, 36)
+offset_right = 36.0
+offset_bottom = 36.0
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("4_style")
+
+[node name="Gauge" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_gauge")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("PlaceholderTexture2D_gauge")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="GaugeNeedle" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_needle")

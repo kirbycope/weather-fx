@@ -23,8 +23,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          # The addons are submodules; without this they check out empty and every test fails.
-          submodules: recursive
 
       - name: Install Godot runtime deps
         shell: bash
@@ -45,8 +43,20 @@ jobs:
           filesystem/import/blender/blender_path = "/usr/bin/blender"
           EOF
 
+      - name: Put the addon where the demo project expects it
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "demo/addons/weather_fx"
+          # Anchored: unanchored, 'demo' would also match scenes/demo/, the demo scene itself.
+          rsync -a --exclude '/.git' --exclude '/.github' --exclude '/demo' \
+                --exclude '/.gitignore' --exclude '/.gitattributes' ./ "demo/addons/weather_fx/"
+
       - name: Import project
-        run: godot --headless --path "$PWD" --import --quit
+        run: |
+          for _ in 1 2 3 4; do
+            godot --headless --path "$PWD/demo" --import --quit
+          done
 
       - name: Run Tests
         env:
@@ -56,7 +66,7 @@ jobs:
           godot \
             --headless \
             -d \
-            --path "$PWD" \
+            --path "$PWD/demo" \
             -s addons/gut/gut_cmdln.gd \
             -gconfig=res://addons/weather_fx/.gutconfig.json \
             -gjunit_xml_file=test-results/gut-junit.xml \

@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://df2moxe7vqkyp"]
+
+[ext_resource type="AudioStream" uid="uid://cavaav2nxuv1q" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Day/Forest Day.ogg" id="1_day_clear"]
+[ext_resource type="AudioStream" uid="uid://4idil8c42s3i" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Day/Forest Day Rain.ogg" id="2_day_rain"]
+[ext_resource type="AudioStream" uid="uid://dm7eauoydfjnw" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Day/Forest Day Storm.ogg" id="3_day_storm"]
+[ext_resource type="AudioStream" uid="uid://d37fk5jwriglv" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Night/Forest Night.ogg" id="4_night_clear"]
+[ext_resource type="AudioStream" uid="uid://comujky8c2e8f" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Night/Forest Night Rain.ogg" id="5_night_rain"]
+[ext_resource type="AudioStream" uid="uid://cw2bq1mufeao1" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Night/Forest Night Storm.ogg" id="6_night_storm"]
+
+[node name="BackGroundSounds" type="Node3D"]
+
+[node name="BGS_Day_Clear" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("1_day_clear")
+unit_size = 50.0
+max_distance = 250.0
+
+[node name="BGS_Day_Rain" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_day_rain")
+unit_size = 50.0
+max_distance = 250.0
+
+[node name="BGS_Day_Storm" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("3_day_storm")
+unit_size = 50.0
+max_distance = 250.0
+
+[node name="BGS_Night_Clear" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("4_night_clear")
+unit_size = 50.0
+max_distance = 250.0
+
+[node name="BGS_Night_Rain" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("5_night_rain")
+unit_size = 50.0
+max_distance = 250.0
+
+[node name="BGS_Night_Storm" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("6_night_storm")
+unit_size = 50.0
+max_distance = 250.0

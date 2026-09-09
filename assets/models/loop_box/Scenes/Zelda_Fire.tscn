@@ -1,0 +1,58 @@
+[gd_scene load_steps=8 format=3 uid="uid://cbyx1ioyva5d4"]
+
+[ext_resource type="Texture2D" uid="uid://djtwlll8voah0" path="res://Botw_Fire_Project/Textures/Ground.png" id="1_6khkq"]
+[ext_resource type="PackedScene" uid="uid://d1mn8tog8d7vq" path="res://Botw_Fire_Project/Scenes/Pot_Fire.tscn" id="6_57iih"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_u4kav"]
+sky_top_color = Color(0, 0.254902, 0.54902, 1)
+sky_horizon_color = Color(0, 0.741176, 0.733333, 1)
+ground_horizon_color = Color(0, 0.741176, 0.733333, 1)
+
+[sub_resource type="Sky" id="Sky_ab4c2"]
+sky_material = SubResource("ProceduralSkyMaterial_u4kav")
+
+[sub_resource type="Environment" id="Environment_622u2"]
+background_mode = 1
+sky = SubResource("Sky_ab4c2")
+ambient_light_source = 2
+ambient_light_color = Color(0.775063, 0.775063, 0.775063, 1)
+glow_enabled = true
+glow_blend_mode = 0
+fog_mode = 1
+fog_light_color = Color(0, 0, 0, 1)
+fog_density = 1.0
+fog_depth_begin = 3.0
+fog_depth_end = 10.0
+adjustment_contrast = 1.2
+adjustment_saturation = 1.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pragq"]
+albedo_texture = ExtResource("1_6khkq")
+metallic = 0.8
+uv1_triplanar = true
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_qfi83"]
+size = Vector2(50, 50)
+
+[node name="3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_622u2")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(0.5000002, -0.61237216, 0.6123726, 0, 0.707107, 0.70710653, -0.8660253, -0.35355338, 0.35355362, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Ground" type="MeshInstance3D" parent="WorldEnvironment"]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_pragq")
+mesh = SubResource("PlaneMesh_qfi83")
+skeleton = NodePath("../..")
+
+[node name="Node3D2" type="Node3D" parent="WorldEnvironment"]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="WorldEnvironment/Node3D2"]
+transform = Transform3D(0.70710653, -0.1576089, 0.6893179, 0, 0.97484267, 0.22289282, -0.70710653, -0.15760893, 0.6893178, 2.132214, 1.4725004, 2.132214)
+
+[node name="Pot_Fire" parent="." instance=ExtResource("6_57iih")]

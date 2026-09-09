@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://c2x8kvgklurm7"
+path="res://.godot/imported/windy day 1.ogg-e69b55b52c780b17ee9e2d9ec1fe9d23.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/gravitysound/Weather Sound Pack/Wind/windy day 1.ogg"
+dest_files=["res://.godot/imported/windy day 1.ogg-e69b55b52c780b17ee9e2d9ec1fe9d23.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

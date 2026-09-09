@@ -1,0 +1,74 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Shader" path="res://addons/weather_fx/assets/vfx/wind/shaders/s_animated_ds_toon.gdshader" id="1_ol4h1"]
+[ext_resource type="Texture2D" path="res://addons/weather_fx/assets/vfx/wind/textures/T_WindWave_Single_A1.png" id="2_087py"]
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/assets/vfx/wind/objects/sm_plane_cross1a.obj" id="3_fhaky"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_oj57c"]
+render_priority = 1
+shader = ExtResource("1_ol4h1")
+shader_parameter/normal_intensity = 0.0
+shader_parameter/frame_count = Vector2(5, 2)
+shader_parameter/sprite_sheet = ExtResource("2_087py")
+
+[sub_resource type="Curve" id="Curve_ym6c4"]
+_data = [Vector2(0.00754717, 0), 0.0, 2.57093, 0, 0, Vector2(1, 1), 1.09168, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_jpdpg"]
+texture_mode = 1
+curve = SubResource("Curve_ym6c4")
+
+[sub_resource type="Curve" id="Curve_r2gus"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="Curve" id="Curve_kxfb2"]
+max_value = 2.0
+_data = [Vector2(0, 1.73635), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="Curve" id="Curve_w3rk4"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_di7ym"]
+curve_x = SubResource("Curve_r2gus")
+curve_y = SubResource("Curve_kxfb2")
+curve_z = SubResource("Curve_w3rk4")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ex4rx"]
+lifetime_randomness = 0.1
+particle_flag_align_y = true
+emission_shape = 1
+emission_sphere_radius = 0.3
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+radial_velocity_min = 1.99998
+radial_velocity_max = 1.99998
+gravity = Vector3(0, 0, 0)
+scale_min = 0.6
+scale_max = 0.8
+scale_curve = SubResource("CurveXYZTexture_di7ym")
+color = Color(0.838897, 0.838897, 0.838897, 1)
+alpha_curve = SubResource("CurveTexture_jpdpg")
+
+[node name="VFX_WindHit_K1" type="Node3D"]
+
+[node name="VFX_Smoke_A8" type="GPUParticles3D" parent="."]
+layers = 4
+material_override = SubResource("ShaderMaterial_oj57c")
+cast_shadow = 0
+amount = 12
+lifetime = 0.5
+explosiveness = 0.84
+randomness = 1.0
+fixed_fps = 60
+visibility_aabb = AABB(-3, -3, -3, 6, 6, 6)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_ex4rx")
+draw_pass_1 = ExtResource("3_fhaky")
+
+

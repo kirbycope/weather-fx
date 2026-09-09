@@ -1,0 +1,19 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://cy88j74yep2kd"]
+
+[ext_resource type="Shader" uid="uid://yi2myvyxd4if" path="res://addons/weather_fx/resources/foliage_wind.gdshader" id="1_fshader"]
+[ext_resource type="Texture2D" uid="uid://ci60kyykaogvw" path="res://addons/weather_fx/assets/models/quaternius/stylized-nature-megakit/Bark_NormalTree.png" id="2_barktex"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_fshader")
+shader_parameter/texture_albedo = ExtResource("2_barktex")
+shader_parameter/foliage_tint = Color(1, 1, 1, 1)
+shader_parameter/alpha_scissor_threshold = 0.5
+shader_parameter/normal_up_bias = 0.0
+shader_parameter/wind_speed = 1.2
+shader_parameter/trunk_sway_strength = 0.04
+shader_parameter/branch_sway_strength = 0.0
+shader_parameter/branch_sway_speed = 1.0
+shader_parameter/leaf_rustle_strength = 0.0
+shader_parameter/rustle_frequency = 14.0
+shader_parameter/rustle_spatial_scale = 8.0

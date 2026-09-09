@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://addons/weather_fx/resources/mesh_leaf_particle.tres" id="1_0e2at"]
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/falling_leaves.gd" id="2_t5rvp"]
+[ext_resource type="Material" path="res://addons/weather_fx/resources/leaf_particle_material.tres" id="3_leafmat"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x43qv"]
+particle_flag_rotate_y = true
+emission_shape = 1
+emission_sphere_radius = 2.8
+angle_max = 360.0
+direction = Vector3(1, -0.3, 0)
+initial_velocity_min = 2.5
+initial_velocity_max = 5.0
+angular_velocity_min = 30.0
+angular_velocity_max = 180.0
+gravity = Vector3(0, -3.5, 0)
+scale_min = 0.6
+scale_max = 1.3
+turbulence_enabled = true
+turbulence_noise_strength = 0.8
+turbulence_noise_scale = 1.2
+
+[node name="FallingLeaves" type="GPUParticles3D" unique_id=193975699]
+material_override = ExtResource("3_leafmat")
+emitting = false
+amount = 48
+lifetime = 6.0
+randomness = 0.8
+visibility_aabb = AABB(-15, -10, -15, 30, 20, 30)
+process_material = SubResource("ParticleProcessMaterial_x43qv")
+draw_pass_1 = ExtResource("1_0e2at")
+script = ExtResource("2_t5rvp")
