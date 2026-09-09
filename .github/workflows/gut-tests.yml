@@ -22,6 +22,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          # The addons are submodules; without this they check out empty and every test fails.
+          submodules: recursive
 
       - name: Install Godot runtime deps
         shell: bash
