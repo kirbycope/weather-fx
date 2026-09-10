@@ -1,3 +1,5 @@
+![Preview](addons/weather_fx/assets/weather-fx.png)
+
 # Weather FX for Godot 4.8+
 
 Biomes, precipitation, wind, wildfire, lightning, a stylized sky and water ripples, driven from one node.
