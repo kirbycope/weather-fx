@@ -4,11 +4,11 @@ name: Demo on Pages
 # everything on this branch. A web export is tens of megabytes and git cannot delta a .wasm, so the
 # export is built here and handed straight to Pages rather than committed.
 #
-# This one builds on Windows. The Linux runner imports this addon's textures into .ctex files the web
-# build then rejects with a bad header, which leaves the demo black and every biome resource null,
-# while the identical project exported from Windows is correct. The other addons here are fine on
-# Linux; this is the one with enough VRAM-compressed texture work to trip it.
-
+# Builds on Linux like every other addon here. It used to build on Windows because the Linux
+# runner produced a demo with no textures at all, which looked like a texture bug; the real cause
+# was an unreferenced Pot.blend, which made Godot fail with "Cannot configure blender path in
+# headless mode" and abort the whole import. That file is gone, and a Linux import now produces
+# textures byte-identical to the Windows and macOS ones.
 on:
   push:
     branches:
@@ -30,7 +30,7 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     defaults:
       run:
@@ -44,15 +44,40 @@ jobs:
         run: |
           set -euo pipefail
           base="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}"
-          curl -fsSL -o godot.zip "${base}/Godot_v${GODOT_VERSION}_win64.exe.zip"
+          curl -fsSL -o godot.zip "${base}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
           curl -fsSL -o templates.tpz "${base}/Godot_v${GODOT_VERSION}_export_templates.tpz"
           unzip -q godot.zip
-          mv "Godot_v${GODOT_VERSION}_win64.exe" godot.exe
+          mv "Godot_v${GODOT_VERSION}_linux.x86_64" /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
           unzip -q templates.tpz
           # The .tpz unpacks to templates/; Godot looks for them under the version's own directory.
-          dest="$APPDATA/Godot/export_templates/${GODOT_VERSION/-/.}"
+          dest="$HOME/.local/share/godot/export_templates/${GODOT_VERSION/-/.}"
           mkdir -p "$dest"
           mv templates/* "$dest/"
+
+      - name: Install Blender when the project has a .blend
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! find . -name '*.blend' -not -path './.git/*' | grep -q .; then
+            echo "No .blend in this repository; Godot will never reach for Blender."
+            exit 0
+          fi
+          echo "Found a .blend; installing Blender."
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends blender
+          # Godot must be told where Blender is. Without this it fails with "Cannot configure blender
+          # path in headless mode", and that error aborts the WHOLE import: no fonts, no textures, and
+          # an export a tenth of its proper size.
+          settings="$HOME/.config/godot/editor_settings-${GODOT_VERSION%%-*}.tres"
+          mkdir -p "$(dirname "$settings")"
+          {
+            echo '[gd_resource type="EditorSettings" format=3]'
+            echo
+            echo '[resource]'
+            echo 'filesystem/import/blender/blender_path = "/usr/bin/blender"'
+          } > "$settings"
+          blender --version | head -1
 
       - name: Put the addon where the demo project expects it
         run: |
@@ -74,9 +99,9 @@ jobs:
           # addon needs several. Exporting early ships scenes whose textures were never written to
           # .godot/imported, which the browser reports as a corrupt texture.
           for _ in 1 2 3 4; do
-            ./godot.exe --headless --path demo --import
+            godot --headless --path demo --import
           done
-          ./godot.exe --headless --path demo --export-release "Web" build/index.html
+          godot --headless --path demo --export-release "Web" build/index.html
 
       - name: Upload the export
         uses: actions/upload-pages-artifact@v3
