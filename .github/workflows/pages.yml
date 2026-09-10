@@ -26,7 +26,6 @@ concurrency:
 
 env:
   GODOT_VERSION: 4.8-dev4
-  ADDON: weather_fx
 
 jobs:
   build:
@@ -79,34 +78,23 @@ jobs:
           } > "$settings"
           blender --version | head -1
 
-      - name: Put the addon where the demo project expects it
-        run: |
-          set -euo pipefail
-          mkdir -p "demo/addons/${ADDON}"
-          # Everything the addon ships, which is the repository minus its own scaffolding.
-          # Anchored with a leading slash: unanchored, 'demo' also matches scenes/demo/,
-          # which is where this addon keeps the demo scene itself.
-          tar --exclude='./.git' --exclude='./.github' --exclude='./demo' \
-              --exclude='./.gitignore' --exclude='./.gitattributes' -cf - . \
-            | tar -xf - -C "demo/addons/${ADDON}"
-
       - name: Export the demo
         run: |
           set -euo pipefail
-          mkdir -p demo/build
+          mkdir -p build
           # Import repeatedly before exporting. One pass only registers the files; each further pass
           # writes the resources whose dependencies the previous pass produced, and an asset-heavy
           # addon needs several. Exporting early ships scenes whose textures were never written to
           # .godot/imported, which the browser reports as a corrupt texture.
           for _ in 1 2 3 4; do
-            godot --headless --path demo --import
+            godot --headless --path . --import
           done
-          godot --headless --path demo --export-release "Web" build/index.html
+          godot --headless --path . --export-release "Web" build/index.html
 
       - name: Upload the export
         uses: actions/upload-pages-artifact@v3
         with:
-          path: demo/build
+          path: build
 
   deploy:
     needs: build

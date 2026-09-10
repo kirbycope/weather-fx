@@ -17,7 +17,6 @@ on:
 
 env:
   GODOT_VERSION: 4.8-dev4
-  ADDON: weather_fx
 
 jobs:
   gut:
@@ -61,21 +60,12 @@ jobs:
           } > "$settings"
           blender --version | head -1
 
-      - name: Put the addon where the demo project expects it
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "demo/addons/${ADDON}"
-          # Anchored: unanchored, 'demo' would also match scenes/demo/, the demo scene itself.
-          rsync -a --exclude '/.git' --exclude '/.github' --exclude '/demo' \
-                --exclude '/.gitignore' --exclude '/.gitattributes' ./ "demo/addons/${ADDON}/"
-
       - name: Import project
         shell: bash
         run: |
           set -euo pipefail
           for _ in 1 2 3 4; do
-            godot --headless --path "$PWD/demo" --import
+            godot --headless --path "$PWD" --import
           done
 
       - name: Run tests
@@ -84,11 +74,11 @@ jobs:
           GODOT_DISABLE_LEAK_CHECKS: "1"
         run: |
           set -euo pipefail
-          mkdir -p demo/test-results
+          mkdir -p test-results
           godot \
             --headless \
             --audio-driver Dummy \
-            --path "$PWD/demo" \
+            --path "$PWD" \
             -s addons/gut/gut_cmdln.gd \
             -gconfig=res://addons/weather_fx/.gutconfig.json \
             -gjunit_xml_file=test-results/gut-junit.xml \
@@ -100,5 +90,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: gut-test-reports
-          path: demo/test-results/
+          path: test-results/
           if-no-files-found: warn

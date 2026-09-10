@@ -1,8 +1,0 @@
-# The addon is the repository root; the demo project takes a copy of it, never committed twice.
-# See the README for the one command that fills it in.
-addons/weather_fx/
-
-# Godot's import cache and the web export the Pages workflow builds.
-.godot/
-build/
-.mcp/
