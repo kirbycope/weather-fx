@@ -85,8 +85,10 @@ jobs:
           rm -rf dist
           mkdir -p dist
           mkdir -p "dist/weather_fx"
-          # The addon is the repository root; everything but its own scaffolding goes in the zip.
-          rsync -a --exclude '/.git' --exclude '/.github' --exclude '/demo' \
+          # The addon is the repository root; everything but its own scaffolding goes in the zip. dist is
+          # excluded because it sits inside the source: without that, rsync copies its own output back into
+          # itself, trips over the temp files it is writing, and exits 24 with "file has vanished".
+          rsync -a --exclude '/.git' --exclude '/.github' --exclude '/demo' --exclude '/dist' \
                 --exclude '/.gitignore' --exclude '/.gitattributes' ./ "dist/weather_fx/"
 
           (
