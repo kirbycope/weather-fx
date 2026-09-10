@@ -1,4 +1,12 @@
 name: GUT Unit Tests
+
+# Godot is downloaded from godot-builds rather than run inside barichello/godot-ci, so every repository
+# here tests on the same engine the Pages export uses. Scenes saved by a 4.8 build carry a unique_id the
+# 4.7 container cannot parse.
+#
+# --audio-driver Dummy is required off that container: on a bare runner Godot cannot open an audio
+# device and start-up fails before a single test runs.
+
 on:
   push:
     branches:
@@ -7,64 +15,79 @@ on:
     branches:
       - main
 
+env:
+  GODOT_VERSION: 4.8-dev4
+  ADDON: weather_fx
+
 jobs:
   gut:
     runs-on: ubuntu-latest
-
-    env:
-      HOME: /tmp/godot-home
-      XDG_CONFIG_HOME: /tmp/godot-home/.config
-      XDG_CACHE_HOME: /tmp/godot-home/.cache
-
-    container:
-      image: "barichello/godot-ci:4.7"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Install Godot runtime deps
+      - name: Install Godot
         shell: bash
         run: |
           set -euo pipefail
-          apt-get update
-          apt-get install -y --no-install-recommends blender libfontconfig1 python3-numpy
+          base="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}"
+          curl -fsSL -o godot.zip "${base}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}_linux.x86_64" /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
 
-      - name: Configure Blender path for headless import
+      - name: Install Blender when the project has a .blend
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$XDG_CONFIG_HOME/godot" "$XDG_CACHE_HOME"
-          cat > "$XDG_CONFIG_HOME/godot/editor_settings-4.7.tres" <<'EOF'
-          [gd_resource type="EditorSettings" format=3]
-
-          [resource]
-          filesystem/import/blender/blender_path = "/usr/bin/blender"
-          EOF
+          if ! find . -name '*.blend' -not -path './.git/*' | grep -q .; then
+            echo "No .blend in this repository; Godot will never reach for Blender."
+            exit 0
+          fi
+          echo "Found a .blend; installing Blender."
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends blender
+          # Godot must be told where Blender is. Without this it fails with "Cannot configure blender
+          # path in headless mode", and that error aborts the WHOLE import: no fonts, no textures, and
+          # an export a tenth of its proper size.
+          settings="$HOME/.config/godot/editor_settings-${GODOT_VERSION%%-*}.tres"
+          mkdir -p "$(dirname "$settings")"
+          {
+            echo '[gd_resource type="EditorSettings" format=3]'
+            echo
+            echo '[resource]'
+            echo 'filesystem/import/blender/blender_path = "/usr/bin/blender"'
+          } > "$settings"
+          blender --version | head -1
 
       - name: Put the addon where the demo project expects it
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "demo/addons/weather_fx"
+          mkdir -p "demo/addons/${ADDON}"
           # Anchored: unanchored, 'demo' would also match scenes/demo/, the demo scene itself.
           rsync -a --exclude '/.git' --exclude '/.github' --exclude '/demo' \
-                --exclude '/.gitignore' --exclude '/.gitattributes' ./ "demo/addons/weather_fx/"
+                --exclude '/.gitignore' --exclude '/.gitattributes' ./ "demo/addons/${ADDON}/"
 
       - name: Import project
+        shell: bash
         run: |
+          set -euo pipefail
           for _ in 1 2 3 4; do
-            godot --headless --path "$PWD/demo" --import --quit
+            godot --headless --path "$PWD/demo" --import
           done
 
-      - name: Run Tests
+      - name: Run tests
+        shell: bash
         env:
           GODOT_DISABLE_LEAK_CHECKS: "1"
         run: |
+          set -euo pipefail
           mkdir -p demo/test-results
           godot \
             --headless \
-            -d \
+            --audio-driver Dummy \
             --path "$PWD/demo" \
             -s addons/gut/gut_cmdln.gd \
             -gconfig=res://addons/weather_fx/.gutconfig.json \

@@ -5,3 +5,4 @@ addons/weather_fx/
 # Godot's import cache and the web export the Pages workflow builds.
 .godot/
 build/
+.mcp/
