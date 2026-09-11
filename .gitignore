@@ -3,3 +3,7 @@
 /android/
 .DS_Store
 .mcp/
+
+# Python bytecode caches from the scripts in tools/
+__pycache__/
+*.pyc
