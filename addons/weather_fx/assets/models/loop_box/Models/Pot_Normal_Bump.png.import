@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/Pot_Normal_Bump.png-2eb9c450a8bd14ee99207bf37
 
 [params]
 
-compress/mode=1
+compress/mode=0
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7
@@ -41,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=512
-detect_3d/compress_to=0
+detect_3d/compress_to=1

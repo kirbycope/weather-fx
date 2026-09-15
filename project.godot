@@ -23,8 +23,8 @@ window/stretch/mode="canvas_items"
 [importer_defaults]
 
 texture={
-&"compress/mode": 1,
-&"detect_3d/compress_to": 0,
+&"compress/mode": 0,
+&"detect_3d/compress_to": 1,
 &"process/size_limit": 512
 }
 
