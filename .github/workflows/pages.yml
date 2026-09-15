@@ -82,6 +82,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build
+          # Textures are committed and imported at full resolution, so a desktop build keeps the
+          # fidelity the artist shipped. The web build is the one place load time is the binding
+          # constraint, so it caps the largest edge here, before the import pass that bakes it in.
+          # This edits a throwaway checkout; nothing it touches is committed.
+          python3 tools/web_texture_cap.py --size 512
           # Import repeatedly before exporting. One pass only registers the files; each further pass
           # writes the resources whose dependencies the previous pass produced, and an asset-heavy
           # addon needs several. Exporting early ships scenes whose textures were never written to
