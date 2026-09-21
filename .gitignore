@@ -7,3 +7,7 @@
 # Python bytecode caches from the scripts in tools/
 __pycache__/
 *.pyc
+
+# Fetched by tools/pull_addons.py, never committed here.
+.addon_cache/
+addons/gut/

@@ -1,0 +1,11 @@
+{
+  "_comment": "Addons fetched into addons/ by tools/pull_addons.py and git-ignored: run the script after cloning. 'ref' is the branch, tag or commit to take; 'main' means always the latest. A 'third_party' addon is somebody else's work, pinned to a release and never pushed to. tools/addons.lock.json records what was actually taken.",
+  "addons": [
+    {
+      "name": "gut",
+      "repo": "https://github.com/bitwes/Gut.git",
+      "ref": "v9.7.1",
+      "third_party": true
+    }
+  ]
+}
