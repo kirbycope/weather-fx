@@ -11,12 +11,6 @@ from __future__ import annotations
 
 import json
 import shutil
-
-# A Windows console may not encode an upstream commit subject (the MIDI player's are Japanese);
-# printing one must not abort a pull halfway, so unencodable characters are replaced instead.
-for _stream in (sys.stdout, sys.stderr):
-    if hasattr(_stream, "reconfigure"):
-        _stream.reconfigure(errors="replace")
 import subprocess
 import sys
 from pathlib import Path
@@ -37,6 +31,12 @@ EXCLUDED_TOP_LEVEL = {
     "test-results",
     "__pycache__",
 }
+
+# A Windows console may not encode an upstream commit subject (the MIDI player's are Japanese);
+# printing one must not abort a pull halfway, so unencodable characters are replaced instead.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(errors="replace")
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "tools" / "addons.json"
