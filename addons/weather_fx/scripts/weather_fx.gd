@@ -9,7 +9,8 @@ extends Node3D
 ## WeatherFX manages dynamic weather simulation, 4-minute forecasting cycles,
 ## altitude/time-based temperatures across 20 biomes, wind shader globals, fog and sun lighting.
 ## Precipitation particles and audio live in the PrecipitationFX / WeatherAudio child nodes and
-## react to this node's signals. Consumers find the active instance via the "WeatherFX" group.
+## react to this node's signals. The sky's clouds and the background ambience are this node's own
+## properties (the cloud_* and bgs_* groups). Consumers find the active instance via the "WeatherFX" group.
 
 # Signals
 signal weather_changed(new_weather: ClimateData.WeatherType, old_weather: ClimateData.WeatherType)
@@ -99,6 +100,8 @@ const PLAYER_SEARCH_COOLDOWN_FRAMES: int = 120
 			_update_temperature()
 			_update_wind_globals()
 			_update_sun_lighting()
+			if not is_puppet():
+				synced_biome = current_biome
 			biome_changed.emit(current_biome, old)
 
 ## With a [member target_node], the biome follows the [WeatherZone]s around it by weight instead of by entry: the
@@ -123,6 +126,29 @@ const PLAYER_SEARCH_COOLDOWN_FRAMES: int = 120
 ## Current active weather condition.
 @export_custom(PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY)
 var active_weather: ClimateData.WeatherType = ClimateData.WeatherType.BLUE_SKY
+
+## The authority's weather, for a [MultiplayerSynchronizer] under this node to carry ([code].:synced_weather[/code]).
+## The authority writes it as its weather changes; a peer that is not the authority takes a write as forced weather
+## ([method set_weather]), since its own forecast would otherwise overrule it. Offline it just follows [member active_weather].
+@export_custom(PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY)
+var synced_weather: ClimateData.WeatherType = ClimateData.WeatherType.BLUE_SKY :
+	set(value):
+		if synced_weather == value:
+			return
+		synced_weather = value
+		if is_puppet():
+			set_weather(value)
+
+## The authority's biome, likewise ([code].:synced_biome[/code]). A peer that reads its biome off the zones around a
+## target of its own ([member blend_zones]) keeps that and takes only the weather; one without takes the host's biome.
+@export_custom(PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY)
+var synced_biome: ClimateData.BiomeZone = ClimateData.BiomeZone.TEMPERATE_PLAINS :
+	set(value):
+		if synced_biome == value:
+			return
+		synced_biome = value
+		if is_puppet() and not is_blending_zones():
+			current_biome = value
 
 # Exported Groups: Environment & Tracking
 @export_group("Environment & Tracking")
@@ -159,8 +185,15 @@ var active_weather: ClimateData.WeatherType = ClimateData.WeatherType.BLUE_SKY
 		sun_light = value
 		_update_sun_lighting()
 
-## Optional WorldEnvironment whose fog follows the active weather.
-@export var world_environment: WorldEnvironment
+## Optional WorldEnvironment whose fog follows the active weather and, when its sky is a Binbun one, whose clouds do too.
+@export var world_environment: WorldEnvironment :
+	set(value):
+		world_environment = value
+		if is_node_ready():
+			_setup_cloud_sky()
+			_apply_cloud_weather(active_weather)
+			snap_clouds()
+			_update_fog()
 ## How far the weather's fog tints the sky, 0 to 1 (Environment.fog_sky_affect). At Godot's default of 1 the sky is
 ## the fog colour outright whenever the weather has any fog (cloudy, rain, snow, storm), which hides the sky shader's
 ## clouds; a low value keeps a haze at the horizon and the clouds in view.
@@ -207,6 +240,31 @@ var current_wind_strength: float = 0.0
 @export var enable_biome_tinting: bool = true ## Dynamically tints tree canopies, leaves, and ground grass based on current biome.
 @export var biome_tint_transition_speed: float = 2.0 ## Smooth blend speed when transitioning between biomes.
 
+## The Binbun sky of [member world_environment] takes its clouds from the weather: a density and colour per weather
+## type, the wind as its scroll, dimmed as [member sun_light] sets, eased over [member cloud_transition_seconds] on a
+## copy of the sky so the asset on disk is untouched. Any other sky is left alone.
+@export_group("Sky Clouds", "cloud_")
+@export var cloud_transition_seconds: float = 8.0 ## How long a change in the weather takes to roll across the sky.
+@export_range(0.0, 5.0) var cloud_clear_density: float = 0.5
+@export var cloud_clear_color: Color = Color(0.92, 0.92, 0.94)
+@export_range(0.0, 5.0) var cloud_cloudy_density: float = 1.4
+@export var cloud_cloudy_color: Color = Color(0.66, 0.68, 0.72)
+@export_range(0.0, 5.0) var cloud_rain_density: float = 2.0 ## Rain, snow and storms.
+@export var cloud_rain_color: Color = Color(0.45, 0.47, 0.52)
+@export_range(0.0, 1.0) var cloud_night_dim: float = 0.22 ## How bright the clouds stay with the sun fully down, as a share of the weather colour; no [member sun_light], no dimming.
+@export_range(0.0, 1.0) var cloud_night_dusk_height: float = 0.25 ## Sun height (its -Z dropped on Y, 1 = overhead) above which the clouds are at full brightness; dimming runs from a little below the horizon up to here.
+@export var cloud_wind_scroll_scale: float = 0.002 ## Sky scroll per unit of wind strength; the shader scrolls at wind_speed * 0.1 per second, so a strong wind drifts the clouds rather than racing them.
+@export var cloud_wind_min_scroll: float = 0.006 ## The clouds never sit dead still.
+
+## The background sounds, a [BiomeAmbience] per kind of place: the set whose biomes include the current one plays its
+## loop for the weather and the hour, through players the WeatherAudio child makes at ready. A biome no set covers
+## plays [member bgs_default], and nothing when that is empty too.
+@export_group("Background Sounds", "bgs_")
+@export var bgs_sets: Array[BiomeAmbience] = []
+@export var bgs_default: BiomeAmbience ## Where no set covers the biome; leave it empty for silence there.
+@export var bgs_bus: StringName = &"Master" ## The audio bus the ambience players go to.
+@export_range(-80.0, 24.0, 0.1, "suffix:dB") var bgs_volume_db: float = 0.0
+
 var current_foliage_tint: Color = Color.WHITE
 var current_grass_tint: Color = Color.WHITE
 var blend_biome: ClimateData.BiomeZone = ClimateData.BiomeZone.TEMPERATE_PLAINS ## The neighbouring biome the climate is blended toward (see [member blend_zones]).
@@ -225,6 +283,17 @@ var _forecast: Array[ClimateData.WeatherType] = []
 var _is_forward_plus: bool = true
 var _is_day: bool = true
 
+# Sky clouds
+const CLOUD_SETTLED: float = 0.005 ## How close every channel must be to its target for the easing to stop.
+var cloud_target_density: float = 0.5
+var cloud_target_color: Color = Color(0.92, 0.92, 0.94)
+var cloud_target_wind: Vector2 = Vector2(0.01, 0.01)
+var _cloud_density: float = 0.5
+var _cloud_color: Color = Color(0.92, 0.92, 0.94)
+var _cloud_wind: Vector2 = Vector2(0.01, 0.01)
+var _cloud_material: ShaderMaterial ## This node's own copy of the Binbun sky material, the one the clouds are written to.
+var _cloud_easing: bool = false
+
 
 # Lifecycle
 func _enter_tree() -> void:
@@ -235,13 +304,17 @@ func _ready() -> void:
 	var renderer: String = ProjectSettings.get_setting("rendering/renderer/rendering_method", "")
 	_is_forward_plus = renderer == "forward_plus" and not OS.has_feature("web") and not OS.has_feature("gl_compatibility")
 	ensure_shader_globals()
+	_setup_cloud_sky()
 	_regenerate_forecast()
 	_update_active_weather(true)
 	_update_playback_state()
 	_update_time_of_day()
+	snap_clouds()
 
 
 func _process(delta: float) -> void:
+	if _cloud_easing:
+		_ease_clouds(delta)
 	if not is_simulating():
 		return
 	if is_instance_valid(target_node) and target_node.is_inside_tree():
@@ -304,6 +377,12 @@ func set_biome_blend(biome: ClimateData.BiomeZone, weight: float) -> void:
 	_update_temperature()
 	_update_wind_globals()
 	_update_sun_lighting()
+
+
+## True on a peer that is not this node's multiplayer authority: its weather is the authority's, arriving through
+## [member synced_weather] and [member synced_biome]. Offline, and on the host, false.
+func is_puppet() -> bool:
+	return is_inside_tree() and multiplayer.has_multiplayer_peer() and not is_multiplayer_authority()
 
 
 ## True while the weather cycle ticks (playing, and in the editor only with editor_weather_enabled).
@@ -439,8 +518,11 @@ func _update_active_weather(force_apply: bool = false) -> void:
 		return
 	var old: ClimateData.WeatherType = active_weather
 	active_weather = target_weather
+	if not is_puppet():
+		synced_weather = active_weather
 	_update_wind_globals()
 	_update_fog()
+	_apply_cloud_weather(active_weather)
 	weather_changed.emit(active_weather, old)
 
 
@@ -459,6 +541,7 @@ func _update_wind_globals() -> void:
 		RenderingServer.global_shader_parameter_set(&"weather_wind_strength", current_wind_strength)
 		RenderingServer.global_shader_parameter_set(&"weather_wind_direction", wind_direction)
 		RenderingServer.global_shader_parameter_set(&"weather_precipitation_strength", active_precipitation_strength)
+	_apply_cloud_wind(current_wind_strength, wind_direction)
 	wind_changed.emit(current_wind_strength, wind_direction)
 
 
@@ -498,6 +581,144 @@ func _update_sun_lighting() -> void:
 	if blend_weight > 0.0:
 		color = color.lerp(get_sun_color(blend_biome, is_day), blend_weight)
 	sun_light.light_color = color
+	_retarget_cloud_color()
+
+
+# Sky clouds
+## The Binbun sky material the clouds are written to: this node's copy of [member world_environment]'s sky material,
+## made at ready; null when the environment's sky is not a Binbun one, and in the editor, where the asset stays as is.
+func sky_material() -> ShaderMaterial:
+	return _cloud_material
+
+
+## The Binbun sky material of [param environment], or null when its sky is something else.
+static func binbun_sky_material(environment: WorldEnvironment) -> ShaderMaterial:
+	if environment == null or environment.environment == null or environment.environment.sky == null:
+		return null
+	var material: ShaderMaterial = environment.environment.sky.sky_material as ShaderMaterial
+	if material == null or material.get_shader_parameter(&"cloud_density") == null:
+		return null
+	return material
+
+
+## Gives the WorldEnvironment its own copy of the Environment, with a copy of its Binbun sky and material, the one the
+## clouds are written to, so the resources on disk are never edited. Not in the editor: a copy made there would be
+## saved into the scene.
+func _setup_cloud_sky() -> void:
+	_cloud_material = null
+	_cloud_easing = false
+	if Engine.is_editor_hint():
+		return
+	var material: ShaderMaterial = binbun_sky_material(world_environment)
+	if material == null:
+		return
+	var environment: Environment = world_environment.environment.duplicate()
+	var sky: Sky = environment.sky.duplicate()
+	_cloud_material = material.duplicate()
+	sky.sky_material = _cloud_material
+	environment.sky = sky
+	world_environment.environment = environment # the node's own copy: the shared resource keeps its sky
+
+
+func cloud_density_for(weather_type: ClimateData.WeatherType) -> float:
+	match weather_type:
+		ClimateData.WeatherType.BLUE_SKY:
+			return cloud_clear_density
+		ClimateData.WeatherType.CLOUDY:
+			return cloud_cloudy_density
+		_:
+			return cloud_rain_density
+
+
+func cloud_color_for(weather_type: ClimateData.WeatherType) -> Color:
+	match weather_type:
+		ClimateData.WeatherType.BLUE_SKY:
+			return cloud_clear_color
+		ClimateData.WeatherType.CLOUDY:
+			return cloud_cloudy_color
+		_:
+			return cloud_rain_color
+
+
+## How much of the weather colour the clouds keep for the sun's height: 1 by day, [member cloud_night_dim] with the
+## sun down, eased in between so dusk rolls in with the sky; 1 without a [member sun_light].
+func cloud_night_factor() -> float:
+	if not is_instance_valid(sun_light):
+		return 1.0
+	# The light travels along -Z; up when the sun is above the horizon. Setters run while a scene is still being built,
+	# before the sun is in the tree, so its own basis stands in for the global one until then.
+	var sun_basis: Basis = sun_light.global_basis if sun_light.is_inside_tree() else sun_light.basis
+	var sun_height: float = sun_basis.z.y
+	var day: float = smoothstep(-0.08, maxf(cloud_night_dusk_height, 0.001), sun_height)
+	return lerpf(cloud_night_dim, 1.0, day)
+
+
+## [param color] with its brightness scaled by [method cloud_night_factor]; the alpha is left alone.
+func cloud_dimmed(color: Color) -> Color:
+	var factor: float = cloud_night_factor()
+	return Color(color.r * factor, color.g * factor, color.b * factor, color.a)
+
+
+## True while the sky is on its way to its targets; [method _process] eases it there and stops once it has settled.
+func is_easing_clouds() -> bool:
+	return _cloud_easing
+
+
+## Jumps the sky to its targets at once and stops easing.
+func snap_clouds() -> void:
+	_cloud_density = cloud_target_density
+	_cloud_color = cloud_target_color
+	_cloud_wind = cloud_target_wind
+	_write_clouds()
+	_cloud_easing = false
+
+
+## Sets where the sky is heading for [param weather_type].
+func _apply_cloud_weather(weather_type: ClimateData.WeatherType) -> void:
+	cloud_target_density = cloud_density_for(weather_type)
+	cloud_target_color = cloud_dimmed(cloud_color_for(weather_type))
+	_cloud_easing = _cloud_material != null
+
+
+## The sun moved: the clouds head for their new brightness.
+func _retarget_cloud_color() -> void:
+	cloud_target_color = cloud_dimmed(cloud_color_for(active_weather))
+	_cloud_easing = _cloud_material != null
+
+
+## Scrolls the clouds down the wind, faster in a stronger one.
+func _apply_cloud_wind(strength: float, direction: Vector3) -> void:
+	var heading: Vector2 = Vector2(direction.x, direction.z)
+	if heading.length() < 0.001:
+		heading = cloud_target_wind.normalized() if cloud_target_wind.length() > 0.001 else Vector2.ONE.normalized()
+	cloud_target_wind = heading.normalized() * maxf(cloud_wind_min_scroll, strength * cloud_wind_scroll_scale)
+	_cloud_easing = _cloud_material != null
+
+
+func _ease_clouds(delta: float) -> void:
+	if _clouds_settled():
+		snap_clouds()
+		return
+	var weight: float = 1.0 if cloud_transition_seconds <= 0.0 else clampf(delta / cloud_transition_seconds, 0.0, 1.0)
+	_cloud_density = lerpf(_cloud_density, cloud_target_density, weight)
+	_cloud_color = _cloud_color.lerp(cloud_target_color, weight)
+	_cloud_wind = _cloud_wind.lerp(cloud_target_wind, weight)
+	_write_clouds()
+
+
+func _clouds_settled() -> bool:
+	var gap: Color = cloud_target_color - _cloud_color
+	return absf(cloud_target_density - _cloud_density) < CLOUD_SETTLED \
+		and Vector3(gap.r, gap.g, gap.b).length() < CLOUD_SETTLED \
+		and (cloud_target_wind - _cloud_wind).length() < CLOUD_SETTLED
+
+
+func _write_clouds() -> void:
+	if _cloud_material == null:
+		return
+	_cloud_material.set_shader_parameter(&"cloud_density", _cloud_density)
+	_cloud_material.set_shader_parameter(&"cloud_color", _cloud_color)
+	_cloud_material.set_shader_parameter(&"wind_speed", _cloud_wind)
 
 
 ## The sun's colour over [param biome] by day or by night: cold and blue over ice, warm over lava, golden over sand,
@@ -584,6 +805,14 @@ func resume_forecast() -> void:
 ## Returns duplicate array of upcoming forecast.
 func get_forecast() -> Array[ClimateData.WeatherType]:
 	return _forecast.duplicate()
+
+
+## The ambience for [param biome]: the first of [member bgs_sets] that covers it, else [member bgs_default].
+func ambience_for(biome: ClimateData.BiomeZone) -> BiomeAmbience:
+	for ambience: BiomeAmbience in bgs_sets:
+		if ambience and ambience.covers(biome):
+			return ambience
+	return bgs_default
 
 
 ## Returns current cycle progress fraction between 0.0 and 1.0.

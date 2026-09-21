@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="BiomeAmbience" load_steps=5 format=3 uid="uid://b15f1uqo51tey"]
+
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/biome_ambience.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://bhbkr558b8g0a" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Cave/Cave.ogg" id="2"]
+[ext_resource type="AudioStream" uid="uid://dxp0mjkmnarxv" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Cave/Cave Rain.ogg" id="3"]
+[ext_resource type="AudioStream" uid="uid://jwo7gcgaf2yq" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Cave/Cave Storm.ogg" id="4"]
+
+[resource]
+resource_name = "Cave"
+script = ExtResource("1")
+biomes = Array[int]([])
+day_clear = ExtResource("2")
+day_rain = ExtResource("3")
+day_storm = ExtResource("4")
+night_clear = ExtResource("2")
+night_rain = ExtResource("3")
+night_storm = ExtResource("4")

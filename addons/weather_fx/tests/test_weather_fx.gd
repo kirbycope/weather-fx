@@ -295,8 +295,9 @@ func test_weather_fx_demo_scene_instantiation() -> void:
 	assert_eq(demo.biome_option_button.item_count, 20)
 	assert_is(demo.forecast_display, WeatherForecastDisplay)
 	assert_is(demo.gauge_display, TemperatureGaugeDisplay)
+	assert_false(demo.weather_fx.bgs_sets.is_empty(), "The demo's WeatherFX carries the ambience sets, weather_fx.tscn's defaults")
 	var audio: WeatherAudio = demo.weather_fx.get_node("WeatherAudio") as WeatherAudio
-	assert_not_null(audio.bgs_day_clear, "Demo wires BGS players into WeatherFX/WeatherAudio")
+	assert_not_null(audio.get_bgs_player(demo.weather_fx.bgs_sets[0].day_clear), "and WeatherAudio made their players")
 	assert_true(demo.weather_fx.weather_changed.is_connected(demo._update_ui_state.unbind(2)), "Demo signals are wired in demo.tscn")
 
 

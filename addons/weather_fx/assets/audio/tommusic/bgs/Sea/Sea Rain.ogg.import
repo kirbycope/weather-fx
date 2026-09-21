@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://btxmn5mgx3su5"
+path="res://.godot/imported/Sea Rain.ogg-655f2d1bfc30adcdd346fa472b3f8da2.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/tommusic/bgs/Sea/Sea Rain.ogg"
+dest_files=["res://.godot/imported/Sea Rain.ogg-655f2d1bfc30adcdd346fa472b3f8da2.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

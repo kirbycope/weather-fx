@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="BiomeAmbience" load_steps=5 format=3 uid="uid://dv2mfvohfvcf6"]
+
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/biome_ambience.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://dh4fm12nvhbh" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Beach/Beach.ogg" id="2"]
+[ext_resource type="AudioStream" uid="uid://2dqre4a5porl" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Beach/Beach Rain.ogg" id="3"]
+[ext_resource type="AudioStream" uid="uid://buy65jus20dgs" path="res://addons/weather_fx/assets/audio/tommusic/bgs/Beach/Beach Storm.ogg" id="4"]
+
+[resource]
+resource_name = "Beach"
+script = ExtResource("1")
+biomes = Array[int]([10, 12])
+day_clear = ExtResource("2")
+day_rain = ExtResource("3")
+day_storm = ExtResource("4")
+night_clear = ExtResource("2")
+night_rain = ExtResource("3")
+night_storm = ExtResource("4")

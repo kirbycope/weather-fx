@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bpfcdtxlccuu5"
+path="res://.godot/imported/Inside Day Rain.ogg-e479a90e432e1ef7133544c850091f52.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/tommusic/bgs/Interior Day/Inside Day Rain.ogg"
+dest_files=["res://.godot/imported/Inside Day Rain.ogg-e479a90e432e1ef7133544c850091f52.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

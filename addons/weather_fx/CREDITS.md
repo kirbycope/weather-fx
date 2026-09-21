@@ -1,0 +1,13 @@
+# Credits
+
+Third-party work in this repository: who made it, where it came from, its licence and where it sits in the tree.
+
+- **Quaternius** – *Stylized Nature Megakit* ([quaternius.com](https://quaternius.com/), CC0) — tree and grass models, bark and foliage textures (`assets/models/quaternius/`).
+- **BinbunVFX** – *Fire Effects Pack* ([binbunvfx.itch.io](https://binbunvfx.itch.io/)) — the billboard flame shader in `assets/vfx/fire/flame_01.gdshader` is adapted from this pack.
+- **TomMusic** – *Fantasy SFX* ([tommusic.itch.io](https://tommusic.itch.io/)) — torch/fire crackle loop in `assets/audio/tommusic/sfx/Torch/`.
+- **Gravity Sound** – *Weather Sound Pack* ([gravity-sound.itch.io](https://gravity-sound.itch.io/)) — rain, thunder and wind ambience (`assets/audio/gravitysound/`).
+- **Binbun (Binbun3D)** - *Godot Skies* ([binbun3d.itch.io/godot-skies](https://binbun3d.itch.io/godot-skies)) - the sky shader, sky materials and cloud noise textures in `assets/BinbunSky/` (the folder has a `.url` to its page). License not recorded - fill in.
+- **ambientCG** – *Grass 004* ([ambientcg.com/view?id=Grass004](https://ambientcg.com/view?id=Grass004), CC0) — `assets/textures/Grass004_1K-JPG_Color.jpg` ground texture.
+- **Godot Shaders** – *Stylized BOTW Fire* ([godotshaders.com/shader/stylized-botw-fire](https://godotshaders.com/shader/stylized-botw-fire/)) and *Stylized Smoke Shader* ([godotshaders.com/shader/stylized-smoke-shader](https://godotshaders.com/shader/stylized-smoke-shader/)) — shaders, meshes, and textures in `assets/models/loop_box/`. License not recorded — fill in.
+- **`assets/vfx/wind/`** (wind ribbon/streak VFX scenes, meshes, shaders, and textures) — source/license not recorded — fill in.
+- **TomMusic** - *Full Fantasy 250 SFX Pack* ([tommusic.itch.io/full-250-fantasy-sfx-pack](https://tommusic.itch.io/full-250-fantasy-sfx-pack), royalty free, no resale or redistribution of the files on their own) - the BGS loops in `assets/audio/tommusic/bgs/`: Forest Day and Night, Beach, Sea, Cave, Interior Day and Night, each clear, rain and storm. Re-encoded to 96 kbps Vorbis (from about 450 kbps) so a web export stays small, and imported with `loop` on, as `WeatherAudio` never restarts the one that stays the target.

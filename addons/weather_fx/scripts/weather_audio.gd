@@ -5,9 +5,11 @@
 class_name WeatherAudio
 extends Node
 
-## Weather SFX and day/night background ambience (BGS) driven by WeatherFX signals.
-## BGS is only re-evaluated on weather_changed / daylight_changed / playback_changed,
-## and a player that is already the target keeps playing without restarting.
+## Weather SFX and the background ambience (BGS) for the biome, the weather and the time of day, driven by WeatherFX
+## signals. The SFX players are this node's children in weather_fx.tscn. The ambience is WeatherFX's own: its bgs_sets
+## are one [BiomeAmbience] per kind of place, and at ready this node makes one non-positional player per loop they
+## carry. BGS is only re-evaluated on weather_changed / biome_changed / daylight_changed / playback_changed, and a
+## player that is already the target keeps playing without restarting.
 
 @export var weather_fx: WeatherFX
 
@@ -17,16 +19,9 @@ extends Node
 @export var audio_storm: AudioStreamPlayer
 @export var audio_wind: AudioStreamPlayer
 
-@export_group("Background Sounds (BGS)")
-## AudioStreamPlayer or AudioStreamPlayer3D per ambient condition. Unassigned players are skipped.
-@export var bgs_day_clear: Node
-@export var bgs_day_rain: Node
-@export var bgs_day_storm: Node
-@export var bgs_night_clear: Node
-@export var bgs_night_rain: Node
-@export var bgs_night_storm: Node
-
+var _bgs_players: Dictionary[AudioStream, AudioStreamPlayer] = {} ## One per loop the ambience sets carry, by stream.
 var _weather: ClimateData.WeatherType = ClimateData.WeatherType.BLUE_SKY
+var _biome: ClimateData.BiomeZone = ClimateData.BiomeZone.TEMPERATE_PLAINS
 var _active: bool = false
 var _is_day: bool = true
 
@@ -36,18 +31,47 @@ func _ready() -> void:
 		weather_fx = get_tree().get_first_node_in_group(&"WeatherFX") as WeatherFX
 	if not is_instance_valid(weather_fx):
 		return
+	if not Engine.is_editor_hint():
+		_build_bgs_players()
 	weather_fx.weather_changed.connect(_on_weather_changed)
+	weather_fx.biome_changed.connect(_on_biome_changed)
 	weather_fx.daylight_changed.connect(_on_daylight_changed)
 	weather_fx.playback_changed.connect(_on_playback_changed)
 	_weather = weather_fx.active_weather
+	_biome = weather_fx.current_biome
 	_active = weather_fx.is_simulating()
 	_is_day = weather_fx.is_daylight()
 	_apply()
 
 
+## One player per loop across WeatherFX's ambience sets and its default; a loop shared between sets gets one.
+func _build_bgs_players() -> void:
+	var sets: Array[BiomeAmbience] = weather_fx.bgs_sets.duplicate()
+	if weather_fx.bgs_default:
+		sets.append(weather_fx.bgs_default)
+	for ambience: BiomeAmbience in sets:
+		if ambience == null:
+			continue
+		for stream: AudioStream in ambience.get_streams():
+			if _bgs_players.has(stream):
+				continue
+			var player: AudioStreamPlayer = AudioStreamPlayer.new()
+			player.name = stream.resource_path.get_file().get_basename().to_pascal_case() if not stream.resource_path.is_empty() else "Bgs%d" % (_bgs_players.size() + 1)
+			player.stream = stream
+			player.bus = weather_fx.bgs_bus
+			player.volume_db = weather_fx.bgs_volume_db
+			add_child(player)
+			_bgs_players[stream] = player
+
+
 func _on_weather_changed(new_weather: ClimateData.WeatherType, _old_weather: ClimateData.WeatherType) -> void:
 	_weather = new_weather
 	_apply()
+
+
+func _on_biome_changed(new_biome: ClimateData.BiomeZone, _old_biome: ClimateData.BiomeZone) -> void:
+	_biome = new_biome
+	_update_bgs()
 
 
 func _on_daylight_changed(is_day: bool) -> void:
@@ -74,19 +98,25 @@ func _apply() -> void:
 	_update_bgs()
 
 
-## Returns the BGS player matching the cached weather and time of day.
-func get_target_bgs_player() -> Node:
-	match _weather:
-		ClimateData.WeatherType.STORM:
-			return bgs_day_storm if _is_day else bgs_night_storm
-		ClimateData.WeatherType.RAIN, ClimateData.WeatherType.HEAVY_RAIN:
-			return bgs_day_rain if _is_day else bgs_night_rain
-		_:
-			return bgs_day_clear if _is_day else bgs_night_clear
+## The loop the cached biome, weather and time of day call for, or null when no set covers the biome or has one for it.
+func get_target_bgs_stream() -> AudioStream:
+	var ambience: BiomeAmbience = weather_fx.ambience_for(_biome) if is_instance_valid(weather_fx) else null
+	return ambience.stream_for(_weather, _is_day) if ambience else null
+
+
+## The player for [method get_target_bgs_stream], or null when there is none.
+func get_target_bgs_player() -> AudioStreamPlayer:
+	return _bgs_players.get(get_target_bgs_stream())
+
+
+## The player made for [param stream], or null when no set carries it.
+func get_bgs_player(stream: AudioStream) -> AudioStreamPlayer:
+	return _bgs_players.get(stream)
 
 
 func _update_bgs() -> void:
-	var target: Node = get_target_bgs_player() if _active else null
-	for player: Node in [bgs_day_clear, bgs_day_rain, bgs_day_storm, bgs_night_clear, bgs_night_rain, bgs_night_storm]:
+	var target: AudioStreamPlayer = get_target_bgs_player() if _active else null
+	for player: AudioStreamPlayer in _bgs_players.values():
+		# Through set(), so a player that stays the target is never assigned again and never restarts
 		if is_instance_valid(player) and player.is_inside_tree() and bool(player.get(&"playing")) != (player == target):
 			player.set(&"playing", player == target)

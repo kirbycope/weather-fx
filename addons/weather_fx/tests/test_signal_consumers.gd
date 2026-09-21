@@ -1,14 +1,18 @@
 extends GutTest
 
-## Purpose: consumers subscribe to WeatherFX signals instead of polling statics, BGS players
-## never restart while they stay the target, and plugin registration does not duplicate classes.
+## Purpose: consumers subscribe to WeatherFX signals instead of polling statics, the BGS players WeatherAudio makes
+## for WeatherFX's ambience sets follow the biome and never restart while they stay the target, and plugin
+## registration does not duplicate classes.
 
 const FALLING_LEAVES_SCENE: PackedScene = preload("res://addons/weather_fx/scenes/falling_leaves.tscn")
 const BGS_STREAM: AudioStream = preload("res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Day/Forest Day.ogg")
+const BGS_RAIN_STREAM: AudioStream = preload("res://addons/weather_fx/assets/audio/tommusic/bgs/Forest Day/Forest Day Rain.ogg")
+const FOREST: BiomeAmbience = preload("res://addons/weather_fx/resources/ambience/forest.tres")
+const BEACH: BiomeAmbience = preload("res://addons/weather_fx/resources/ambience/beach.tres")
 
 
-## Counts how many times something assigns `playing` through Object.set(), which is how
-## WeatherAudio drives the untyped BGS nodes. A restart would show up as a second assignment.
+## Counts how many times something assigns `playing` through Object.set(), which is how WeatherAudio drives its
+## BGS players. A restart would show up as a second assignment.
 class CountingPlayer extends AudioStreamPlayer:
 	var play_sets: int = 0
 
@@ -47,20 +51,23 @@ func test_falling_leaves_update_material_on_wind_changed_only() -> void:
 
 
 func test_bgs_player_does_not_restart_when_target_is_unchanged() -> void:
-	var audio := WeatherAudio.new()
-	var day_rain := CountingPlayer.new()
-	day_rain.stream = BGS_STREAM
-	var day_clear := CountingPlayer.new()
-	day_clear.stream = BGS_STREAM
-	audio.add_child(day_rain)
-	audio.add_child(day_clear)
-	audio.bgs_day_rain = day_rain
-	audio.bgs_day_clear = day_clear
-	audio.weather_fx = wfx
+	var here := BiomeAmbience.new()
+	here.day_clear = BGS_STREAM
+	here.day_rain = BGS_RAIN_STREAM
+	wfx.bgs_default = here # any biome
 	wfx.set_weather(ClimateData.WeatherType.BLUE_SKY) # the procedural forecast is random; force it before the audio node listens
-	add_child_autofree(audio)
 	wfx.manual_time_of_day = 12.0
-	assert_eq(day_clear.play_sets, 1, "Clear daytime BGS starts once")
+	var audio := WeatherAudio.new()
+	audio.weather_fx = wfx
+	add_child_autofree(audio)
+	var day_clear: AudioStreamPlayer = audio.get_bgs_player(BGS_STREAM)
+	assert_not_null(day_clear, "A player per loop the sets carry")
+	assert_true(day_clear.playing, "Clear daytime BGS plays")
+	# A player that counts its starts, put in for the rain loop
+	var day_rain := CountingPlayer.new()
+	day_rain.stream = BGS_RAIN_STREAM
+	audio.add_child(day_rain)
+	audio._bgs_players[BGS_RAIN_STREAM] = day_rain
 
 	wfx.set_weather(ClimateData.WeatherType.RAIN)
 	assert_true(day_rain.playing)
@@ -73,19 +80,18 @@ func test_bgs_player_does_not_restart_when_target_is_unchanged() -> void:
 	assert_eq(day_rain.play_sets, 1, "RAIN -> HEAVY_RAIN keeps the same BGS player without restarting it")
 
 	wfx.manual_time_of_day = 22.0
-	assert_false(day_rain.playing, "Night has no player assigned, so the day player stops")
+	assert_false(day_rain.playing, "Night has no loop in this set, so the day player stops")
 
 
 func test_bgs_audio_matching_weather_and_time() -> void:
+	wfx.bgs_default = FOREST # six distinct loops
 	var audio := WeatherAudio.new()
-	var players: Dictionary = {}
-	for key in ["bgs_day_clear", "bgs_day_rain", "bgs_day_storm", "bgs_night_clear", "bgs_night_rain", "bgs_night_storm"]:
-		var player := AudioStreamPlayer.new()
-		audio.add_child(player)
-		audio.set(key, player)
-		players[key] = player
 	audio.weather_fx = wfx
 	add_child_autofree(audio)
+	var players: Dictionary = {}
+	for slot: String in ["day_clear", "day_rain", "day_storm", "night_clear", "night_rain", "night_storm"]:
+		players["bgs_" + slot] = audio.get_bgs_player(FOREST.get(slot))
+		assert_not_null(players["bgs_" + slot], "%s got a player" % slot)
 
 	wfx.manual_time_of_day = 12.0
 	wfx.set_weather(ClimateData.WeatherType.BLUE_SKY)
@@ -111,7 +117,32 @@ func test_bgs_unassigned_optional_behavior() -> void:
 	wfx.manual_time_of_day = 22.0
 	wfx.set_weather(ClimateData.WeatherType.STORM)
 	wfx.is_playing = false
-	assert_null(audio.get_target_bgs_player(), "Target BGS player should be null when unassigned")
+	assert_null(audio.get_target_bgs_player(), "Target BGS player should be null when WeatherFX carries no ambience")
+	assert_eq(audio.get_child_count(), 0, "and no players were made")
+
+
+func test_the_ambience_follows_the_biome() -> void:
+	wfx.blend_zones = false
+	wfx.bgs_sets = [FOREST, BEACH]
+	wfx.set_weather(ClimateData.WeatherType.BLUE_SKY)
+	wfx.manual_time_of_day = 12.0
+	var audio := WeatherAudio.new()
+	audio.weather_fx = wfx
+	add_child_autofree(audio)
+	assert_true(FOREST.covers(ClimateData.BiomeZone.ANCIENT_FOREST), "The forest loops are for the wooded biomes")
+	assert_false(FOREST.covers(ClimateData.BiomeZone.TEMPERATE_PLAINS))
+	assert_true(BEACH.covers(ClimateData.BiomeZone.COASTAL_PLAINS))
+	assert_null(audio.get_target_bgs_player(), "The plains: no set covers them and there is no default, so silence")
+	wfx.current_biome = ClimateData.BiomeZone.ANCIENT_FOREST
+	assert_eq(audio.get_target_bgs_stream(), FOREST.day_clear, "In the forest by day: the forest's clear loop")
+	assert_true(audio.get_bgs_player(FOREST.day_clear).playing)
+	wfx.current_biome = ClimateData.BiomeZone.COASTAL_PLAINS
+	assert_eq(audio.get_target_bgs_stream(), BEACH.day_clear, "On the coast: the beach")
+	assert_false(audio.get_bgs_player(FOREST.day_clear).playing, "and the forest stops")
+	assert_eq(BEACH.night_storm, BEACH.day_storm, "A set with no night loops uses its day ones at night")
+	wfx.bgs_default = FOREST
+	wfx.current_biome = ClimateData.BiomeZone.DESERT_DUNES
+	assert_eq(wfx.ambience_for(ClimateData.BiomeZone.DESERT_DUNES), FOREST, "A default covers what no set does")
 
 
 func test_plugin_registers_each_class_once() -> void:

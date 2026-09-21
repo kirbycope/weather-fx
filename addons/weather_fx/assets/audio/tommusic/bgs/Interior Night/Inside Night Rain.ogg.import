@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://p8xunlhij0eh"
+path="res://.godot/imported/Inside Night Rain.ogg-2ac8cf676174d7cec3ffe226c5dc537d.oggvorbisstr"
+
+[deps]
+
+source_file="res://addons/weather_fx/assets/audio/tommusic/bgs/Interior Night/Inside Night Rain.ogg"
+dest_files=["res://.godot/imported/Inside Night Rain.ogg-2ac8cf676174d7cec3ffe226c5dc537d.oggvorbisstr"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
