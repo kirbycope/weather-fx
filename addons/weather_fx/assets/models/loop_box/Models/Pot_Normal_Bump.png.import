@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ue316wcv83v0"
-path="res://.godot/imported/Pot_Normal_Bump.png-2eb9c450a8bd14ee99207bf37f85957f.ctex"
+path.s3tc="res://.godot/imported/Pot_Normal_Bump.png-2eb9c450a8bd14ee99207bf37f85957f.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "94522da7078c61c4cb256073acf1bc52"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://addons/weather_fx/assets/models/loop_box/Models/Pot_Normal_Bump.png"
-dest_files=["res://.godot/imported/Pot_Normal_Bump.png-2eb9c450a8bd14ee99207bf37f85957f.ctex"]
+dest_files=["res://.godot/imported/Pot_Normal_Bump.png-2eb9c450a8bd14ee99207bf37f85957f.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/high_quality_mode=0
 compress/lossy_quality=0.7
@@ -43,4 +44,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

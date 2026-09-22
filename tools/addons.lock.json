@@ -1,7 +1,7 @@
 {
   "gut": {
     "commit": "aeb5d4f3f7f0a6c9b5e178876d6c99b791fda605",
-    "pulled": "2026-09-21T02:39:28Z",
+    "pulled": "2026-09-21T14:05:56Z",
     "ref": "v9.7.1",
     "repo": "https://github.com/bitwes/Gut.git",
     "subject": "Version bump, documentation for 9.7.1 release (#847)"
