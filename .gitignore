@@ -11,3 +11,6 @@ __pycache__/
 # Fetched by tools/pull_addons.py, never committed here.
 .addon_cache/
 addons/gut/
+
+# Screenshots and reports from agent runs; local only.
+.diagnostics/

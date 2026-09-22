@@ -2,7 +2,7 @@
 
 Third-party work in this repository: who made it, where it came from, its licence and where it sits in the tree.
 
-- **Quaternius** – *Stylized Nature Megakit* ([quaternius.com](https://quaternius.com/), CC0) — tree and grass models, bark and foliage textures (`assets/models/quaternius/`).
+- **Quaternius** – *Stylized Nature Megakit* ([quaternius.com](https://quaternius.com/), CC0) — tree and grass models, bark and foliage textures (`assets/models/quaternius/`). `assets/textures/grass_blades.png` is derived from that pack's `Grass.png`: columns 13 and 98, the centres of the two palette bands the four grass meshes sample, each stretched across its own side of the image (the split is at column 56) and averaged down to 32 rows, so no mip level blends one band into another. CC0, so the derived file carries the same terms.
 - **BinbunVFX** – *Fire Effects Pack* ([binbunvfx.itch.io](https://binbunvfx.itch.io/)) — the billboard flame shader in `assets/vfx/fire/flame_01.gdshader` is adapted from this pack.
 - **TomMusic** – *Fantasy SFX* ([tommusic.itch.io](https://tommusic.itch.io/)) — torch/fire crackle loop in `assets/audio/tommusic/sfx/Torch/`.
 - **Gravity Sound** – *Weather Sound Pack* ([gravity-sound.itch.io](https://gravity-sound.itch.io/)) — rain, thunder and wind ambience (`assets/audio/gravitysound/`).

@@ -106,12 +106,22 @@ turbulence_enabled = true
 turbulence_noise_strength = 0.8
 turbulence_noise_scale = 1.2
 
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_trunk"]
+height = 4.0
+radius = 0.56
+
 [node name="Tree_1" type="Node3D" unique_id=481840691 groups=["Tree"]]
 
 [node name="Mesh" type="MeshInstance3D" parent="." unique_id=293084115]
 mesh = SubResource("ArrayMesh_vnyc5")
 surface_material_override/0 = ExtResource("4_67y5d")
 surface_material_override/1 = ExtResource("5_mol5c")
+
+[node name="Trunk" type="StaticBody3D" parent="." unique_id=4810002]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Trunk" unique_id=4810003]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0)
+shape = SubResource("CylinderShape3D_trunk")
 
 [node name="FallingLeaves" type="GPUParticles3D" parent="." unique_id=193975699 instance=ExtResource("6_r33qi")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.2, 0)

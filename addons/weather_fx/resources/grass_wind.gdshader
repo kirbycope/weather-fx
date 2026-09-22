@@ -23,7 +23,7 @@ uniform vec4 color_dry_variation : source_color = vec4(0.66, 0.62, 0.28, 1.0);
 uniform float dry_patch_scale : hint_range(0.01, 0.5, 0.01) = 0.06;
 uniform float dry_patch_blend : hint_range(0.0, 1.0, 0.05) = 0.18;
 uniform float ambient_occlusion_strength : hint_range(0.0, 1.0, 0.05) = 0.45;
-uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, hint_default_white;
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_disable, hint_default_white;
 uniform float alpha_scissor_threshold : hint_range(0.0, 1.0) = 0.5;
 
 // Combustion & Wildfire Dynamics (BotW Decomp Style)
@@ -51,11 +51,16 @@ uniform float wind_wave_size : hint_range(0.01, 1.0, 0.01) = 0.15;
 uniform float sway_strength : hint_range(0.0, 2.0, 0.05) = 0.50;
 
 // Character & Object Interaction
+// Anything that walks, rolls or slides through the field presses it: GrassField fills press_points with the
+// bodies standing in it, xyz the world position and w the radius each one presses. press_count is 0 when the
+// field is empty, and the loop below then costs nothing.
 group_uniforms Interaction;
-uniform bool enable_player_displacement = false;
-instance uniform vec3 player_position;
-uniform float player_displacement_strength : hint_range(0.0, 2.0, 0.05) = 0.0;
-uniform float player_displacement_radius : hint_range(0.1, 5.0, 0.1) = 1.2;
+const int MAX_PRESS_POINTS = 8;
+uniform vec4 press_points[MAX_PRESS_POINTS];
+uniform int press_count = 0;
+uniform float press_strength : hint_range(0.0, 2.0, 0.05) = 1.0;
+uniform float press_flatten : hint_range(0.0, 1.0, 0.05) = 0.7; // Fraction of its height a blade under a body is trodden down by.
+uniform float press_height : hint_range(0.1, 5.0, 0.1) = 1.5; // A body this far above or below the blades presses nothing: a bird, a platform overhead.
 
 varying vec3 v_world_pos;
 varying float v_height;
@@ -63,6 +68,7 @@ varying float v_burn;
 
 void vertex() {
 	vec3 world_origin = MODEL_MATRIX[3].xyz;
+	mat3 inv_basis = inverse(mat3(MODEL_MATRIX)); // Directions only, shared by the wind and the pressing below
 	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	
 	// Burn factor: the material uniform, the instance uniform, or this blade's own fire (MultiMesh custom data)
@@ -86,7 +92,7 @@ void vertex() {
 	}
 	
 	// Transform wind direction to local mesh space so sway stays scale-invariant
-	vec3 local_wind_dir = normalize((inverse(MODEL_MATRIX) * vec4(wind_dir, 0.0)).xyz);
+	vec3 local_wind_dir = normalize(inv_basis * wind_dir);
 	vec3 local_wind_perp = vec3(-local_wind_dir.z, 0.0, local_wind_dir.x);
 	
 	// Harmonic wind sway guided by sinusoidal wave physics
@@ -121,16 +127,34 @@ void vertex() {
 		VERTEX.y *= height_collapse;
 	}
 	
-	// Player / entity displacement interaction (local space)
-	if (enable_player_displacement && player_displacement_strength > 0.0) {
-		vec3 push_delta = v_world_pos - player_position;
-		float dist_to_player = length(vec3(push_delta.x, push_delta.y * 1.6, push_delta.z));
-		if (dist_to_player < player_displacement_radius && dist_to_player > 0.001) {
-			float push_factor = smoothstep(player_displacement_radius, 0.0, dist_to_player) * v_height * player_displacement_strength;
-			vec3 world_push = normalize(vec3(push_delta.x, -0.2, push_delta.z)) * push_factor;
-			vec3 local_push = (inverse(MODEL_MATRIX) * vec4(world_push, 0.0)).xyz;
-			local_sway += clamp(local_push, vec3(-height * 0.8), vec3(height * 0.8));
+	// Pressed by whatever is standing in the field. The blade leans away from the body's axis and is trodden
+	// down as it goes, and the lean is measured from the blade's own root rather than from the vertex, so a
+	// clump bends as one piece instead of stretching.
+	vec2 pushed_away = vec2(0.0);
+	float trodden = 0.0;
+	for (int i = 0; i < min(press_count, MAX_PRESS_POINTS); i++) {
+		vec4 presser = press_points[i];
+		if (abs(presser.y - world_origin.y) > press_height) {
+			continue; // Overhead or below: a bird, a platform, grass on the floor under a walkway
 		}
+		vec2 from_body = world_origin.xz - presser.xz;
+		float reach = length(from_body);
+		if (reach >= presser.w) {
+			continue;
+		}
+		// Flat under the body, easing back out to standing at the edge of its radius
+		float press = 1.0 - smoothstep(presser.w * 0.6, presser.w, reach);
+		pushed_away += (reach > 0.001 ? from_body / reach : vec2(1.0, 0.0)) * press;
+		trodden = max(trodden, press);
+	}
+	if (trodden > 0.0) {
+		float standing = max(VERTEX.y, 0.0); // After any collapse to ash above, so a charred stub is not pressed underground
+		// Normalised in local space the way the wind is, so the lean does not change with the blade's scale
+		vec3 local_away = inv_basis * vec3(pushed_away.x, 0.0, pushed_away.y);
+		if (length(local_away) > 0.001) {
+			local_sway += normalize(local_away) * trodden * press_strength * standing;
+		}
+		local_sway.y -= trodden * press_flatten * standing;
 	}
 	
 	VERTEX += local_sway;

@@ -333,6 +333,7 @@ func test_global_shader_parameters_initialization_and_updates() -> void:
 
 func test_grass_field_generation_and_properties() -> void:
 	var grass_field = GrassField.new()
+	grass_field.ground_group = &"" # Flat: there is no ground here to probe
 	add_child_autofree(grass_field)
 	grass_field.instance_count = 100
 	grass_field.field_size = Vector2(20.0, 20.0)
@@ -355,13 +356,8 @@ func test_grass_field_generation_and_properties() -> void:
 		grass_field.mesh_type = mesh_type
 		assert_eq(grass_field.multimesh.mesh, GrassField.GRASS_MESHES[mesh_type])
 
-	# Exclusion radius clearing
-	grass_field.exclusion_radius = 4.0
-	grass_field.exclusion_center = Vector2(0.0, 0.0)
 	var origins = grass_field.get_instance_origins()
-	assert_eq(origins.size(), grass_field.instance_count)
-	for org in origins:
-		assert_gt(Vector2(org.x, org.z).length(), 3.99, "Grass instances should be outside exclusion radius")
+	assert_eq(origins.size(), grass_field.instance_count, "A flat field grows every blade")
 
 
 func test_grass_material_resource() -> void:

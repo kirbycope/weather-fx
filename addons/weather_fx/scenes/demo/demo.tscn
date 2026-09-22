@@ -106,6 +106,10 @@ shadow_size = 8
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hud"]
 
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_pot"]
+height = 0.45
+radius = 0.62
+
 [node name="WeatherFXDemo" type="Node3D" unique_id=1870745780]
 script = ExtResource("1_demogd")
 
@@ -119,7 +123,7 @@ shadow_enabled = true
 
 [node name="DemonstrationTarget" type="Node3D" parent="." unique_id=580331234]
 
-[node name="Ground" type="CSGBox3D" parent="." unique_id=2042510620]
+[node name="Ground" type="CSGBox3D" parent="." unique_id=2042510620 groups=["GRASS"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 use_collision = true
 size = Vector3(60, 1, 60)
@@ -148,7 +152,6 @@ instance_count = 10000
 field_size = Vector2(50, 50)
 min_scale = 0.35
 max_scale = 0.65
-exclusion_radius = 3.0
 
 [node name="Fire" parent="Scenery" unique_id=1907233315 node_paths=PackedStringArray("smoke_particles", "spark_particles", "fire_light") instance=ExtResource("14_reimf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9999998, 0, -0.19999993)
@@ -169,6 +172,12 @@ metadata/extras = {
 "boneCount": 16.0,
 "boneList": "Root"
 }
+
+[node name="PotBody" type="StaticBody3D" parent="Scenery/Fire" unique_id=1907233316]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Scenery/Fire/PotBody" unique_id=1907233317]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+shape = SubResource("CylinderShape3D_pot")
 
 [node name="Tree1" parent="Scenery" unique_id=1288831359 instance=ExtResource("7_tree1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, -5)

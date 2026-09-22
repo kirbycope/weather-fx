@@ -13,6 +13,7 @@ var root: Node3D
 
 
 func before_each() -> void:
+	seed(20260922) # The front's catch jitter and each flame's blade are random: seeded, a failure can be run again
 	root = Node3D.new()
 	add_child_autofree(root)
 	WeatherFX.active_wind_strength = 0.0
@@ -31,10 +32,32 @@ func after_each() -> void:
 
 func _field(count: int = 20, size: float = 40.0) -> GrassField:
 	var field: GrassField = GRASS_FIELD_SCENE.instantiate() as GrassField
+	field.ground_group = &"" # Flat: these tests are about the fire, not the ground
 	field.field_size = Vector2(size, size)
 	field.instance_count = count
 	root.add_child(field)
 	return field
+
+
+func test_lighting_grass_that_is_already_alight_still_extends_the_front() -> void:
+	# A second ignition lights no new cell, but a lightning bolt's longer duration must not be thrown away
+	# with it, and BurnableGrass reads a false as "this field did not take it" and keeps looking.
+	var field := _field(400)
+	assert_true(field.ignite_at(Vector3.ZERO, 2.0, 30.0), "The first flame lights it")
+	assert_almost_eq(field._spread_time_left, 30.0, 0.01, "and the front has thirty seconds to grow")
+	field._process(0.5)
+
+	assert_true(field.ignite_at(Vector3.ZERO, 2.0, 60.0), "A bolt on the same burning patch still counts")
+	assert_almost_eq(field._spread_time_left, 60.0, 0.01, "and its longer duration replaces what was left")
+
+
+func test_lighting_bare_ground_reports_that_nothing_caught() -> void:
+	var field := _field(400, 10.0)
+	assert_false(
+		field.ignite_at(Vector3(40.0, 0.0, 40.0), 2.0, 30.0),
+		"Well off the field there is nothing to light"
+	)
+	assert_almost_eq(field._spread_time_left, 0.0, 0.01, "and no front is started")
 
 
 func test_creep_speed_stays_in_botw_band_even_in_storm_wind() -> void:
@@ -261,14 +284,22 @@ func test_dousing_a_spot_leaves_the_rest_of_the_front_burning() -> void:
 			still_burning += 1
 	assert_gt(doused, 0, "Something under the water was burning")
 	assert_gt(still_burning, 0, "The rest of the front burns on")
+	# A flame stands on one of its cell's blades, anywhere in the cell, so it goes out with its cell: no flame
+	# burns on over ash, and none is put out while its cell burns on
 	var flames_out: int = 0
+	var flames_on: int = 0
+	var wrong: PackedStringArray = []
 	for node: FireTrailNode in field._trail_nodes: # An extinguished flame frees itself a second later
-		if node.global_position.distance_to(Vector3(4.0, 0.0, 0.0)) <= 2.5:
-			assert_true(node._is_extinguished, "Flames under the water went out")
+		var cell: Vector2i = field._cell_of(node.position)
+		if field._burning_cells.has(cell) == node._is_extinguished:
+			wrong.append("%s in %s, cell burning %s" % [node.position, cell, field._burning_cells.has(cell)])
+		if node._is_extinguished:
 			flames_out += 1
 		else:
-			assert_false(node._is_extinguished, "Flames outside it burn on")
-	assert_gt(flames_out, 0)
+			flames_on += 1
+	assert_eq(wrong.size(), 0, "Every flame is out exactly when its cell is: %s" % ", ".join(wrong))
+	assert_gt(flames_out, 0, "Flames under the water went out")
+	assert_gt(flames_on, 0, "and the rest burn on")
 
 
 func test_a_flame_above_the_field_lights_nothing() -> void:

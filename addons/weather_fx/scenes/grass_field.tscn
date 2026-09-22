@@ -3,6 +3,20 @@
 [ext_resource type="Script" uid="uid://dg3id7augvkl4" path="res://addons/weather_fx/scripts/grass_field.gd" id="1_grassgd"]
 [ext_resource type="Material" path="res://addons/weather_fx/resources/grass_material.tres" id="2_grassmat"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_press"]
+resource_local_to_scene = true
+size = Vector3(30, 6, 30)
+
 [node name="GrassField" type="MultiMeshInstance3D" groups=["GrassField"]]
 script = ExtResource("1_grassgd")
 custom_grass_material = ExtResource("2_grassmat")
+
+[node name="PressArea" type="Area3D" parent="."]
+collision_layer = 0
+monitorable = false
+
+[node name="PressShape" type="CollisionShape3D" parent="PressArea"]
+shape = SubResource("BoxShape3D_press")
+
+[connection signal="body_entered" from="PressArea" to="." method="_on_body_entered"]
+[connection signal="body_exited" from="PressArea" to="." method="_on_body_exited"]

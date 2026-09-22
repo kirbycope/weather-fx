@@ -56,6 +56,7 @@ func test_a_strike_spawns_a_bolt_and_hurts_what_is_under_it() -> void:
 
 func test_a_strike_lights_the_grass_even_in_the_rain() -> void:
 	var field: GrassField = GRASS_SCENE.instantiate() as GrassField
+	field.ground_group = &"" # Flat: there is no ground here to probe
 	root.add_child(field)
 	await wait_physics_frames(1)
 	field._on_weather_changed(ClimateData.WeatherType.STORM, ClimateData.WeatherType.BLUE_SKY)
