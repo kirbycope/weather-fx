@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BiomeAmbience" load_steps=3 format=3 uid="uid://b3mkyruv40gqv"]
+
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/biome_ambience.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://c7lsbn1pdygjk" path="res://addons/weather_fx/assets/audio/gravitysound/Adventure Environments/Swamp/swamp_4.ogg" id="2"]
+
+[resource]
+resource_name = "Swamp"
+script = ExtResource("1")
+biomes = Array[int]([9])
+day_clear = ExtResource("2")
+day_rain = ExtResource("2")
+day_storm = ExtResource("2")
+night_clear = ExtResource("2")
+night_rain = ExtResource("2")
+night_storm = ExtResource("2")

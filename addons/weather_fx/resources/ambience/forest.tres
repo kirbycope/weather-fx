@@ -11,7 +11,7 @@
 [resource]
 resource_name = "Forest"
 script = ExtResource("1")
-biomes = Array[int]([15, 16, 18, 11])
+biomes = Array[int]([15, 16, 18])
 day_clear = ExtResource("2")
 day_rain = ExtResource("3")
 day_storm = ExtResource("4")

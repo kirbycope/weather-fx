@@ -13,6 +13,12 @@
 [ext_resource type="Script" path="res://addons/weather_fx/scripts/biome_ambience.gd" id="11_ambience"]
 [ext_resource type="Resource" uid="uid://co0bc7wx3xnms" path="res://addons/weather_fx/resources/ambience/forest.tres" id="12_forest"]
 [ext_resource type="Resource" uid="uid://dv2mfvohfvcf6" path="res://addons/weather_fx/resources/ambience/beach.tres" id="13_beach"]
+[ext_resource type="Resource" uid="uid://bsclqvyac50yr" path="res://addons/weather_fx/resources/ambience/plains.tres" id="14_plains"]
+[ext_resource type="Resource" uid="uid://dldsbktduqaci" path="res://addons/weather_fx/resources/ambience/desert.tres" id="15_desert"]
+[ext_resource type="Resource" uid="uid://by5cdqwuwi6gk" path="res://addons/weather_fx/resources/ambience/arctic.tres" id="16_arctic"]
+[ext_resource type="Resource" uid="uid://cphfbkh24y15m" path="res://addons/weather_fx/resources/ambience/jungle.tres" id="17_jungle"]
+[ext_resource type="Resource" uid="uid://b3mkyruv40gqv" path="res://addons/weather_fx/resources/ambience/swamp.tres" id="18_swamp"]
+[ext_resource type="Resource" uid="uid://b84vdg4fqoa5n" path="res://addons/weather_fx/resources/ambience/volcano.tres" id="19_volcano"]
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rain"]
 particle_flag_align_y = true
@@ -121,7 +127,7 @@ size = Vector2(0.08, 0.08)
 script = ExtResource("1_wfx")
 cycle_timer = NodePath("CycleTimer")
 wind_direction = Vector3(1, 0, 0)
-bgs_sets = Array[ExtResource("11_ambience")]([ExtResource("12_forest"), ExtResource("13_beach")])
+bgs_sets = Array[ExtResource("11_ambience")]([ExtResource("12_forest"), ExtResource("13_beach"), ExtResource("14_plains"), ExtResource("15_desert"), ExtResource("16_arctic"), ExtResource("17_jungle"), ExtResource("18_swamp"), ExtResource("19_volcano")])
 
 [node name="CycleTimer" type="Timer" parent="." unique_id=1080350457]
 wait_time = 240.0

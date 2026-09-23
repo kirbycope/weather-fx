@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BiomeAmbience" load_steps=3 format=3 uid="uid://by5cdqwuwi6gk"]
+
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/biome_ambience.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://di7ey7i1bcol0" path="res://addons/weather_fx/assets/audio/gravitysound/Adventure Environments/Arctic/arctic_1.ogg" id="2"]
+
+[resource]
+resource_name = "Arctic"
+script = ExtResource("1")
+biomes = Array[int]([2, 4, 17])
+day_clear = ExtResource("2")
+day_rain = ExtResource("2")
+day_storm = ExtResource("2")
+night_clear = ExtResource("2")
+night_rain = ExtResource("2")
+night_storm = ExtResource("2")

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BiomeAmbience" load_steps=3 format=3 uid="uid://b84vdg4fqoa5n"]
+
+[ext_resource type="Script" path="res://addons/weather_fx/scripts/biome_ambience.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://b7cmqsubgvmoy" path="res://addons/weather_fx/assets/audio/gravitysound/Adventure Environments/Volcano/volcano_1.ogg" id="2"]
+
+[resource]
+resource_name = "Volcano"
+script = ExtResource("1")
+biomes = Array[int]([7, 13, 14])
+day_clear = ExtResource("2")
+day_rain = ExtResource("2")
+day_storm = ExtResource("2")
+night_clear = ExtResource("2")
+night_rain = ExtResource("2")
+night_storm = ExtResource("2")

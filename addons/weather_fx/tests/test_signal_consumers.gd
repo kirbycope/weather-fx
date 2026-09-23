@@ -145,6 +145,18 @@ func test_the_ambience_follows_the_biome() -> void:
 	assert_eq(wfx.ambience_for(ClimateData.BiomeZone.DESERT_DUNES), FOREST, "A default covers what no set does")
 
 
+func test_the_shipped_sets_give_every_biome_one_looping_ambience() -> void:
+	var fx: WeatherFX = load("res://addons/weather_fx/scenes/weather_fx.tscn").instantiate()
+	add_child_autofree(fx)
+	for zone: int in ClimateData.BiomeZone.values():
+		var covering: Array[BiomeAmbience] = fx.bgs_sets.filter(func(a: BiomeAmbience) -> bool: return a.covers(zone))
+		assert_eq(covering.size(), 1, "%s has exactly one ambience set" % ClimateData.get_biome_name(zone))
+	for ambience: BiomeAmbience in fx.bgs_sets:
+		for stream: AudioStream in ambience.get_streams():
+			assert_true((stream as AudioStreamOggVorbis).loop, "%s loops" % stream.resource_path.get_file())
+	assert_eq(fx.ambience_for(ClimateData.BiomeZone.TROPICAL_RAINFOREST).resource_name, "Jungle", "The rainforest plays the jungle, not the forest")
+
+
 func test_plugin_registers_each_class_once() -> void:
 	var classes: Array = ProjectSettings.get_global_class_list()
 	for class_name_str in ["WeatherFX", "WeatherZone", "WeatherForecastDisplay", "TemperatureGaugeDisplay", "GaugeNeedle", "PrecipitationFX", "WeatherAudio"]:
