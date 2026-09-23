@@ -330,6 +330,56 @@ class PullAfterTheLockMoved(unittest.TestCase):
         self.assertNotIn("STOPPED", out)
         self.assertIn("theirs", (self.vendored / "plugin.cfg").read_text())
 
+    def delete_upstream(self, relative: str) -> str:
+        """Somebody else deletes a file from the addon and pushes it."""
+        git(self.other, "rm", "--quiet", relative)
+        git(self.other, "commit", "--quiet", "-m", f"delete {relative}")
+        git(self.other, "push", "--quiet", "origin", "main")
+        return git(self.other, "rev-parse", "HEAD")
+
+    def pull_with_save_game_data(self) -> Path:
+        """Pull a commit that has scripts/save_game_data.gd, so the copy here holds it."""
+        self.commit_upstream("addons/widget/scripts/save_game_data.gd", "extends Node\n")
+        code, out = self.call(pull_addons.main)
+        self.assertEqual(code, 0, out)
+        return self.vendored / "scripts" / "save_game_data.gd"
+
+    def test_a_file_deleted_upstream_goes_quietly_after_the_lock_moved(self) -> None:
+        # The live case: the copy came from a commit with save_game_data.gd, the next commit deleted
+        # it, and a `git pull` moved the lock on. The removal guard called it local work and stopped.
+        script = self.pull_with_save_game_data()
+        self.move_the_lock(self.delete_upstream("addons/widget/scripts/save_game_data.gd"))
+
+        code, out = self.call(pull_addons.main)
+
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("STOPPED", out)
+        self.assertFalse(script.exists(), "deleted here too, without --force")
+
+    def test_a_file_that_was_never_upstream_still_stops_the_pull(self) -> None:
+        # A .uid or .import Godot wrote beside the addon is in neither commit; it stays protected.
+        script = self.pull_with_save_game_data()
+        generated = script.with_name("save_game_data.gd.uid")
+        generated.write_text("uid://b1234567890\n")
+        self.move_the_lock(self.delete_upstream("addons/widget/scripts/save_game_data.gd"))
+
+        code, out = self.call(pull_addons.main)
+
+        self.assertEqual(code, 1, out)
+        self.assertIn("STOPPED: 1 local file(s) are not upstream", out)
+        self.assertTrue(generated.exists())
+
+    def test_a_file_edited_here_and_deleted_upstream_still_stops_the_pull(self) -> None:
+        script = self.pull_with_save_game_data()
+        script.write_text("extends Node\n# tuned here\n")
+        self.move_the_lock(self.delete_upstream("addons/widget/scripts/save_game_data.gd"))
+
+        code, out = self.call(pull_addons.main)
+
+        self.assertEqual(code, 1, out)
+        self.assertIn("STOPPED: 1 file(s) edited here", out)
+        self.assertIn("tuned here", script.read_text())
+
 
 if __name__ == "__main__":
     unittest.main()

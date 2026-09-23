@@ -223,6 +223,13 @@ def payload_entries(source: Path) -> list[Path]:
     )
 
 
+def payload_files(source: Path, dest: Path) -> set[Path]:
+    """Where every file of the addon payload at source lands under dest, as mirror() lays it out."""
+    return {
+        dest / path.relative_to(source) for entry in payload_entries(source) for path in _files_under(entry)
+    }
+
+
 def is_replace_fragment(name: str) -> bool:
     """Whether a file name is what Windows leaves behind when it replaces a file that is in use.
 

@@ -31,6 +31,7 @@ from addon_common import (
     load_pulled,
     local_edits,
     mirror,
+    payload_files,
     run,
     is_archive,
     resolve_ref,
@@ -136,11 +137,14 @@ def main() -> int:
         # drifted from the lock but already matches what is arriving is in no danger at all, and
         # counting it would cry wolf over every addon whose lock has simply fallen behind.
         edited: list = []
+        was_upstream: set = set()  # every file the copy's own commit had, for the removal guard below
         if base and base != commit:
-            incoming = set(local_edits(origin, dest))
+            # Deleting a file writes over it as surely as copying one in, so both are at risk.
+            incoming = set(local_edits(origin, dest)) | set(removed)
             try:
                 run(["git", "checkout", "--quiet", "--force", base], cwd=cache)
                 edited = [p for p in local_edits(addon_source(cache, name), dest) if p in incoming]
+                was_upstream = payload_files(addon_source(cache, name), dest)
             except RuntimeError:
                 edited = []  # The recorded commit is gone; report nothing rather than block blindly.
             finally:
@@ -167,12 +171,17 @@ def main() -> int:
                 blocked = True
                 continue
 
-        if removed and not (args.force or args.dry_run):
-            print(f"{name:<28} {commit[:7]}  STOPPED: {len(removed)} local file(s) are not upstream")
-            for path in removed[:10]:
+        # A file the copy's own commit had and the incoming one lacks was deleted upstream, and goes
+        # quietly like any other upstream change; an edit made to it here was caught just above.
+        # Only a file that was never upstream is at risk: work not pushed yet, or something generated
+        # beside the addon, a .uid or an .import, which stays protected exactly as before.
+        local_only = [p for p in removed if p not in was_upstream]
+        if local_only and not (args.force or args.dry_run):
+            print(f"{name:<28} {commit[:7]}  STOPPED: {len(local_only)} local file(s) are not upstream")
+            for path in local_only[:10]:
                 print(f"{'':<28}   {path.relative_to(dest)}")
-            if len(removed) > 10:
-                print(f"{'':<28}   ... and {len(removed) - 10} more")
+            if len(local_only) > 10:
+                print(f"{'':<28}   ... and {len(local_only) - 10} more")
             print(f"{'':<28} push them first, or re-run with --force to delete them")
             blocked = True
             continue
