@@ -278,6 +278,20 @@ class PullAfterTheLockMoved(unittest.TestCase):
         """The commit this machine recorded mirroring addons/widget from."""
         return json.loads((self.project / ".addon_cache" / "pulled.json").read_text())[self.NAME]
 
+    def test_a_pull_that_changes_nothing_leaves_the_lock_alone(self) -> None:
+        # Every pull used to stamp a fresh "pulled" time into the lock, leaving a clone dirty with nothing
+        # worth committing; a pull that takes the same commit must not touch the file at all.
+        lock = addon_common.load_lock()
+        lock[self.NAME]["pulled"] = "2000-01-01T00:00:00Z"
+        addon_common.save_lock(lock)
+        before = (self.project / "tools" / "addons.lock.json").read_bytes()
+
+        code, out = self.call(pull_addons.main)
+
+        self.assertEqual(code, 0, out)
+        self.assertIn("up to date", out)
+        self.assertEqual((self.project / "tools" / "addons.lock.json").read_bytes(), before)
+
     def test_a_lock_moved_by_a_project_pull_is_not_an_edit_here(self) -> None:
         # The lock is committed, so a `git pull` here moves it on while addons/ keeps the older copy.
         # The guard used to diff that copy against the lock, call the upstream change an edit made

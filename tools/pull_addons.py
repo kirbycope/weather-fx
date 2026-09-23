@@ -217,11 +217,14 @@ def main() -> int:
 
         if not args.dry_run:
             pulled_at[name] = commit
-            lock[name] = {
-                "commit": commit,
-                "subject": subject,
-                "pulled": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            }
+            # Rewritten only when the commit moves: a pull that changes nothing leaves the lock alone,
+            # so a clone is not left dirty by a fresh timestamp.
+            if lock.get(name, {}).get("commit") != commit:
+                lock[name] = {
+                    "commit": commit,
+                    "subject": subject,
+                    "pulled": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                }
             if is_archive(addon):
                 lock[name]["archive"] = addon["archive"]  # commit holds the archive's SHA-256
             else:
