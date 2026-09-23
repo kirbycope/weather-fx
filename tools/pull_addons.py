@@ -25,8 +25,10 @@ from datetime import datetime, timezone
 from addon_common import (
     ROOT,
     addon_source,
+    has_commit,
     load_lock,
     load_manifest,
+    load_pulled,
     local_edits,
     mirror,
     run,
@@ -34,6 +36,7 @@ from addon_common import (
     resolve_ref,
     sync_archive,
     save_lock,
+    save_pulled,
     sweep_replace_fragments,
     sync_cache,
 )
@@ -66,6 +69,7 @@ def main() -> int:
         addons = [a for a in addons if a["name"] in wanted]
 
     lock = load_lock()
+    pulled_at = load_pulled()
     changed = False
     blocked = False
 
@@ -89,6 +93,7 @@ def main() -> int:
                 continue
             subject = addon["archive"].rsplit("/", 1)[-1]
             previous = None
+            base = None
         else:
             try:
                 cache = sync_cache(addon, fetch=not args.offline)
@@ -110,6 +115,13 @@ def main() -> int:
             commit = run(["git", "rev-parse", "HEAD"], cwd=cache)
             subject = run(["git", "log", "-1", "--pretty=%s"], cwd=cache)
             previous = lock.get(name, {}).get("commit")
+            # What addons/ here was really mirrored from. The lock stops saying so as soon as a
+            # `git pull` of this project brings in the commit another machine pulled (load_pulled).
+            base = pulled_at.get(name) or previous
+            if base != previous and not has_commit(cache, base):
+                print(f"{name:<28} {base[:7]}, the commit this copy was pulled at, is not in "
+                      f".addon_cache/{name}; comparing against the lock's {(previous or 'none')[:7]} instead")
+                base = previous
 
         # Look before touching anything, so a pull that would destroy unpushed work can stop.
         origin = addon_source(cache, name)
@@ -118,23 +130,23 @@ def main() -> int:
         # mirror() copies whenever a file differs, which includes a file edited here and never
         # pushed. That is how hand-tuned animation .tres files were lost twice: the pull reported
         # them as "file(s) in" and said nothing about what it wrote over. Diffing against the commit
-        # the lock recorded is what separates an edit made here from a change made upstream.
-        # Both halves matter. Differing from the locked commit makes it an edit made here; differing
+        # this copy was last pulled at is what separates an edit made here from a change upstream.
+        # Both halves matter. Differing from that commit makes it an edit made here; differing
         # from the incoming one makes it something mirror() is about to write over. A file that has
         # drifted from the lock but already matches what is arriving is in no danger at all, and
         # counting it would cry wolf over every addon whose lock has simply fallen behind.
         edited: list = []
-        if previous and previous != commit:
+        if base and base != commit:
             incoming = set(local_edits(origin, dest))
             try:
-                run(["git", "checkout", "--quiet", "--force", previous], cwd=cache)
+                run(["git", "checkout", "--quiet", "--force", base], cwd=cache)
                 edited = [p for p in local_edits(addon_source(cache, name), dest) if p in incoming]
             except RuntimeError:
                 edited = []  # The recorded commit is gone; report nothing rather than block blindly.
             finally:
                 run(["git", "checkout", "--quiet", "--force", target], cwd=cache)
                 origin = addon_source(cache, name)
-        elif previous:
+        elif base:
             # Nothing new upstream, so anything mirror() would copy is an edit made here.
             edited = local_edits(origin, dest)
 
@@ -195,6 +207,7 @@ def main() -> int:
                   f"parked beside it until that closes")
 
         if not args.dry_run:
+            pulled_at[name] = commit
             lock[name] = {
                 "commit": commit,
                 "subject": subject,
@@ -213,6 +226,7 @@ def main() -> int:
         return 0
 
     save_lock(lock)
+    save_pulled(pulled_at)
 
     if blocked:
         print("Some addons were left alone because a pull would have deleted local work.")

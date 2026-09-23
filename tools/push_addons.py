@@ -27,9 +27,11 @@ from addon_common import (
     load_lock,
     is_third_party,
     load_manifest,
+    load_pulled,
     mirror,
     run,
     save_lock,
+    save_pulled,
     sync_cache,
 )
 
@@ -54,6 +56,7 @@ def main() -> int:
         addons = [a for a in addons if a["name"] in wanted]
 
     lock = load_lock()
+    pulled_at = load_pulled()
     pushed = []
     blocked = False
 
@@ -148,6 +151,7 @@ def main() -> int:
             print(f"{'':<28} pushed {commit[:7]} to {branch}")
 
         pushed.append(name)
+        pulled_at[name] = commit  # addons/<name> here is exactly what was just committed
         lock[name] = {
             "repo": addon["repo"],
             "ref": branch,
@@ -167,6 +171,7 @@ def main() -> int:
         return 1 if blocked else 0
 
     save_lock(lock)
+    save_pulled(pulled_at)
     print(f"{len(pushed)} addon(s) sent upstream: {', '.join(pushed)}")
     print("The lock file now records the new commits. Commit it here with your changes:")
     print("  git add addons tools/addons.lock.json")

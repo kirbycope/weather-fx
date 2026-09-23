@@ -72,6 +72,31 @@ def save_lock(data: dict) -> None:
     LOCKFILE.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def load_pulled() -> dict:
+    """The commit each vendored copy on this machine was last mirrored from, by addon name.
+
+    The lock cannot say this. It is committed, so a `git pull` of this project brings in the commit
+    another machine pulled while addons/ here still holds the older copy, and diffing that copy
+    against the lock calls every upstream change in between an edit made here. This record lives in
+    .addon_cache/, which git never carries, so it only ever describes the copy on this machine. A
+    fresh clone has none and falls back to the lock, which its copy was just made from anyway.
+    """
+    try:
+        return json.loads((CACHE / "pulled.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def save_pulled(data: dict) -> None:
+    CACHE.mkdir(exist_ok=True)
+    (CACHE / "pulled.json").write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def has_commit(cache: Path, commit: str) -> bool:
+    """Whether the clone at cache holds commit, so there is a tree to check out and diff against."""
+    return run(["git", "cat-file", "-t", commit], cwd=cache, check=False) == "commit"
+
+
 def is_third_party(addon: dict) -> bool:
     """Whether the addon is somebody else's work: pulled and pinned like the rest, never pushed to."""
     return bool(addon.get("third_party", False))
@@ -278,10 +303,10 @@ def mirror(
 def local_edits(source: Path, dest: Path) -> list[Path]:
     """Files in dest that differ from source, meaning they were changed here since that pull.
 
-    Pass the addon at the commit tools/addons.lock.json says was last pulled. A difference against
-    *that* is work done in this project's copy and never sent upstream; a difference against the
-    incoming commit would just be an upstream change, and the two are indistinguishable from the
-    filesystem alone. That is the whole reason the lock file is worth consulting here.
+    Pass the addon at the commit this copy was last pulled at (load_pulled(), else the lock). A
+    difference against *that* is work done in this project's copy and never sent upstream; a
+    difference against the incoming commit would just be an upstream change, and the two are
+    indistinguishable from the filesystem alone. That is the whole reason that commit is recorded.
 
     Only files that exist in both are edits. One that is missing from dest is simply new upstream,
     and one that is missing from source is local-only, which mirror() already reports as a removal.

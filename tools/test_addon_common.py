@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Tests for the addon tooling's handling of Windows replace fragments.
+"""Tests for the addon tooling: Windows replace fragments, and the pull's edit guard run against
+throwaway git repositories.
 
 Run with:  python -m unittest tools/test_addon_common.py
 
@@ -13,15 +14,24 @@ mirror ignores it on both sides, and the sweep removes what it can and reports w
 
 from __future__ import annotations
 
+import contextlib
+import io
+import json
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import addon_common  # noqa: E402
+import pull_addons  # noqa: E402
+import push_addons  # noqa: E402
 from addon_common import (  # noqa: E402
+    _rmtree,
     is_replace_fragment,
     local_edits,
     mirror,
@@ -114,10 +124,6 @@ class SweepFragments(unittest.TestCase):
         self.assertTrue(keep.exists())
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class LocalEdits(unittest.TestCase):
     """The check that stops a pull writing over work that was never pushed.
 
@@ -183,3 +189,147 @@ class LocalEdits(unittest.TestCase):
         second = self.write(self.dest, "animations/Sprint.tres", "tuned\n")
 
         self.assertEqual(local_edits(self.source, self.dest), sorted([first, second]))
+
+
+def git(cwd: Path, *args: str) -> str:
+    return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True).stdout.strip()
+
+
+class PullAfterTheLockMoved(unittest.TestCase):
+    """The pull's edit guard, run for real against repositories made in a temporary folder.
+
+    tools/addons.lock.json is committed, so a `git pull` of this project brings in the commit another
+    machine pulled while addons/ here still holds the older copy. The guard has to diff against what
+    this machine really mirrored, which the pull and the push record in .addon_cache/pulled.json, or
+    every upstream change in between looks like an edit made here. `remotes/widget.git` is the addon's
+    origin, `other` is somebody else's clone of it, and `project` vendors it under addons/widget/.
+    """
+
+    NAME = "widget"
+
+    def setUp(self) -> None:
+        self._temp = tempfile.TemporaryDirectory()
+        self.base = Path(self._temp.name)
+        self.addCleanup(self._temp.cleanup)
+        self.addCleanup(_rmtree, self.base)  # git leaves read-only objects that Windows will not delete
+
+        # Git with an identity for the commits and nothing of this machine's own configuration.
+        config = self.base / "gitconfig"
+        config.write_text("[user]\n\tname = Test\n\temail = test@example.com\n")
+        self.origin = self.base / "remotes" / "widget.git"
+        self.project = self.base / "project"
+        (self.project / "tools").mkdir(parents=True)
+        manifest = self.project / "tools" / "addons.json"
+        manifest.write_text(json.dumps({"addons": [{"name": self.NAME, "repo": self.origin.as_uri(), "ref": "main"}]}))
+        for patch in [
+            mock.patch.dict(os.environ, {"GIT_CONFIG_GLOBAL": str(config), "GIT_CONFIG_NOSYSTEM": "1"}),
+            mock.patch.object(addon_common, "ROOT", self.project),
+            mock.patch.object(addon_common, "MANIFEST", manifest),
+            mock.patch.object(addon_common, "LOCKFILE", self.project / "tools" / "addons.lock.json"),
+            mock.patch.object(addon_common, "CACHE", self.project / ".addon_cache"),
+            mock.patch.object(pull_addons, "ROOT", self.project),
+            mock.patch.object(push_addons, "ROOT", self.project),
+        ]:
+            patch.start()
+            self.addCleanup(patch.stop)
+
+        self.origin.mkdir(parents=True)
+        git(self.origin, "init", "--quiet", "--bare", "--initial-branch=main")
+        self.other = self.base / "other"
+        git(self.base, "clone", "--quiet", self.origin.as_uri(), str(self.other))
+        git(self.other, "symbolic-ref", "HEAD", "refs/heads/main")
+        self.commit_upstream("addons/widget/plugin.cfg", "[plugin]\n")
+
+        code, out = self.call(pull_addons.main)
+        self.assertEqual(code, 0, out)
+        self.vendored = self.project / "addons" / self.NAME
+        self.assertTrue((self.vendored / "plugin.cfg").exists(), out)
+
+    def commit_upstream(self, relative: str, text: str) -> str:
+        """Somebody else commits to the addon and pushes it."""
+        path = self.other / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+        git(self.other, "add", "-A")
+        git(self.other, "commit", "--quiet", "-m", f"change {relative}")
+        git(self.other, "push", "--quiet", "origin", "main")
+        return git(self.other, "rev-parse", "HEAD")
+
+    def origin_head(self) -> str:
+        return git(self.origin, "rev-parse", "main")
+
+    def edit_here(self) -> None:
+        (self.vendored / "plugin.cfg").write_text("[plugin]\nname=\"edited here\"\n")
+
+    def call(self, main, *argv: str) -> tuple[int, str]:
+        out = io.StringIO()
+        with mock.patch.object(sys, "argv", ["tool", *argv]), contextlib.redirect_stdout(out):
+            code = main()
+        return code, out.getvalue()
+
+    def move_the_lock(self, commit: str) -> None:
+        """What `git pull` of this project does once another machine has pulled the addon and pushed."""
+        path = self.project / "tools" / "addons.lock.json"
+        lock = json.loads(path.read_text())
+        lock[self.NAME]["commit"] = commit
+        path.write_text(json.dumps(lock))
+
+    def pulled_record(self) -> str:
+        """The commit this machine recorded mirroring addons/widget from."""
+        return json.loads((self.project / ".addon_cache" / "pulled.json").read_text())[self.NAME]
+
+    def test_a_lock_moved_by_a_project_pull_is_not_an_edit_here(self) -> None:
+        # The lock is committed, so a `git pull` here moves it on while addons/ keeps the older copy.
+        # The guard used to diff that copy against the lock, call the upstream change an edit made
+        # here and stop, and only --force got past it, which would also have destroyed a real edit.
+        pulled = self.origin_head()
+        newer = self.commit_upstream("addons/widget/plugin.cfg", "[plugin]\nname=\"newer\"\n")
+        self.move_the_lock(newer)
+        self.assertEqual(self.pulled_record(), pulled, "this machine knows its copy is the older one")
+
+        code, out = self.call(pull_addons.main)
+
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("STOPPED", out)
+        self.assertIn("newer", (self.vendored / "plugin.cfg").read_text())
+        self.assertEqual(self.pulled_record(), newer)
+
+    def test_an_edit_here_still_stops_a_pull_after_the_lock_moved(self) -> None:
+        self.edit_here()
+        self.move_the_lock(self.commit_upstream("addons/widget/theirs.gd", "extends Node\n"))
+
+        code, out = self.call(pull_addons.main)
+
+        self.assertEqual(code, 1, out)
+        self.assertIn("STOPPED: 1 file(s) edited here", out)
+        self.assertIn("edited here", (self.vendored / "plugin.cfg").read_text(), "the edit survives")
+
+    def test_a_recorded_commit_missing_from_the_cache_falls_back_to_the_lock(self) -> None:
+        (self.project / ".addon_cache" / "pulled.json").write_text(json.dumps({self.NAME: "0" * 40}))
+        self.commit_upstream("addons/widget/plugin.cfg", "[plugin]\nname=\"newer\"\n")
+
+        code, out = self.call(pull_addons.main)
+
+        self.assertEqual(code, 0, out)
+        self.assertIn("is not in .addon_cache/widget; comparing against the lock's", out)
+        self.assertIn("newer", (self.vendored / "plugin.cfg").read_text())
+
+    def test_a_push_records_its_commit_so_the_next_pull_diffs_against_it(self) -> None:
+        # Otherwise the next pull diffs against the older pull, and a later upstream change to the
+        # file pushed from here looks like an edit made here.
+        self.edit_here()
+        code, out = self.call(push_addons.main, "-m", "edited here")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.pulled_record(), self.origin_head())
+        git(self.other, "pull", "--quiet", "origin", "main")
+        self.commit_upstream("addons/widget/plugin.cfg", "[plugin]\nname=\"theirs\"\n")
+
+        code, out = self.call(pull_addons.main)
+
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("STOPPED", out)
+        self.assertIn("theirs", (self.vendored / "plugin.cfg").read_text())
+
+
+if __name__ == "__main__":
+    unittest.main()
